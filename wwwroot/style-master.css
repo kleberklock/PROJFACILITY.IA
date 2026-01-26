@@ -1527,3 +1527,111 @@ input:checked + .slider-demo:before { transform: translateX(26px); box-shadow: 0
     padding: 8px 0 !important;     /* Ajuste fino do texto */
     line-height: 20px;
 }
+/* Botão Flutuante do WhatsApp */
+.whatsapp-float {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: #25d366; /* Verde WhatsApp */
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 32px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255,255,255,0.1);
+}
+
+.whatsapp-float:hover {
+    background-color: #128c7e; /* Verde mais escuro ao passar o mouse */
+    transform: scale(1.1);
+    box-shadow: 0px 6px 15px rgba(0,255,136, 0.4); /* Glow no estilo do seu site */
+}
+
+/* O Balão (Tooltip) */
+.tooltip-bala {
+    position: absolute;
+    right: 75px; /* Posiciona à esquerda do botão */
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #1a1a1a; /* Cor de fundo escura do seu tema */
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    opacity: 0; /* Invisível por padrão */
+    visibility: hidden;
+    transition: opacity 0.3s, right 0.3s;
+    border: 1px solid #333;
+    pointer-events: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+/* Setinha do balão apontando para o botão */
+.tooltip-bala::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -6px; /* Encosta no botão */
+    margin-top: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent transparent #1a1a1a;
+}
+
+/* Mostrar o balão quando passar o mouse */
+.whatsapp-float:hover .tooltip-bala {
+    opacity: 1;
+    visibility: visible;
+    right: 85px; /* Leve movimento para a esquerda para dar destaque */
+}
+/* --- INTERATIVIDADE MOBILE (Força o balão aparecer) --- */
+@media (max-width: 768px) {
+    .whatsapp-float .tooltip-bala {
+        /* Torna visível por padrão no celular */
+        opacity: 1;
+        visibility: visible;
+        
+        /* Ajustes de posição para caber na tela do celular */
+        right: 70px;
+        width: max-content;
+        max-width: 180px; /* Limita largura para não estourar a tela */
+        white-space: normal; /* Permite quebra de linha */
+        text-align: right;
+        font-size: 11px; /* Texto levemente menor */
+        
+        /* Animação: O balão desliza para dentro após 1 segundo */
+        animation: slideInBaloon 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) 1s backwards;
+    }
+
+    /* O Botão fica pulsando levemente para chamar atenção */
+    .whatsapp-float {
+        animation: pulseButton 2s infinite;
+    }
+}
+
+/* --- Definição das Animações --- */
+@keyframes slideInBaloon {
+    from { 
+        opacity: 0; 
+        transform: translateY(-50%) translateX(20px); /* Vem da direita */
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(-50%) translateX(0); /* Posição final */
+    }
+}
+
+@keyframes pulseButton {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}

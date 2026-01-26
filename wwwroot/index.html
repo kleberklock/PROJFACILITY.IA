@@ -204,21 +204,12 @@
         </div>
     </footer>
 
-    <div class="chat-widget-btn" onclick="toggleChat()">💬 I.A.</div>
-
-    <div class="chat-window" id="chatWindow">
-        <div class="chat-header">
-            <span>Assistente Facility.IA</span>
-            <span class="close-btn" style="cursor:pointer;" onclick="toggleChat()">✖</span>
-        </div>
-        <div class="chat-body">
-            <p>Sistema online. Como posso ajudar?</p>
-        </div>
-        <div class="chat-input">
-            <input type="text" placeholder="Comando...">
-            <button style="background:none; border:none; color: var(--primary-color); cursor:pointer;">➤</button>
-        </div>
-    </div>
+    <a href="https://wa.me/5511943544588?text=Ol%C3%A1%2C%20estou%20testando%20o%20Facility.IA%20e%20gostaria%20de%20falar%20sobre%20erros%20ou%20melhorias." 
+   target="_blank" 
+   class="whatsapp-float">
+    <i class="fab fa-whatsapp"></i>
+    <span class="tooltip-bala">📢 Reportar erros ou sugerir melhorias</span>
+</a>
     
     <script src="config.js"></script> 
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
@@ -292,6 +283,98 @@
             });
             document.addEventListener("click", function(e) { if (e.target !== input) { lista.style.display = "none"; } });
         }
+        /* --- INTERATIVIDADE ADICIONAL (Adicione ao final do script.js) --- */
+
+// 1. Função para Abrir/Fechar o Chat (Obrigatório para o botão funcionar)
+function toggleChat() {
+    const chatWindow = document.getElementById('chatWindow');
+    if (chatWindow) {
+        // Alterna entre mostrar e esconder
+        if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+            chatWindow.style.display = 'flex';
+            setTimeout(() => chatWindow.classList.add('active'), 10); // Pequeno delay para animação CSS se houver
+        } else {
+            chatWindow.classList.remove('active');
+            setTimeout(() => chatWindow.style.display = 'none', 300); // Espera animação terminar
+        }
+    }
+}
+
+// 2. Função dos Switches (Botões de Ligar/Desligar na Home)
+function toggleSwitch(idElemento) {
+    // Busca o checkbox dentro do elemento pai (ex: demo1)
+    const checkbox = document.querySelector(`#${idElemento} input`);
+    
+    if (checkbox && checkbox.checked) {
+        showToast('Funcionalidade ativada para demonstração!', 'success');
+        // Aqui você poderia adicionar lógica extra, como mudar a cor do card
+        document.getElementById(idElemento).style.borderColor = '#00ff88';
+    } else {
+        showToast('Funcionalidade desativada.', 'warning');
+        if(document.getElementById(idElemento)) {
+            document.getElementById(idElemento).style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        }
+    }
+}
+
+// 3. Lógica do Botão "Procurar" (Busca de Profissões)
+document.addEventListener('DOMContentLoaded', function() {
+    const btnProcurar = document.querySelector('.btn-activate');
+    const inputProfissao = document.getElementById('inputProfissao');
+
+    if (btnProcurar && inputProfissao) {
+        btnProcurar.addEventListener('click', function() {
+            const valor = inputProfissao.value.trim();
+            if (valor) {
+                // Simula um "carregando"
+                btnProcurar.innerText = "Buscando...";
+                setTimeout(() => {
+                    // Redireciona para o login ou cadastro levando o interesse
+                    window.location.href = `login.html?interesse=${encodeURIComponent(valor)}`;
+                }, 1000);
+            } else {
+                showToast('Por favor, digite ou selecione uma profissão.', 'error');
+                inputProfissao.focus();
+            }
+        });
+    }
+    
+    // 4. Lógica de Envio de Mensagem no Chat (Frontend)
+    const chatInput = document.querySelector('.chat-input input');
+    const chatBtn = document.querySelector('.chat-input button');
+    const chatBody = document.querySelector('.chat-body');
+
+    function enviarMensagem() {
+        const texto = chatInput.value.trim();
+        if (!texto) return;
+
+        // 1. Adiciona mensagem do usuário
+        const userMsg = document.createElement('p');
+        userMsg.style.cssText = "text-align:right; background: rgba(0, 255, 136, 0.2); padding: 8px; border-radius: 8px; margin: 5px 0; border: 1px solid #00ff88;";
+        userMsg.textContent = texto;
+        chatBody.appendChild(userMsg);
+
+        chatInput.value = ''; // Limpa input
+        chatBody.scrollTop = chatBody.scrollHeight; // Desce o scroll
+
+        // 2. Simula resposta da IA (Delay de 1.5s)
+        setTimeout(() => {
+            const iaMsg = document.createElement('p');
+            iaMsg.style.cssText = "text-align:left; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 8px; margin: 5px 0;";
+            iaMsg.innerHTML = "<strong>Facility.IA:</strong> Para acessar respostas completas, por favor faça login ou crie sua conta.";
+            chatBody.appendChild(iaMsg);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }, 1500);
+    }
+
+    // Adiciona eventos ao botão e ao Enter
+    if (chatBtn) chatBtn.addEventListener('click', enviarMensagem);
+    if (chatInput) {
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') enviarMensagem();
+        });
+    }
+});
     </script>
 </body>
 </html>

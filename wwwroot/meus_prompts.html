@@ -151,6 +151,58 @@
         .view-section.active { display: block; opacity: 1; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* --- INTERATIVIDADE MOBILE (App Feel) --- */
+        @media (max-width: 768px) {
+            
+            /* 1. Botão "Novo" vira um FAB (Floating Action Button) */
+            .action-fab {
+                position: fixed;
+                bottom: 25px;
+                right: 25px;
+                z-index: 100;
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 !important;
+                box-shadow: 0 4px 15px rgba(124, 58, 237, 0.5);
+                font-size: 0; /* Esconde o texto "Novo" */
+            }
+            
+            .action-fab i {
+                font-size: 24px; /* Aumenta o ícone */
+                margin: 0 !important;
+            }
+
+            /* 2. Ajuste das Abas para Caber na Tela */
+            .studio-tabs {
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+            .tab-btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+
+            /* 3. Cards Otimizados para Toque */
+            .item-card {
+                margin-bottom: 15px;
+                background: rgba(255, 255, 255, 0.05); /* Um pouco mais claro no mobile */
+            }
+            
+            /* Aumenta a área de toque dos botões de ação */
+            .card-actions {
+                top: 10px;
+                right: 10px;
+            }
+            .icon-btn {
+                padding: 12px; /* Área de toque maior */
+                font-size: 1.2rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -471,6 +523,41 @@
 
         // Init
         document.addEventListener('DOMContentLoaded', () => carregarAgentes());
+        /* --- GESTOS MOBILE (SWIPE) --- */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicializa detecção de gestos na área de conteúdo
+            const touchArea = document.querySelector('.studio-content');
+            if (!touchArea) return;
+
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            touchArea.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, {passive: true});
+
+            touchArea.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, {passive: true});
+
+            function handleSwipe() {
+                const swipeDistance = touchEndX - touchStartX;
+                const threshold = 60; // Mínimo de pixels para considerar swipe
+
+                // Deslizar para a ESQUERDA (<<) -> Vai para Prompts
+                if (swipeDistance < -threshold) {
+                    const btnPrompts = document.querySelectorAll('.tab-btn')[1];
+                    if (btnPrompts) switchMainTab('prompts', btnPrompts);
+                }
+                
+                // Deslizar para a DIREITA (>>) -> Vai para Agentes
+                if (swipeDistance > threshold) {
+                    const btnAgentes = document.querySelectorAll('.tab-btn')[0];
+                    if (btnAgentes) switchMainTab('agents', btnAgentes);
+                }
+            }
+        });
 
     </script>
 </body>
