@@ -1,0 +1,101 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PROJFACILITY.IA.Data;
+using PROJFACILITY.IA.Models;
+using System.Security.Claims;
+
+namespace PROJFACILITY.IA.Controllers
+{
+    [ApiController]
+    [Route("api/agents")]
+    public class AgentsController : ControllerBase
+    {
+        private readonly AppDbContext _context;
+
+        public AgentsController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        // LISTAR
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Agent>>> GetAgents([FromQuery] int? userId)
+        {
+            if (userId == null)
+            {
+                var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
+                if (!string.IsNullOrEmpty(userIdStr)) userId = int.Parse(userIdStr);
+            }
+            return await _context.Agents
+                .Where(a => a.UserId == null || a.UserId == userId)
+                .OrderByDescending(a => a.Id) // Mais recentes primeiro
+                .ToListAsync();
+        }
+
+        // CRIAR
+        [HttpPost]
+        public async Task<IActionResult> PostAgent([FromBody] CreateAgentRequest request)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
+            int finalUserId = request.CreatorId;
+            if (!string.IsNullOrEmpty(userIdStr)) finalUserId = int.Parse(userIdStr);
+
+            if (finalUserId == 0) return Unauthorized();
+
+            var agent = new Agent
+            {
+                Name = request.Name,
+                Specialty = "Personalizado",
+                SystemInstruction = request.Prompt,
+                UserId = finalUserId,
+                IsPublic = false,
+                Icon = "fa-robot"
+            };
+
+            _context.Agents.Add(agent);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Criado com sucesso!", id = agent.Id });
+        }
+
+        // EDITAR (NOVO)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAgent(int id, [FromBody] CreateAgentRequest request)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
+
+            var agent = await _context.Agents.FindAsync(id);
+            if (agent == null) return NotFound();
+            if (agent.UserId != userId) return Forbid(); // Só o dono edita
+
+            agent.Name = request.Name;
+            agent.SystemInstruction = request.Prompt;
+            
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Atualizado!" });
+        }
+
+        // EXCLUIR (NOVO)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAgent(int id)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
+
+            var agent = await _context.Agents.FindAsync(id);
+            if (agent == null) return NotFound();
+            if (agent.UserId != userId) return Forbid();
+
+            _context.Agents.Remove(agent);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Excluído!" });
+        }
+
+        public class CreateAgentRequest
+        {
+            public string Name { get; set; } = string.Empty;
+            public string Prompt { get; set; } = string.Empty;
+            public int CreatorId { get; set; }
+        }
+    }
+}

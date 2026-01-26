@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+    <title>Facility.IA - Workstation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style-master.css">
+    
+    <script src="config.js"></script> 
+    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="chat-mode">
+    <input type="file" id="realFileInput" style="display: none;">
+
+    <div class="chat-layout">
+        <aside class="sidebar" id="mainSidebar">
+            <div class="logo" style="margin-bottom: 30px;"><a href="dashboard.html" style="text-decoration:none; color:inherit;"><h1>FACILITY<span>.IA</span></h1></a></div>
+            <div class="new-chat-btn" onclick="window.location.href='escolher_agente.html'"><i class="fas fa-arrow-left"></i> Trocar Agente</div>
+            
+            <div class="history-list" id="historyList"></div>
+        </aside>
+
+        <main style="position: relative; width: 100%; height: 100%; overflow: hidden;">
+            <div id="chatInterface" class="chat-interface">
+                <header class="chat-header-bar">
+                    <div class="header-top">
+                        <div class="agent-info" style="display:flex; align-items:center; gap:15px;">
+                            <div class="agent-avatar" id="headerIcon">🤖</div>
+                            <div>
+                                <div style="font-weight:bold; color:white;" id="headerName">Carregando...</div>
+                                <div style="font-size:0.7rem; color:#666;">● ONLINE</div>
+                            </div>
+                        </div>
+                        <i class="fas fa-bars mobile-only" style="color:#666; cursor:pointer; font-size:1.2rem; display:none;" onclick="toggleSidebarMobile()"></i>
+                    </div>
+                    <div class="active-modules-container" id="activeModulesArea"></div>
+                </header>
+
+                <div class="messages-area" id="messagesArea"></div>
+
+                <div class="input-wrapper">
+                    <div class="input-box-styled">
+                        <div class="attachments-preview" id="attachmentsPreview"></div>
+                        <div class="input-container">
+                            <div style="position:relative;">
+                                <div class="action-icon" onclick="toggleMenu('attachMenu')"><i class="fas fa-paperclip"></i></div>
+                                <div class="floating-menu" id="attachMenu">
+                                    <div class="menu-option" onclick="triggerFileUpload('application/pdf')"><i class="far fa-file-pdf"></i> PDF</div>
+                                    <div class="menu-option" onclick="triggerFileUpload('image/*')"><i class="far fa-file-image"></i> Imagem</div>
+                                    <div class="menu-option" onclick="saveCurrentInputAsPrompt()"><i class="fas fa-save"></i> Salvar Prompt</div>
+                                </div>
+                            </div>
+
+                            <div style="position:relative;">
+                                <div class="action-icon prompts" onclick="togglePanel()"><i class="fas fa-wand-magic-sparkles" style="color:var(--primary)"></i></div>
+                                <div class="floating-panel" id="promptsPanel">
+                                    <div class="panel-header"><span>Módulos de Contexto</span></div>
+                                    <div id="switchesContainer" style="padding:10px;"></div>
+                                </div>
+                            </div>
+
+                            <div class="action-icon" id="micBtn" onclick="toggleRecording()"><i class="fas fa-microphone"></i></div>
+                            
+                            <textarea id="userInput" placeholder="Digite sua instrução..."></textarea>
+                            
+                            <button onclick="handleSendMessage()" style="background:var(--primary); border:none; width:40px; height:40px; border-radius:10px; cursor:pointer; color:black;"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+   <script>
+    // 1. Verificação de Segurança
+    (function() {
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = "login.html";
+    })();
+
+    // 2. Base de Conhecimento (Contextos)
+    const knowledgeBase = {
+            juridico: [
+                { label: "REVISAR CONTRATO", desc: "Analisar cláusulas abusivas." },
+                { label: "JURISPRUDÊNCIA", desc: "Buscar decisões recentes." },
+                { label: "REDIGIR PETIÇÃO", desc: "Estrutura formal jurídica." }
+            ],
+            saude: [
+                { label: "INTERAÇÃO MEDICAMENTOSA", desc: "Verificar conflitos." },
+                { label: "EXPLICAÇÃO DE EXAME", desc: "Traduzir laudos técnicos." }
+            ],
+            tech: [
+                { label: "DEBUG CODE", desc: "Encontrar erros no código." },
+                { label: "DOCUMENTAR API", desc: "Gerar Swagger/OpenAPI." }
+            ],
+            geral: [
+                { label: "RESUMIR TEXTO", desc: "Criar síntese executiva." },
+                { label: "MELHORAR ESCRITA", desc: "Corrigir gramática e tom." }
+            ]
+    };
+
+    // Variáveis de Estado
+    let activeContexts = new Set();
+    let currentAgentIcon = "";
+    let currentAgentName = "";
+    let currentAgentArea = "geral";
+    let currentFile = null; 
+    let currentSessionId = null;
+
+    // Elementos DOM
+    const userInput = document.getElementById('userInput');
+    const messagesArea = document.getElementById('messagesArea');
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', async () => {
+        document.getElementById('realFileInput').addEventListener('change', handleFileSelected);
+        
+        // Pega params da URL
+        const params = new URLSearchParams(window.location.search);
+        const agentName = params.get('name') || params.get('agent') || 'Assistente';
+        const agentIcon = params.get('icon') || 'fa-robot';
+        const agentArea = params.get('area') || 'geral';
+
+        setupChat(agentName, agentIcon, agentArea);
+        renderHistoryFromStorage(); 
+        
+        // Ajuste Mobile: Garante que o ícone de menu apareça
+        if(window.innerWidth <= 768) {
+            const mobileMenu = document.querySelector('.mobile-only');
+            if(mobileMenu) mobileMenu.style.display = 'block';
+        }
+    });
+
+    // --- SETUP DO CHAT ---
+    function setupChat(name, icon, area) {
+        if(name.includes('-')) name = name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+        currentSessionId = Date.now().toString(); 
+        currentAgentName = name;
+        currentAgentIcon = icon.replace('fa-', ''); 
+        currentAgentArea = area;
+
+        document.getElementById('headerName').innerText = name;
+        document.getElementById('headerIcon').innerHTML = `<i class="fas fa-${currentAgentIcon}"></i>`;
+        
+        activeContexts.clear(); 
+        updateActiveBadges();
+        messagesArea.innerHTML = "";
+
+        loadSwitches(area);
+        
+        addMessage('ai', `Olá! Sou seu ${name}. Como posso ajudar hoje?`, currentAgentIcon, false);
+    }
+    // Função para copiar texto para a área de transferência
+function copiarTexto(btn, texto) {
+    navigator.clipboard.writeText(texto).then(() => {
+        // Feedback visual (Troca ícone para check)
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copiado';
+        btn.style.color = 'var(--neon-green)';
+        
+        // Volta ao normal após 2 segundos
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.style.color = '';
+        }, 2000);
+    }).catch(err => {
+        console.error('Erro ao copiar:', err);
+        showToast('Erro ao copiar texto', 'error');
+    });
+}
+
+    // --- ENVIO DE MENSAGEM ---
+    async function handleSendMessage() {
+        const text = userInput.value.trim();
+        if (!text && !currentFile) return;
+
+        // Adiciona mensagem do usuário
+        if(text) addMessage("user", text);
+        if(currentFile) addMessage("user", `[Arquivo: ${currentFile.name}]`, null);
+
+        // Cria a bolha da IA (estado digitando)
+        const aiDiv = addMessage("ai", "", currentAgentIcon, true); 
+        
+        userInput.value = ""; 
+        const fileToSend = currentFile;
+        clearAttachments();
+
+        try {
+            const token = localStorage.getItem('token'); 
+            let contextPrompt = "";
+            if(activeContexts.size > 0) {
+                contextPrompt = "Contextos ativos: " + Array.from(activeContexts).map(c => c.l).join(", ") + ". ";
+            }
+
+            let responseText = "";
+            
+            // Tenta conectar com a API real
+            if (typeof CONFIG !== 'undefined' && CONFIG.API_URL) {
+                try {
+                    const formData = new FormData();
+                    formData.append('message', contextPrompt + text);
+                    formData.append('agentId', currentAgentName); 
+                    if(fileToSend) formData.append('file', fileToSend);
+
+                    const res = await fetch(`${CONFIG.API_URL}/api/chat/enviar`, { 
+                        method: 'POST', 
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        body: formData 
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        responseText = data.reply;
+                    } else throw new Error("API Error");
+                } catch(e) { console.log("API offline, usando simulação."); }
+            }
+
+            // Fallback para simulação se não tiver API
+            if (!responseText) {
+                await new Promise(r => setTimeout(r, 1000 + Math.random() * 1000));
+                responseText = simulateAIResponse(text, currentAgentName);
+            }
+
+            // 1. Limpa o estado de "digitando"
+            // ATENÇÃO: Mudamos de .msg-bubble para .message-bubble aqui
+            const bubble = aiDiv.querySelector('.message-bubble');
+            bubble.classList.remove('typing-cursor');
+            bubble.innerHTML = ""; 
+            
+            // 2. Efeito de Datilografia (Typewriter)
+            let i = 0; 
+            const speed = 15; 
+            
+            const typeLoop = () => { 
+                if(i < responseText.length) { 
+                    const char = responseText.charAt(i);
+                    bubble.innerHTML += char; 
+                    i++; 
+                    messagesArea.scrollTop = messagesArea.scrollHeight;
+                    setTimeout(typeLoop, speed); 
+                } else {
+                    // --- FINAL DA ANIMAÇÃO ---
+                    
+                    // 1. Salva no histórico UMA vez
+                    saveMessageToHistory("ai", responseText);
+
+                    // 2. Renderiza Markdown simples (Bold e quebra de linha)
+                    bubble.innerHTML = responseText
+                        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                        .replace(/\n/g, '<br>');
+
+                    // 3. INJEÇÃO DOS BOTÕES (Copiar e Regerar)
+                    // Agora que terminou de digitar, adicionamos os botões
+                    const contentWrapper = aiDiv.querySelector('.message-content-wrapper');
+                    const actionsDiv = document.createElement('div');
+                    actionsDiv.className = 'action-row';
+                    
+                    // Note o uso de encodeURIComponent para não quebrar o HTML com aspas no texto
+                    actionsDiv.innerHTML = `
+                        <button class="icon-btn" onclick="copiarTexto(this, decodeURIComponent('${encodeURIComponent(responseText)}'))" title="Copiar">
+                            <i class="far fa-copy"></i>
+                        </button>
+                        <button class="icon-btn" title="Regerar resposta">
+                            <i class="fas fa-redo"></i>
+                        </button>
+                    `;
+                    contentWrapper.appendChild(actionsDiv);
+                }
+            };
+            typeLoop();
+
+        } catch (e) {
+            // Tratamento de erro visual
+            const bubble = aiDiv.querySelector('.message-bubble');
+            if(bubble) bubble.innerText = "Erro: " + e.message;
+            console.error(e);
+        }
+    }
+
+    function simulateAIResponse(input, role) {
+        const lowerInput = input.toLowerCase();
+        if (lowerInput.includes("olá") || lowerInput.includes("oi")) return `Olá! Como posso auxiliar você em suas tarefas de ${role} hoje?`;
+        if (lowerInput.includes("resumo") || lowerInput.includes("resumir")) return `Com certeza. Para gerar um resumo eficiente como ${role}, preciso que você forneça o texto original ou os pontos principais.`;
+        return `Como ${role}, analisei sua solicitação: "${input}".\n\nEssa é uma questão interessante que envolve múltiplos aspectos da nossa área. Recomendo uma abordagem estruturada:\n\n1. Análise preliminar dos dados.\n2. Verificação das normas vigentes.\n3. Aplicação da solução técnica.`;
+    }
+
+   function addMessage(sender, text, icon, typing = false) {
+    const d = document.createElement('div');
+    // Usa classes semânticas: 'message-row' é o container, 'ai-message' ou 'user-message' define o lado
+    const isAI = sender === 'ai';
+    d.className = `message-row ${isAI ? 'ai-message' : 'user-message'}`;
+
+    // Ícone da IA (Gradiente do Google/Gemini ou o seu ícone definido)
+    const avatarHTML = isAI 
+        ? `<div class="ai-avatar"><i class="fas fa-${icon || 'robot'}"></i></div>` 
+        : ''; // Usuário não precisa de avatar no estilo Gemini
+
+    // Conteúdo da mensagem
+    let content = text;
+    if (typing) content = '<i class="fas fa-circle-notch fa-spin"></i> Gerando resposta...';
+
+    // Formata negrito **texto** para <b>texto</b> se não estiver digitando
+    if (!typing && text) {
+        content = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+    }
+
+    // Botão de copiar (Só aparece para IA e se não estiver digitando)
+    // Usamos o encodeURIComponent para garantir que aspas ou caracteres especiais não quebrem o HTML
+    const actionsHTML = (isAI && !typing) 
+        ? `
+        <div class="action-row">
+            <button class="icon-btn" onclick="copiarTexto(this, decodeURIComponent('${encodeURIComponent(text)}'))" title="Copiar resposta">
+                <i class="far fa-copy"></i>
+            </button>
+            <button class="icon-btn" title="Regerar resposta">
+                <i class="fas fa-redo"></i>
+            </button>
+        </div>` 
+        : '';
+
+    // Montagem do HTML Final
+    d.innerHTML = `
+        ${avatarHTML}
+        <div class="message-content-wrapper">
+            <div class="message-bubble ${typing ? 'typing-cursor' : ''}">${content}</div>
+            ${actionsHTML}
+        </div>
+    `;
+
+    messagesArea.appendChild(d);
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+
+    // Salva no histórico se for usuário
+    if (!typing && sender === 'user') saveMessageToHistory(sender, text);
+
+    return d;
+}
+    
+
+    function triggerFileUpload(accept) { 
+        toggleMenu('attachMenu'); 
+        const i = document.getElementById('realFileInput'); 
+        i.accept = accept; i.click(); 
+    }
+    
+    function handleFileSelected(e) { 
+        const f = e.target.files[0]; if(!f) return; currentFile = f;
+        document.getElementById('attachmentsPreview').innerHTML = `<div class="attachment-chip"><i class="fas fa-file"></i> ${f.name} <i class="fas fa-times" onclick="clearAttachments()" style="cursor:pointer"></i></div>`;
+    }
+    
+    function clearAttachments() { 
+        currentFile = null; 
+        document.getElementById('realFileInput').value=""; 
+        document.getElementById('attachmentsPreview').innerHTML=""; 
+    }
+
+    function loadSwitches(area) {
+        let key = 'geral';
+        if (area.includes('jur')) key = 'juridico';
+        else if (area.includes('sau') || area.includes('med')) key = 'saude';
+        else if (area.includes('tech') || area.includes('dev')) key = 'tech';
+
+        const list = knowledgeBase[key] || knowledgeBase['geral'];
+        const container = document.getElementById('switchesContainer');
+        
+        container.innerHTML = "";
+        list.forEach((p, i) => {
+             const id = `p_${i}`;
+             container.innerHTML += `
+                <div class="prompt-switch-item">
+                    <div>
+                        <div style="font-weight:bold; font-size:0.85rem; color:#eee;">${p.label}</div>
+                        <div style="font-size:0.75rem; color:#888;">${p.desc}</div>
+                    </div>
+                    <label class="mini-switch">
+                        <input type="checkbox" onchange="toggleContext('${id}', '${p.label}', this.checked)">
+                        <span class="mini-slider"></span>
+                    </label>
+                </div>`;
+        });
+    }
+    
+    function toggleContext(id, label, checked) {
+        if(checked) activeContexts.add({id, l: label});
+        else activeContexts.forEach(i=>{if(i.id===id)activeContexts.delete(i)});
+        updateActiveBadges();
+    }
+
+    function updateActiveBadges() {
+        const area = document.getElementById('activeModulesArea');
+        area.innerHTML = "";
+        activeContexts.forEach(c => {
+            area.innerHTML += `<div class="module-badge"><i class="fas fa-bolt"></i> ${c.l}</div>`;
+        });
+    }
+
+    function toggleMenu(id) {
+        const m = document.getElementById(id);
+        m.style.display = m.style.display === 'block' ? 'none' : 'block';
+    }
+    
+    function togglePanel() {
+        const p = document.getElementById('promptsPanel');
+        p.style.display = p.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleSidebarMobile() {
+        const sb = document.getElementById('mainSidebar');
+        sb.classList.toggle('active');
+    }
+
+    function getHistory() { return JSON.parse(localStorage.getItem('chatHistory') || '[]'); }
+    
+    function saveMessageToHistory(sender, text) {
+        let history = getHistory();
+        let session = history.find(h => h.id === currentSessionId);
+        if (!session) {
+            session = { id: currentSessionId, timestamp: Date.now(), title: text.substring(0, 25) + "...", agentName: currentAgentName, icon: 'robot', messages: [] };
+            history.push(session);
+        }
+        session.messages.push({ sender, text, timestamp: Date.now() });
+        localStorage.setItem('chatHistory', JSON.stringify(history));
+        renderHistoryFromStorage();
+    }
+
+    function renderHistoryFromStorage() {
+        const list = document.getElementById('historyList');
+        const history = getHistory();
+        list.innerHTML = "";
+        history.reverse().forEach(h => {
+            list.innerHTML += `
+                <div class="history-item" onclick="alert('Carregar chat ${h.id}')">
+                    <i class="fas fa-comment"></i>
+                    <div style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">${h.title}</div>
+                </div>`;
+        });
+    }
+
+    document.addEventListener('click', (e) => {
+        if(!e.target.closest('.action-icon') && !e.target.closest('.floating-menu')) 
+            document.querySelectorAll('.floating-menu').forEach(m => m.style.display = 'none');
+        if(!e.target.closest('.prompts') && !e.target.closest('.floating-panel')) 
+            document.getElementById('promptsPanel').style.display = 'none';
+    });
+
+    userInput.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessage();
+        }
+    });
+   </script>
+</body>
+</html>

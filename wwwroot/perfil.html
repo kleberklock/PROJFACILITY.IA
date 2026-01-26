@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Meu Perfil | Facility.IA</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style-master.css">
+</head>
+<body>
+
+    <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
+
+    <div class="mobile-header">
+        <i class="fas fa-bars menu-trigger" onclick="toggleSidebar()"></i>
+        <div class="mobile-title">MEU PERFIL</div>
+        <div style="width: 32px;"></div>
+    </div>
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="layout">
+        <nav class="sidebar" id="sidebar">
+            <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
+            <a href="chatcomIA.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
+            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Meus Prompts</a>
+            <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
+            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
+            <div class="spacer"></div>
+            <a href="#" onclick="fazerLogout()" class="nav-btn" style="color:#ff5555; margin-top:20px;"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </nav>
+
+        <main class="content">
+            <div style="max-width: 800px; margin: 0 auto;">
+                
+                <div class="profile-card">
+                    <div style="position: absolute; top:0; left:0; width:100%; height:100px; background: linear-gradient(90deg, var(--primary-dim), transparent);"></div>
+                    
+                    <div class="profile-avatar-container">
+                        <div id="mainAvatar" class="profile-avatar-large" style="background-size: cover; background-position: center;">U</div>
+                        <label for="fileUpload" class="camera-btn">
+                            <i class="fas fa-camera" style="font-size: 0.9rem;"></i>
+                        </label>
+                        <input type="file" id="fileUpload" style="display: none;" accept="image/*" onchange="uploadPhoto(this)">
+                    </div>
+
+                    <h2 id="displayName" style="margin: 0; color: white;">Carregando...</h2>
+                    <p id="displayEmail" style="color: #888; margin-top: 5px;">...</p>
+                    
+                    <div style="margin-top: 30px; display: flex; justify-content: center; gap: 40px;">
+                        <div>
+                            <div id="displayPlan" style="font-size: 1.5rem; font-weight: bold; color: white;">Free</div>
+                            <div style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Plano Atual</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">0</div>
+                            <div style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Prompts Criados</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: #161b22; border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 30px;">
+                    <h3 style="margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 25px;">Dados Pessoais</h3>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="color: #ccc; font-size: 0.9rem;">Nome Completo</label>
+                            <input type="text" id="inputName" class="modal-input" style="margin-bottom:0;">
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <label style="color: #ccc; font-size: 0.9rem;">E-mail</label>
+                            <input type="email" id="inputEmail" disabled class="modal-input" style="margin-bottom:0; background: rgba(255,255,255,0.05); cursor: not-allowed; color:#888;">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; text-align: right;">
+                        <button id="btnSave" onclick="saveProfile()" style="background: var(--primary); color: black; border: none; padding: 12px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.3s;">Salvar Alterações</button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        // Função para carregar os dados reais do Backend
+        async function loadProfile() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    
+                    // Preenche campos de texto
+                    document.getElementById('displayName').innerText = user.name || 'Usuário';
+                    document.getElementById('displayEmail').innerText = user.email || 'email@exemplo.com';
+                    document.getElementById('inputName').value = user.name || '';
+                    document.getElementById('inputEmail').value = user.email || '';
+                    document.getElementById('displayPlan').innerText = user.plan || 'Free';
+
+                    // Lógica de exibição da Foto
+                    const avatar = document.getElementById('mainAvatar');
+                    if (user.profilePicture) {
+                        // Se tem foto no backend, mostra ela
+                        avatar.innerText = "";
+                        avatar.style.backgroundImage = `url('${API_BASE_URL}${user.profilePicture}')`;
+                    } else {
+                        // Se não tem, mostra inicial do nome
+                        avatar.style.backgroundImage = 'none';
+                        avatar.innerText = user.name ? user.name.charAt(0).toUpperCase() : 'U';
+                    }
+                } else {
+                    showToast('Erro ao carregar perfil.', 'error');
+                }
+            } catch(e) {
+                console.error(e);
+                showToast('Erro de conexão.', 'error');
+            }
+        }
+
+        // Função de upload conectada ao backend
+        async function uploadPhoto(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const formData = new FormData();
+                formData.append('file', file);
+
+                // Feedback visual imediato
+                showToast('Enviando foto...', 'info');
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/user/upload-photo`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` }, // Sem Content-Type, o browser define multipart
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        // Atualiza a visualização com a URL retornada pelo servidor
+                        const avatar = document.getElementById('mainAvatar');
+                        avatar.innerText = "";
+                        avatar.style.backgroundImage = `url('${API_BASE_URL}${data.url}')`;
+                        
+                        showToast('Foto atualizada com sucesso!', 'success');
+                    } else {
+                        showToast('Falha no envio da imagem.', 'error');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    showToast('Erro ao conectar ao servidor.', 'error');
+                }
+            }
+        }
+
+        // Salvar alterações de texto (Nome)
+        async function saveProfile() {
+            const btn = document.getElementById('btnSave');
+            const newName = document.getElementById('inputName').value;
+
+            if (!newName.trim()) {
+                showToast('O nome não pode estar vazio.', 'warning');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = 'Salvando...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: newName })
+                });
+
+                if (response.ok) {
+                    document.getElementById('displayName').innerText = newName;
+                    
+                    // Atualiza localmente para evitar refresh
+                    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                    userData.name = newName;
+                    localStorage.setItem('userData', JSON.stringify(userData));
+
+                    btn.innerHTML = '<i class="fas fa-check"></i> Salvo!';
+                    btn.style.background = '#00cc88';
+                    setTimeout(() => {
+                        btn.disabled = false;
+                        btn.innerText = 'Salvar Alterações';
+                        btn.style.background = 'var(--primary)';
+                    }, 2000);
+                } else {
+                    showToast('Erro ao salvar perfil.', 'error');
+                    btn.disabled = false;
+                    btn.innerText = 'Salvar Alterações';
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Erro de conexão.', 'error');
+                btn.disabled = false;
+                btn.innerText = 'Salvar Alterações';
+            }
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProfile);
+    </script>
+</body>
+</html>

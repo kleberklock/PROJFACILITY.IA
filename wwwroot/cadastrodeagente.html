@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Novo Agente | Facility.IA</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style-master.css">
+</head>
+<body>
+    <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
+
+    <div class="layout">
+        <nav class="sidebar" id="sidebar">
+            <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-arrow-left"></i> Voltar</a>
+        </nav>
+
+        <main class="content" style="display: flex; justify-content: center; align-items: center; min-height: 90vh;">
+            <div class="auth-card" style="width: 100%; max-width: 600px;">
+                <h2 style="color: white; margin-bottom: 20px; text-align: center;"><i class="fas fa-robot"></i> Novo Agente</h2>
+                <p style="color: #888; text-align: center; margin-bottom: 30px;">Crie um assistente personalizado para suas necessidades específicas.</p>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="color: #ccc; display: block; margin-bottom: 8px;">Nome do Agente</label>
+                    <input type="text" id="agentName" class="auth-input" placeholder="Ex: Especialista em Python, Corretor de Texto..." style="width: 100%;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="color: #ccc; display: block; margin-bottom: 8px;">Instrução do Sistema (Prompt)</label>
+                    <textarea id="agentPrompt" class="auth-input" rows="6" placeholder="Ex: Você é um especialista em Python sênior. Responda sempre com exemplos de código limpo..." style="width: 100%; height: auto; padding: 15px;"></textarea>
+                    <small style="color: #666; font-size: 0.8rem;">Dica: Quanto mais detalhada a instrução, melhor o agente se comportará.</small>
+                </div>
+
+                <button onclick="criarAgente()" id="btnCriar" class="btn-primary" style="width: 100%; margin-top: 10px;">
+                    <i class="fas fa-plus-circle"></i> Criar Agente
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        async function criarAgente() {
+            const name = document.getElementById('agentName').value;
+            const prompt = document.getElementById('agentPrompt').value;
+            const btn = document.getElementById('btnCriar');
+
+            if (!name || !prompt) {
+                showToast('Preencha todos os campos.', 'warning');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
+
+            try {
+                // Recupera ID do usuário (embora o backend pegue do token, a model pode exigir int)
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                const creatorId = userData.id || 0; 
+
+                // Usa URL do config.js
+                const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : ''; 
+
+                const response = await fetch(`${baseUrl}/api/agents`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        prompt: prompt,
+                        creatorId: creatorId // Enviamos para compatibilidade com o modelo
+                    })
+                });
+
+                if (response.ok) {
+                    Swal.fire({
+                        title: 'Sucesso!',
+                        text: 'Agente criado com sucesso.',
+                        icon: 'success',
+                        background: '#1a1a2e',
+                        color: '#fff'
+                    }).then(() => {
+                        window.location.href = 'chatcomIA.html'; // Redireciona para o chat
+                    });
+                } else {
+                    const err = await response.text();
+                    showToast(err || 'Erro ao criar agente.', 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Erro de conexão.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-plus-circle"></i> Criar Agente';
+            }
+        }
+    </script>
+</body>
+</html>

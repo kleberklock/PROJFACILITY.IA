@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Configurações | Facility.IA</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style-master.css">
+</head>
+<body>
+    <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
+    <div class="mobile-header">
+        <i class="fas fa-bars menu-trigger" onclick="toggleSidebar()"></i>
+        <div class="mobile-title">CONFIGURAÇÕES</div>
+        <div style="width: 32px;"></div>
+    </div>
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="layout">
+        <nav class="sidebar" id="sidebar">
+            <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
+            <a href="dashboard.html" class="nav-btn active"><i class="fas fa-th-large"></i> Início</a>
+            <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
+            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i>Prompts/Agentes</a>
+            <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
+            <a href="prompts.html" class="nav-btn"><i class="fas fa-lightbulb"></i> Como Funciona</a>
+            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
+            <div class="spacer"></div>
+            <a href="#" onclick="fazerLogout()" class="nav-btn" style="color:#ff5555; margin-top:20px;"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </nav>
+
+        <main class="content">
+            <div style="max-width: 600px; margin: 0 auto;">
+                <h2 style="color:white; margin-bottom: 30px;">Segurança & Preferências</h2>
+
+                <div class="profile-card" style="text-align: left; padding: 30px;">
+                    <h3 style="color:white; margin-top:0;">Alterar Senha</h3>
+                    <p style="color:#888; font-size:0.9rem; margin-bottom:20px;">Recomendamos usar uma senha forte com caracteres especiais.</p>
+                    
+                    <label style="color:#ccc; font-size:0.9rem;">Senha Atual</label>
+                    <input type="password" id="oldPass" class="modal-input">
+                    
+                    <label style="color:#ccc; font-size:0.9rem;">Nova Senha</label>
+                    <input type="password" id="newPass" class="modal-input">
+                    
+                    <label style="color:#ccc; font-size:0.9rem;">Confirmar Nova Senha</label>
+                    <input type="password" id="confirmPass" class="modal-input">
+
+                    <button onclick="updatePassword()" class="hero-btn" style="margin-top:10px; font-size:0.9rem;">Atualizar Senha</button>
+                </div>
+
+                <div class="profile-card" style="text-align: left; padding: 30px; margin-top: 20px; border-color: rgba(255, 85, 85, 0.3);">
+                    <h3 style="color:#ff5555; margin-top:0;">Zona de Perigo</h3>
+                    <p style="color:#888; font-size:0.9rem;">Ações irreversíveis para sua conta.</p>
+                    <button onclick="alert('Funcionalidade indisponível na Demo.')" style="background:transparent; border:1px solid #ff5555; color:#ff5555; padding:10px 20px; border-radius:8px; cursor:pointer;">Excluir Conta</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="script.js"></script>
+   
+    <script>
+        function updatePassword() {
+            // Simulação
+            const old = document.getElementById('oldPass').value;
+            const newP = document.getElementById('newPass').value;
+            if(!old || !newP) return alert("Preencha todos os campos.");
+            
+            alert("Senha atualizada com sucesso! (Simulação)");
+            document.getElementById('oldPass').value = "";
+            document.getElementById('newPass').value = "";
+            document.getElementById('confirmPass').value = "";
+        }
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.querySelector('.overlay').classList.toggle('active'); }
+        function fazerLogout() { localStorage.removeItem('token'); localStorage.removeItem('userData'); window.location.href = 'index.html'; }
+        if(typeof particlesJS !== 'undefined') { particlesJS("particles-js", { "particles": { "number": { "value": 20 }, "color": { "value": "#ffffff" }, "opacity": { "value": 0.1 }, "size": { "value": 2 }, "move": { "enable": true, "speed": 0.5 } } }); }
+    </script>
+</body>
+</html>

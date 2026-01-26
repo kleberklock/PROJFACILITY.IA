@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Console | Facility.IA</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+        
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const role = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || payload["role"];
+            if (role !== 'admin') window.location.href = 'dashboard.html';
+        } catch (e) { window.location.href = 'login.html'; }
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style-master.css">
+</head>
+<body>
+
+    <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
+
+    <div class="mobile-header">
+        <i class="fas fa-bars menu-trigger" onclick="toggleSidebar()"></i>
+        <div class="mobile-title">ADMINISTRADOR</div>
+        <div style="width: 32px;"></div>
+    </div>
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="layout">
+        <nav class="sidebar" id="sidebar">
+            <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
+            <a href="chatcomIA.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
+            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Meus Prompts</a>
+            <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
+            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
+
+            <div id="adminArea" style="display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
+                <div style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">Administração</div>
+                <a href="treinamento.html" class="nav-btn"><i class="fas fa-brain"></i> Treinamento</a>
+                <a href="admin.html" class="nav-btn active" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel Admin</a>
+            </div>
+
+            <div class="spacer"></div>
+            <a href="#" onclick="fazerLogout()" class="nav-btn" style="color:#ff5555; margin-top:20px;">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </nav>
+
+        <main class="content">
+            <div class="hero-banner" style="background: linear-gradient(135deg, #2c1a06 0%, #1a1a1a 100%); border-color: rgba(255, 204, 0, 0.2);">
+                <div class="hero-content">
+                    <h2 class="hero-title" style="color: #ffcc00;">Painel de Controle</h2>
+                    <p class="hero-desc">Gerencie usuários, planos e métricas do sistema.</p>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="margin:0; color:white;">Usuários Cadastrados</h3>
+                    <button onclick="loadData()" style="background: rgba(255,255,255,0.1); border:none; color:white; padding: 8px 15px; border-radius: 8px; cursor: pointer;"><i class="fas fa-sync"></i> Atualizar</button>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Plano</th>
+                                <th>Tokens</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody">
+                            <tr><td colspan="5" style="text-align:center; padding: 30px;">Carregando dados...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="editModal" class="modal-backdrop">
+        <div class="modal-content">
+            <h3 style="color:white; margin-top:0;">Editar Usuário</h3>
+            <input type="hidden" id="editEmail">
+            
+            <label style="color:#888; font-size:0.8rem;">Novo Plano</label>
+            <select id="editPlan" class="modal-input">
+                <option value="Free">Iniciante (Free)</option>
+                <option value="Plus">Plus</option>
+                <option value="Pro">Pro</option>
+            </select>
+
+            <label style="color:#888; font-size:0.8rem;">Ciclo</label>
+            <select id="editCycle" class="modal-input">
+                <option value="monthly">Mensal</option>
+                <option value="quarterly">Trimestral</option>
+                <option value="annual">Anual</option>
+            </select>
+
+            <div style="margin-bottom:20px;">
+                <label style="color:#888; font-size:0.8rem; display:flex; align-items:center; gap:10px;">
+                    <input type="checkbox" id="resetTokens"> Resetar Tokens para o padrão do plano
+                </label>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button onclick="closeModal()" style="flex:1; padding:10px; background:transparent; border:1px solid #555; color:white; border-radius:8px; cursor:pointer;">Cancelar</button>
+                <button id="btnSave" onclick="saveChanges()" style="flex:1; padding:10px; background:#ffcc00; border:none; color:black; font-weight:bold; border-radius:8px; cursor:pointer;">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Mantenha a configuração da sua porta aqui
+        // Se estiver abrindo o arquivo direto, use 'https://localhost:SUA_PORTA'
+        const BASE_URL = ''; 
+        const API_URL = `${BASE_URL}/api/admin`;
+
+        async function loadData() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>';
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) throw new Error("Token não encontrado.");
+
+                const response = await fetch(`${API_URL}/users`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) throw new Error("Erro ao buscar usuários.");
+
+                const users = await response.json();
+                tbody.innerHTML = "";
+                
+                if (!users || users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum usuário.</td></tr>';
+                    return;
+                }
+
+                users.forEach(u => {
+                    // Tratamento de segurança para campos
+                    const id = u.id || u.Id;
+                    const name = u.name || u.Name || 'Sem nome';
+                    const email = u.email || u.Email || '---';
+                    const plan = u.plan || u.Plan || 'Free';
+                    const cycle = u.subscriptionCycle || u.SubscriptionCycle || 'Mensal';
+                    const tokens = (u.usedTokensCurrentMonth ?? u.UsedTokensCurrentMonth ?? 0).toLocaleString();
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${name}</td>
+                        <td>${email}</td>
+                        <td><span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:4px; font-size:0.8rem;">${plan}</span></td>
+                        <td>${tokens}</td>
+                        <td>
+                            <button onclick="openModal(${id}, '${email}', '${plan}', '${cycle}')" 
+                                    style="background:none; border:none; color:#ffcc00; cursor:pointer; margin-right:10px;" 
+                                    title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            
+                            <button onclick="deleteUser(${id}, '${email}')" 
+                                    style="background:none; border:none; color:#ff5555; cursor:pointer;" 
+                                    title="Excluir Permanentemente">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ff5555;">Erro: ${error.message}</td></tr>`;
+            }
+        }
+
+        // ==========================================
+        // NOVA FUNÇÃO: DELETAR USUÁRIO
+        // ==========================================
+        async function deleteUser(id, email) {
+            // Confirmação dupla para evitar acidentes
+            const confirmacao = confirm(`PERIGO: Você tem certeza que deseja EXCLUIR o usuário ${email}?\n\nTodos os dados dele (chats, histórico) serão apagados permanentemente.`);
+            
+            if (!confirmacao) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/user/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    alert('Usuário excluído com sucesso!');
+                    loadData(); // Recarrega a lista
+                } else {
+                    const err = await response.json();
+                    alert('Erro ao excluir: ' + (err.message || 'Falha desconhecida.'));
+                }
+            } catch (error) {
+                alert('Erro de conexão: ' + error.message);
+            }
+        }
+
+        // --- Funções de Modal e Edição (Mantidas iguais) ---
+        let currentEditingUserId = null;
+        function openModal(id, email, plan, cycle) {
+            currentEditingUserId = id;
+            document.getElementById('editEmail').value = email;
+            document.getElementById('editPlan').value = plan;
+            document.getElementById('editCycle').value = cycle;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+            currentEditingUserId = null;
+        }
+        async function saveChanges() {
+            const btn = document.getElementById('btnSave');
+            if (!currentEditingUserId) return;
+            btn.disabled = true;
+            btn.innerText = "Salvando...";
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/update-user`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                        userId: currentEditingUserId,
+                        newPlan: document.getElementById('editPlan').value,
+                        newCycle: document.getElementById('editCycle').value,
+                        resetTokens: document.getElementById('resetTokens').checked
+                    })
+                });
+                if (response.ok) {
+                    alert('Sucesso!');
+                    closeModal();
+                    loadData();
+                } else {
+                    const err = await response.json();
+                    alert('Erro: ' + (err.message || response.statusText));
+                }
+            } catch (error) { alert('Erro: ' + error.message); } 
+            finally { btn.disabled = false; btn.innerText = "Salvar"; }
+        }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

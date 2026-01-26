@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Facility.IA - Como Funciona</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style-master.css">
+     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            const authBtn = document.getElementById('authBtn');
+
+            // CORREÇÃO: Validação reforçada para ignorar strings 'null' ou 'undefined' que ficam no cache
+            if (token && token !== 'null' && token !== 'undefined' && authBtn) {
+                // USUÁRIO LOGADO: Botão vira Dashboard
+                authBtn.innerText = "Dashboard";
+                authBtn.href = "dashboard.html";
+                
+                // Estilo para destacar que está logado
+                authBtn.style.background = "#00ff88";
+                authBtn.style.color = "black";
+                authBtn.style.padding = "8px 15px";
+                authBtn.style.borderRadius = "20px";
+                authBtn.style.fontWeight = "bold";
+            } else if (authBtn) {
+                // USUÁRIO NÃO LOGADO: Garante estado inicial (Entrar)
+                authBtn.innerText = "Entrar";
+                authBtn.href = "login.html";
+                // Remove estilos de logado se existirem
+                authBtn.style.background = "";
+                authBtn.style.color = "";
+                authBtn.style.padding = "";
+                authBtn.style.borderRadius = "";
+                authBtn.style.fontWeight = "";
+            }
+        });
+    </script>
+</head>
+<body class="page-prompts"> <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
+    <div class="scanline"></div>
+
+    <header class="header-glass">
+    <div class="header-container">
+        <div class="logo">
+            <a href="index.html">
+                <h1>FACILITY<span>.IA</span> <span class="badge-beta">BETA</span></h1>
+            </a>
+        </div>
+        
+        <div class="mobile-menu-btn" onclick="togglePublicMenu()">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <nav class="nav-menu" id="publicNav">
+            <div class="mobile-menu-header">
+                <span>MENU</span>
+                <i class="fas fa-times close-btn" onclick="togglePublicMenu()"></i>
+            </div>
+            <ul>
+                <li><a href="index.html" onclick="togglePublicMenu()">Início</a></li>
+                <li><a href="prompts.html" onclick="togglePublicMenu()">Como funciona?</a></li>
+                <li><a href="planos.html" onclick="togglePublicMenu()">Planos</a></li>
+                <li><a href="index.html#universal" onclick="togglePublicMenu()">Profissões</a></li>
+                
+                <li>
+                    <a href="login.html" id="authBtn" class="cta-button">
+                        Entrar <i class="fas fa-arrow-right" style="margin-left:5px; font-size:0.8rem;"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="mobile-nav-overlay" onclick="togglePublicMenu()"></div>
+    </div>
+</header>
+
+    <main>
+        <div class="explainer-section">
+            <div class="explainer-title">
+                <i class="fas fa-info-circle"></i> Entenda o Fluxo dos Prompts
+            </div>
+            <div class="explainer-text">
+                Por trás de cada botão, existem centenas de instruções que nossa equipe já configurou para você.
+                Você não precisa "conversar" com a máquina. Você apenas diz o que quer, e nós entregamos pronto.
+            </div>
+            
+            <div class="steps-visual">
+                <div class="step-item">
+                    <i class="fas fa-hand-pointer" style="color:white; font-size: 1.5rem;"></i>
+                    <span>1. Você Clica</span>
+                </div>
+                <div class="step-arrow"><i class="fas fa-chevron-right"></i></div>
+                <div class="step-item">
+                    <i class="fas fa-microchip" style="color:#00ff88; font-size: 1.5rem;"></i>
+                    <span>2. IA Processa</span>
+                </div>
+                <div class="step-arrow"><i class="fas fa-chevron-right"></i></div>
+                <div class="step-item">
+                    <i class="fas fa-file-alt" style="color:#2ecc71; font-size: 1.5rem;"></i>
+                    <span>3. Resultado</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-pills">
+            <div class="pill active" onclick="switchTab('tab-study', this)">
+                <i class="fas fa-graduation-cap"></i> Estudo
+            </div>
+            <div class="pill" onclick="switchTab('tab-work', this)">
+                <i class="fas fa-briefcase"></i> Trabalho
+            </div>
+        </div>
+
+        <div id="tab-study" class="pipeline-container active">
+            
+            <div class="demo-block">
+                <div class="block-header">
+                    <i class="fas fa-book-open" style="color: #00ff88;"></i>
+                    <span class="block-title">Resumir Matéria Técnica</span>
+                    <span class="tag">Para Provas</span>
+                </div>
+                <div class="flow-grid">
+                    <div class="col-user">
+                        <span style="font-size:0.8rem; margin-bottom:5px; display:block;">Ativar</span>
+                        <label class="switch-demo"><input type="checkbox" onchange="toggleFlow(this, 's1')"><span class="slider-demo"></span></label>
+                    </div>
+                    <div class="col-process" id="proc-s1">
+                        <div class="process-visual">
+                            <span class="prompt-chip">Extrair Datas</span>
+                            <span class="prompt-chip">Preservar Fórmulas</span>
+                            <span class="prompt-chip">Criar Mnemônicos</span>
+                        </div>
+                    </div>
+                    <div class="col-result" id="res-s1">
+                        <div class="doc-mini"><div class="check-badge"><i class="fas fa-check"></i></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-block">
+                <div class="block-header">
+                    <i class="fas fa-question-circle" style="color: #bd93f9;"></i>
+                    <span class="block-title">Criar Simulado da Aula</span>
+                    <span class="tag">Memorização</span>
+                </div>
+                <div class="flow-grid">
+                    <div class="col-user">
+                        <span style="font-size:0.8rem; margin-bottom:5px; display:block;">Ativar</span>
+                        <label class="switch-demo"><input type="checkbox" onchange="toggleFlow(this, 's2')"><span class="slider-demo"></span></label>
+                    </div>
+                    <div class="col-process" id="proc-s2">
+                        <div class="process-visual">
+                            <span class="prompt-chip" style="border-color:#bd93f9; color:#bd93f9">Nível Difícil</span>
+                            <span class="prompt-chip" style="border-color:#bd93f9; color:#bd93f9">4 Alternativas</span>
+                            <span class="prompt-chip" style="border-color:#bd93f9; color:#bd93f9">Gabarito Comentado</span>
+                        </div>
+                    </div>
+                    <div class="col-result" id="res-s2">
+                        <div class="doc-mini"><div class="check-badge"><i class="fas fa-check"></i></div></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="tab-work" class="pipeline-container">
+            
+            <div class="demo-block">
+                <div class="block-header">
+                    <i class="fas fa-tooth" style="color: #00ff88;"></i>
+                    <span class="block-title">Instruções Pós-Operatório</span>
+                    <span class="tag">Odontologia</span>
+                </div>
+                <div class="flow-grid">
+                    <div class="col-user">
+                        <span style="font-size:0.8rem; margin-bottom:5px; display:block;">Ativar</span>
+                        <label class="switch-demo"><input type="checkbox" onchange="toggleFlow(this, 'w1')"><span class="slider-demo"></span></label>
+                    </div>
+                    <div class="col-process" id="proc-w1">
+                        <div class="process-visual">
+                            <span class="prompt-chip">Protocolo Cirúrgico</span>
+                            <span class="prompt-chip">Linguagem Empática</span>
+                            <span class="prompt-chip">Lista de Remédios</span>
+                        </div>
+                    </div>
+                    <div class="col-result" id="res-w1">
+                        <div class="doc-mini"><div class="check-badge"><i class="fas fa-check"></i></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="demo-block">
+                <div class="block-header">
+                    <i class="fas fa-gavel" style="color: #bd93f9;"></i>
+                    <span class="block-title">Análise de Risco em Contrato</span>
+                    <span class="tag">Jurídico</span>
+                </div>
+                <div class="flow-grid">
+                    <div class="col-user">
+                        <span style="font-size:0.8rem; margin-bottom:5px; display:block;">Ativar</span>
+                        <label class="switch-demo"><input type="checkbox" onchange="toggleFlow(this, 'w2')"><span class="slider-demo"></span></label>
+                    </div>
+                    <div class="col-process" id="proc-w2">
+                        <div class="process-visual">
+                            <span class="prompt-chip" style="border-color:#bd93f9; color:#bd93f9">Código Civil 2024</span>
+                            <span class="prompt-chip" style="border-color:#bd93f9; color:#bd93f9">Buscar 'Multa Abusiva'</span>
+                            <span class="prompt-chip" style="border-color:#bd93f9; color:#bd93f9">Resumo Executivo</span>
+                        </div>
+                    </div>
+                    <div class="col-result" id="res-w2">
+                        <div class="doc-mini"><div class="check-badge"><i class="fas fa-check"></i></div></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <section class="agent-explainer-section">
+            <div class="explainer-header">
+                <h2 style="font-size: 2rem; color: white;">E o que são os <span style="color:#00ff88;">Agentes de IA?</span></h2>
+                <p style="color:#888;">
+                    Se os Prompts são os comandos, o Agente é o <strong>especialista contratado</strong> para executar.
+                </p>
+            </div>
+
+            <div class="comparison-container">
+                <div class="comparison-box generic">
+                    <div style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;">🧠</div>
+                    <h3 style="margin-bottom:10px; color:white;">IA Genérica (Padrão)</h3>
+                    <p style="color:#aaa; font-size:0.9rem;">Sabe "um pouco de tudo". Responde sobre culinária, poesia e leis na mesma conversa. É como um estagiário que tenta fazer tudo.</p>
+                    <ul class="comparison-list">
+                        <li>❌ Conhecimento Raso</li>
+                        <li>❌ Inventa informações (Alucinação)</li>
+                        <li>❌ Linguagem robótica</li>
+                    </ul>
+                </div>
+
+                <div class="connector-arrow">
+                    <i class="fas fa-angle-double-right"></i>
+                </div>
+
+                <div class="comparison-box specialized">
+                    <div style="font-size: 0.7rem; color: #00ff88; border: 1px solid #00ff88; display: inline-block; padding: 2px 8px; border-radius: 4px; margin-bottom: 5px;">Treinado na sua área</div>
+                    <div style="font-size: 2rem; margin-bottom: 10px;">🎓</div>
+                    <h3 style="margin-bottom:10px; color:white;">Agente Facility (Expert)</h3>
+                    <p style="color:#aaa; font-size:0.9rem;">Uma IA isolada e "treinada" apenas com livros e manuais da sua profissão (atual ou futura).</p>
+                    <ul class="comparison-list">
+                        <li>✅ Cita leis e normas reais (ABNT/ISO)</li>
+                        <li>✅ Vocabulário Técnico Perfeito</li>
+                        <li>✅ Atua como seu Mentor Sênior</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <p style="color: #888; font-size: 0.9rem;">Disponível para:</p>
+                <div class="pill-container">
+                    <span class="pro-pill">⚖️ Direito</span>
+                    <span class="pro-pill">🦷 Odontologia</span>
+                    <span class="pro-pill">💻 T.I.</span>
+                    <span class="pro-pill">🏗️ Engenharia</span>
+                    <span class="pro-pill">🧠 Psicologia</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-bottom" style="text-align: center; margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); padding: 20px;">
+            <p style="color: #666;">&copy; 2025 FACILITY.IA INC.</p>
+        </div>
+    </footer>
+
+    <script src="config.js"></script> 
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        /* Lógica das Abas e Animações */
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.pipeline-container').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.pill').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function toggleFlow(checkbox, idSuffix) {
+            const processBox = document.getElementById('proc-' + idSuffix);
+            const resultBox = document.getElementById('res-' + idSuffix);
+
+            if (checkbox.checked) {
+                processBox.classList.add('active');
+                setTimeout(() => {
+                    resultBox.classList.add('active');
+                }, 600);
+            } else {
+                processBox.classList.remove('active');
+                resultBox.classList.remove('active');
+            }
+        }
+
+        // Partículas (mantidas conforme original)
+        if(typeof particlesJS !== 'undefined') {
+            particlesJS("particles-js", {
+                "particles": { "number": { "value": 30 }, "color": { "value": "#ffffff" }, "opacity": { "value": 0.1 }, "size": { "value": 2 }, "move": { "enable": true, "speed": 0.5 } },
+                "interactivity": { "events": { "onhover": { "enable": false } } }
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Treinamento Neural | Facility.IA</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const role = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || payload["role"];
+            if (role !== 'admin') window.location.href = 'dashboard.html';
+        } catch (e) { window.location.href = 'login.html'; }
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style-master.css">
+</head>
+<body>
+
+    <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
+
+    <div class="mobile-header">
+        <i class="fas fa-bars menu-trigger" onclick="toggleSidebar()"></i>
+        <div class="mobile-title">TREINAMENTO</div>
+        <div style="width: 32px;"></div>
+    </div>
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="layout">
+        <nav class="sidebar" id="sidebar">
+            <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
+            <a href="chatcomIA.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
+            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Meus Prompts</a>
+            <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
+            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
+
+            <div id="adminArea" style="display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
+                <div style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">Administração</div>
+                <a href="treinamento.html" class="nav-btn active" style="color: #00F3FF;"><i class="fas fa-brain"></i> Treinamento</a>
+                <a href="admin.html" class="nav-btn" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel Admin</a>
+            </div>
+
+            <div class="spacer"></div>
+            <a href="#" onclick="fazerLogout()" class="nav-btn" style="color:#ff5555; margin-top:20px;"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </nav>
+
+        <main class="content">
+            <div class="hero-banner" style="background: linear-gradient(135deg, #062c2c 0%, #1a1a1a 100%); border-color: rgba(0, 243, 255, 0.2);">
+                <div class="hero-content">
+                    <h2 class="hero-title" style="color: #00F3FF;">Laboratório de Treinamento</h2>
+                    <p class="hero-desc">Faça upload de manuais e livros para especializar os agentes.</p>
+                </div>
+            </div>
+
+            <div class="table-container" style="max-width: 800px; margin: 0 auto; text-align: center;">
+                <div id="dropZone" class="drop-zone">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #00F3FF; margin-bottom: 20px;"></i>
+                    <h3 style="margin: 0 0 10px 0; color: white;">Arraste arquivos ou clique aqui</h3>
+                    <p style="color: #666; font-size: 0.9rem;">Suporta PDF, DOCX e TXT (Máx 10MB)</p>
+                    <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(this)">
+                </div>
+
+                <div id="fileInfo" style="display: none;">
+                    <div class="file-info-badge">
+                        <i class="fas fa-file-alt"></i> <span id="fileName">arquivo.pdf</span>
+                        <i class="fas fa-times" style="cursor: pointer; color: #ff5555; margin-left: 10px;" onclick="resetForm()"></i>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; text-align: left;">
+                    <label style="color: #ccc; font-size: 0.9rem;">Tags de Conhecimento (Opcional)</label>
+                    <input type="text" id="textContent" placeholder="Ex: engenharia, normas, abnt..." class="modal-input">
+                </div>
+
+                <button id="uploadBtn" onclick="uploadFile()" disabled style="width: 100%; margin-top: 30px; padding: 15px; background: rgba(255,255,255,0.1); color: #666; font-weight: bold; border: none; border-radius: 10px; cursor: not-allowed; transition: 0.3s;">
+                    <i class="fas fa-microchip"></i> INICIAR PROCESSAMENTO
+                </button>
+
+                <div id="progressContainer" style="margin-top: 30px; display: none;">
+                    <div style="background: rgba(255,255,255,0.1); height: 10px; border-radius: 5px; overflow: hidden;">
+                        <div id="progressBar" style="width: 0%; height: 100%; background: #00F3FF; transition: width 0.3s;"></div>
+                    </div>
+                    <p id="statusText" style="color: #888; font-size: 0.8rem; margin-top: 10px;">Iniciando...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                document.getElementById('fileName').innerText = input.files[0].name;
+                document.getElementById('fileInfo').style.display = 'block';
+                checkButtonState();
+            }
+        }
+
+        function checkButtonState() {
+            const hasFile = document.getElementById('fileInput').files.length > 0;
+            const btn = document.getElementById('uploadBtn');
+            if(hasFile) {
+                btn.disabled = false;
+                btn.style.background = '#00F3FF';
+                btn.style.color = 'black';
+                btn.style.cursor = 'pointer';
+            } else {
+                btn.disabled = true;
+                btn.style.background = 'rgba(255,255,255,0.1)';
+                btn.style.color = '#666';
+                btn.style.cursor = 'not-allowed';
+            }
+        }
+
+        async function uploadFile() {
+            const btn = document.getElementById('uploadBtn');
+            const progressBar = document.getElementById('progressBar');
+            const progressContainer = document.getElementById('progressContainer');
+            const statusText = document.getElementById('statusText');
+
+            btn.disabled = true;
+            btn.innerText = "ENVIANDO...";
+            progressContainer.style.display = 'block';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                progressBar.style.width = `${progress}%`;
+                if(progress < 50) statusText.innerText = "Enviando para o servidor...";
+                else if(progress < 90) statusText.innerText = "Vetorizando conteúdo...";
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    statusText.innerText = "Concluído!";
+                    alert("Treinamento finalizado com sucesso!");
+                    resetForm();
+                }
+            }, 100);
+        }
+
+        function resetForm() {
+            document.getElementById('fileInput').value = "";
+            document.getElementById('fileName').innerText = "";
+            document.getElementById('textContent').value = "";
+            document.getElementById('progressContainer').style.display = 'none';
+            document.getElementById('fileInfo').style.display = 'none';
+            checkButtonState();
+            document.getElementById('uploadBtn').innerText = 'INICIAR PROCESSAMENTO';
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        function fazerLogout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userData');
+            window.location.href = 'index.html';
+        }
+
+        if(typeof particlesJS !== 'undefined') {
+            particlesJS("particles-js", {
+                "particles": { "number": { "value": 20 }, "color": { "value": "#00F3FF" }, "opacity": { "value": 0.1 }, "size": { "value": 2 }, "move": { "enable": true, "speed": 0.5 } }
+            });
+        }
+    </script>
+</body>
+</html>

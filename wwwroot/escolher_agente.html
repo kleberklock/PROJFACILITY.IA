@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escolher Assistente | Facility.IA</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style-master.css">
+    
+    <style>
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* --- BARRA DE BUSCA --- */
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            padding: 15px 20px 15px 50px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+            backdrop-filter: blur(5px);
+        }
+
+        .search-input:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(124, 58, 237, 0.2);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+        }
+        
+        /* --- ABAS DE NAVEGAÇÃO --- */
+        .agent-tabs-wrapper {
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            /* Esconde barra de rolagem mas permite scroll */
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+        }
+        .agent-tabs-wrapper::-webkit-scrollbar { display: none; }
+
+        .agent-tabs {
+            display: flex;
+            justify-content: center; /* Centraliza se couber */
+            gap: 10px;
+            min-width: max-content; /* Garante que não quebre em mobile */
+            padding: 0 20px;
+        }
+
+        .agent-tab-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #aaa;
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        .agent-tab-btn:hover, .agent-tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .agent-tab-btn i { font-size: 0.85rem; }
+
+        /* Grid de Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding-bottom: 50px;
+        }
+
+        /* Destaque para Meus Agentes */
+        .custom-agent-card {
+            border: 1px solid rgba(124, 58, 237, 0.4) !important;
+            background: rgba(124, 58, 237, 0.08) !important;
+        }
+        .custom-agent-card .card-icon {
+            background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%) !important;
+            color: white !important;
+        }
+
+        /* Animação de entrada */
+        .fade-in { animation: fadeIn 0.4s ease forwards; opacity: 0; }
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        @media(max-width: 768px) {
+            .agent-tabs { justify-content: flex-start; } /* Alinha a esquerda no mobile para scrollar */
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
+
+    <div class="mobile-header">
+        <i class="fas fa-bars menu-trigger" onclick="toggleSidebar()"></i>
+        <div class="mobile-title">ASSISTENTES</div>
+        <div style="width: 32px;"></div>
+    </div>
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="layout">
+        <nav class="sidebar" id="sidebar">
+            <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
+            <a href="dashboard.html" class="nav-btn active"><i class="fas fa-th-large"></i> Início</a>
+            <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
+            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i>Prompts/Agentes</a>
+            <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
+            <a href="prompts.html" class="nav-btn"><i class="fas fa-lightbulb"></i> Como Funciona</a>
+            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
+
+            <div class="spacer"></div>
+            <a href="#" onclick="fazerLogout()" class="nav-btn" style="color:#ff5555;"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </nav>
+
+        <main class="content">
+            
+            <div class="page-header">
+                <h2>Catálogo de Inteligência</h2>
+                <p style="color:#888;">Encontre o especialista ideal para sua tarefa.</p>
+            </div>
+
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="inputBusca" class="search-input" placeholder="Busque por nome, profissão ou área..." oninput="executarBusca()">
+            </div>
+
+            <div class="agent-tabs-wrapper">
+                <div class="agent-tabs">
+                    <button class="agent-tab-btn active" onclick="filtrarAba('todos', this)">
+                        <i class="fas fa-border-all"></i> Todos
+                    </button>
+                    <button class="agent-tab-btn" onclick="filtrarAba('meus', this)">
+                        <i class="fas fa-user-astronaut"></i> Meus Agentes
+                    </button>
+                    <button class="agent-tab-btn" onclick="filtrarAba('tech', this)">
+                        <i class="fas fa-laptop-code"></i> Tech
+                    </button>
+                    <button class="agent-tab-btn" onclick="filtrarAba('juridico', this)">
+                        <i class="fas fa-scale-balanced"></i> Jurídico
+                    </button>
+                    <button class="agent-tab-btn" onclick="filtrarAba('saude', this)">
+                        <i class="fas fa-user-doctor"></i> Saúde
+                    </button>
+                    <button class="agent-tab-btn" onclick="filtrarAba('engenharia', this)">
+                        <i class="fas fa-hard-hat"></i> Engenharia
+                    </button>
+                    <button class="agent-tab-btn" onclick="filtrarAba('negocios', this)">
+                        <i class="fas fa-briefcase"></i> Negócios
+                    </button>
+                    <button class="agent-tab-btn" onclick="filtrarAba('criativos', this)">
+                        <i class="fas fa-palette"></i> Criativos
+                    </button>
+                    <button class="agent-tab-btn" onclick="filtrarAba('educacao', this)">
+                        <i class="fas fa-graduation-cap"></i> Educação
+                    </button>
+                    <button class="agent-tab-btn" onclick="filtrarAba('operacional', this)">
+                        <i class="fas fa-cogs"></i> Operacional
+                    </button>
+                </div>
+            </div>
+
+            <div id="gridAgentes" class="card-grid">
+                <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">
+                    <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+                    <p style="margin-top:10px">Carregando especialistas...</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="constants.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : ''; 
+        let todosAgentes = []; // Cache local de todos os agentes
+
+        async function carregarTudo() {
+            todosAgentes = [];
+
+            // 1. Carrega Oficiais (do constants.js)
+            if (typeof AGENTES_DB !== 'undefined') {
+                const estaticos = AGENTES_DB.map(a => ({
+                    id: 'static_' + a.name,
+                    name: a.name,
+                    icon: a.icon || 'fa-robot',
+                    area: a.area || 'geral',
+                    description: "Especialista Facility.IA",
+                    isCustom: false
+                }));
+                todosAgentes = [...estaticos];
+            }
+
+            // 2. Carrega Meus Agentes (da API)
+            try {
+                const response = await fetch(`${baseUrl}/api/agents`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const apiAgents = await response.json();
+                    
+                    // Filtra apenas os que têm userId (Customizados)
+                    const meus = apiAgents.filter(a => a.userId !== null).map(a => ({
+                        id: a.id,
+                        name: a.name,
+                        icon: a.icon || 'fa-robot',
+                        area: 'meus', // Categoria especial para filtro
+                        description: "Criado por você",
+                        isCustom: true
+                    }));
+
+                    // Adiciona no topo da lista
+                    todosAgentes = [...meus, ...todosAgentes];
+                }
+            } catch (error) {
+                console.error("Erro API Agentes:", error);
+            }
+
+            // Renderiza estado inicial
+            renderizar(todosAgentes);
+        }
+
+        function renderizar(lista) {
+            const grid = document.getElementById('gridAgentes');
+            grid.innerHTML = '';
+
+            if (lista.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #555; border: 1px dashed rgba(255,255,255,0.1); border-radius: 15px;">
+                        <i class="fas fa-wind fa-3x" style="margin-bottom: 15px; opacity: 0.3;"></i>
+                        <p>Nenhum agente encontrado.</p>
+                    </div>`;
+                return;
+            }
+
+            lista.forEach((agent, index) => {
+                const card = document.createElement('a');
+                const linkParam = agent.name; 
+                
+                card.href = `chatcomIA.html?agent=${encodeURIComponent(linkParam)}&icon=${agent.icon}&custom=${agent.isCustom}`;
+                card.className = `app-card fade-in ${agent.isCustom ? 'custom-agent-card' : ''}`;
+                card.style.animationDelay = `${index * 0.05}s`; // Efeito cascata
+                
+                card.innerHTML = `
+                    <div class="card-icon ${agent.isCustom ? '' : 'icon-'+agent.area}">
+                        <i class="fas ${agent.icon}"></i>
+                    </div>
+                    <div class="card-title">${agent.name}</div>
+                    <div class="card-desc">${agent.description}</div>
+                    <div class="card-arrow"><i class="fas fa-arrow-right"></i></div>
+                    ${agent.isCustom ? '<div style="position:absolute; top:15px; right:15px; font-size:0.65rem; background:var(--primary); color:black; padding:3px 8px; border-radius:6px; font-weight:800; letter-spacing:0.5px;">MEU</div>' : ''}
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- FILTROS ---
+
+        function filtrarAba(categoria, btn) {
+            // Limpa busca visualmente para indicar que estamos usando abas
+            document.getElementById('inputBusca').value = '';
+            
+            // Atualiza UI dos botões
+            document.querySelectorAll('.agent-tab-btn').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+
+            if (categoria === 'todos') {
+                renderizar(todosAgentes);
+            } else if (categoria === 'meus') {
+                renderizar(todosAgentes.filter(a => a.isCustom === true));
+            } else {
+                renderizar(todosAgentes.filter(a => a.area === categoria && !a.isCustom));
+            }
+        }
+
+        function executarBusca() {
+            const termo = document.getElementById('inputBusca').value.toLowerCase();
+            
+            // Remove 'active' das abas para mostrar que é uma busca global
+            document.querySelectorAll('.agent-tab-btn').forEach(b => b.classList.remove('active'));
+
+            if (termo === '') {
+                // Se limpar, volta para 'todos' por padrão
+                document.querySelector('.agent-tab-btn').classList.add('active');
+                renderizar(todosAgentes);
+                return;
+            }
+
+            const filtrados = todosAgentes.filter(a => 
+                a.name.toLowerCase().includes(termo) || 
+                a.area.toLowerCase().includes(termo) ||
+                (a.description && a.description.toLowerCase().includes(termo))
+            );
+
+            renderizar(filtrados);
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', carregarTudo);
+    </script>
+</body>
+</html>

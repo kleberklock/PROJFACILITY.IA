@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login | Facility.IA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style-master.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+    <div id="particles-js" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;"></div>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-logo">FACILITY<span>.IA</span></div>
+            <p class="auth-subtitle">Entre para acessar seu workspace inteligente.</p>
+
+            <div class="auth-input-group">
+                <label>E-mail</label>
+                <i class="fas fa-envelope auth-icon"></i>
+                <input type="email" id="email" class="auth-input" placeholder="seu@email.com">
+            </div>
+
+            <div class="auth-input-group">
+                <label>Senha</label>
+                <i class="fas fa-lock auth-icon"></i>
+                <input type="password" id="senha" class="auth-input" placeholder="••••••••">
+            </div>
+
+            <button id="btnEntrar" class="btn-auth" onclick="fazerLogin()">ENTRAR</button>
+            <p id="feedback" class="feedback-msg"></p>
+
+            <div class="auth-footer">
+                Não tem uma conta? <a href="cadastrodeusuario.html">Crie agora</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Scripts inline mantidos para garantir funcionamento sem dependências externas complexas
+        async function fazerLogin() {
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+            const btn = document.getElementById('btnEntrar');
+            const feedback = document.getElementById('feedback');
+
+            if (!email || !senha) {
+                feedback.style.color = "#ff5555";
+                feedback.innerText = "Preencha todos os campos.";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Verificando...";
+            feedback.innerText = "";
+
+            try {
+                // Tenta API Real
+                const response = await fetch(`${CONFIG.API_URL}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: senha })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('token', data.token);
+                    if(data.user) localStorage.setItem('userData', JSON.stringify(data.user));
+
+                    feedback.style.color = "#00ff88";
+                    feedback.innerText = "Login realizado! Entrando...";
+                    setTimeout(() => window.location.href = 'dashboard.html', 1000);
+                } else {
+                    feedback.style.color = "#ff5555";
+                    feedback.innerText = "E-mail ou senha incorretos.";
+                    btn.disabled = false;
+                    btn.innerText = "ENTRAR";
+                }
+            } catch (error) {
+                // Fallback para Demo (Remova em produção se quiser)
+                console.error("Erro API, tentando fallback local...");
+                feedback.style.color = "#ff5555";
+                feedback.innerText = "Erro de conexão com o servidor.";
+                btn.disabled = false;
+                btn.innerText = "ENTRAR";
+            }
+        }
+
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') fazerLogin();
+        });
+
+        if(typeof particlesJS !== 'undefined') {
+            particlesJS("particles-js", {
+                "particles": { "number": { "value": 30 }, "color": { "value": "#00ff88" }, "opacity": { "value": 0.2 }, "size": { "value": 3 }, "move": { "enable": true, "speed": 1 } },
+                "interactivity": { "events": { "onhover": { "enable": true, "mode": "grab" } } }
+            });
+        }
+    </script>
+</body>
+</html>
