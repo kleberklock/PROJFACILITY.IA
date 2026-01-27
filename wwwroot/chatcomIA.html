@@ -4,13 +4,199 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <title>Facility.IA - Workstation</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style-master.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
     
     <script src="config.js"></script> 
     <script src="script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        /* --- Styles Específicos para as Novas Funcionalidades --- */
+
+        /* Code Blocks */
+        pre {
+            background: #282c34;
+            border-radius: 8px;
+            margin: 10px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1c1e24;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            color: #abb2bf;
+            border-bottom: 1px solid #3e4451;
+        }
+        .copy-code-btn {
+            background: none;
+            border: none;
+            color: #abb2bf;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .copy-code-btn:hover { color: var(--primary); }
+
+        /* Slash Commands Menu */
+        .slash-menu {
+            position: absolute;
+            bottom: 70px;
+            left: 20px;
+            width: 250px;
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+        .slash-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ccc;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        .slash-item:hover, .slash-item.active {
+            background: var(--primary);
+            color: #000;
+        }
+        .slash-item i { width: 20px; text-align: center; }
+
+        /* Edit User Message */
+        .edit-msg-btn {
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            cursor: pointer;
+            color: #888;
+            font-size: 0.8rem;
+        }
+        .user-message:hover .edit-msg-btn { opacity: 1; }
+        .edit-msg-btn:hover { color: var(--primary); }
+
+        /* Rich Attachment Preview */
+        .rich-preview {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.05);
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            border: 1px solid var(--primary);
+        }
+        .preview-thumb {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .file-info {
+            display: flex;
+            flex-direction: column;
+            font-size: 0.8rem;
+            color: #fff;
+        }
+        .file-meta { font-size: 0.7rem; color: #aaa; }
+
+        /* History Group Headers */
+        .history-date-header {
+            font-size: 0.75rem;
+            color: #666;
+            padding: 10px 15px 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        /* Export Dropdown in Header */
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
+        .export-btn {
+            background: transparent;
+            border: 1px solid #444;
+            color: #ccc;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .export-btn:hover { background: rgba(255,255,255,0.1); }
+
+        /* Stop Button State */
+        .stop-btn {
+            background: #ff4444 !important;
+            color: white !important;
+            animation: pulse-red 2s infinite;
+        }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+        }
+
+        /* Adjust Markdown Elements */
+        /* --- CORREÇÃO DE OVERFLOW REFORÇADA --- */
+        
+        /* 1. Limita o container geral da mensagem para não ocupar 100% da tela */
+        .message-content-wrapper {
+            max-width: 85%; /* O balão só pode ir até 85% da tela */
+            min-width: 0;   /* Essencial para Flexbox não travar */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 2. Força o texto a quebrar e respeitar o limite acima */
+        .message-bubble {
+            max-width: 100%;       /* Respeita os 85% do wrapper */
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: normal;   /* Garante quebra de linha padrão */
+        }
+
+        /* 3. Bloco de Código (Pre) ganha Scroll em vez de estourar */
+        .message-bubble pre {
+            max-width: 100%;       /* Não passa do balão */
+            overflow-x: auto;      /* Cria barra de rolagem horizontal se precisar */
+            white-space: pre;      /* Mantém a formatação do código */
+            border-radius: 6px;    /* Visual */
+        }
+
+        /* 4. Tabelas também ganham scroll se forem grandes */
+        .message-bubble table {
+            display: block;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+        .message-bubble h1, .message-bubble h2, .message-bubble h3 { margin-top: 10px; margin-bottom: 5px; color: #fff; }
+        .message-bubble ul, .message-bubble ol { margin-left: 20px; margin-bottom: 10px; }
+        .message-bubble blockquote { border-left: 3px solid var(--primary); padding-left: 10px; color: #aaa; font-style: italic; }
+        .message-bubble table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
+        .message-bubble th, .message-bubble td { border: 1px solid #444; padding: 6px; text-align: left; }
+        .message-bubble th { background: #333; }
+        .message-bubble p { margin-bottom: 10px; } /* Garante espaçamento entre parágrafos durante a digitação */
+    </style>
 </head>
 <body class="chat-mode">
     <input type="file" id="realFileInput" style="display: none;">
@@ -34,7 +220,13 @@
                                 <div style="font-size:0.7rem; color:#666;">● ONLINE</div>
                             </div>
                         </div>
-                        <i class="fas fa-bars mobile-only" style="color:#666; cursor:pointer; font-size:1.2rem; display:none;" onclick="toggleSidebarMobile()"></i>
+                        
+                        <div class="header-actions">
+                            <button class="export-btn" onclick="exportChat('txt')"><i class="fas fa-file-alt"></i> TXT</button>
+                            <button class="export-btn" onclick="exportChat('pdf')"><i class="fas fa-file-pdf"></i> PDF</button>
+                        </div>
+
+                        <i class="fas fa-bars mobile-only" style="color:#666; cursor:pointer; font-size:1.2rem; display:none; margin-left: 15px;" onclick="toggleSidebarMobile()"></i>
                     </div>
                     <div class="active-modules-container" id="activeModulesArea"></div>
                 </header>
@@ -42,6 +234,13 @@
                 <div class="messages-area" id="messagesArea"></div>
 
                 <div class="input-wrapper">
+                    <div id="slashMenu" class="slash-menu">
+                        <div class="slash-item" onclick="insertSlash('/resumir')"><i class="fas fa-compress-alt"></i> /resumir <span style="font-size:0.7rem; color:#666; margin-left:auto;">Resumir texto</span></div>
+                        <div class="slash-item" onclick="insertSlash('/codigo')"><i class="fas fa-code"></i> /codigo <span style="font-size:0.7rem; color:#666; margin-left:auto;">Gerar código</span></div>
+                        <div class="slash-item" onclick="insertSlash('/email')"><i class="fas fa-envelope"></i> /email <span style="font-size:0.7rem; color:#666; margin-left:auto;">Criar e-mail</span></div>
+                        <div class="slash-item" onclick="insertSlash('/corrigir')"><i class="fas fa-check-double"></i> /corrigir <span style="font-size:0.7rem; color:#666; margin-left:auto;">Revisar texto</span></div>
+                    </div>
+
                     <div class="input-box-styled">
                         <div class="attachments-preview" id="attachmentsPreview"></div>
                         <div class="input-container">
@@ -64,16 +263,18 @@
 
                             <div class="action-icon" id="micBtn" onclick="toggleRecording()"><i class="fas fa-microphone"></i></div>
                             
-                            <textarea id="userInput" placeholder="Digite sua instrução..."></textarea>
+                            <textarea id="userInput" placeholder="Digite sua instrução ou use / para comandos..." rows="1"></textarea>
                             
-                            <button onclick="handleSendMessage()" style="background:var(--primary); border:none; width:40px; height:40px; border-radius:10px; cursor:pointer; color:black;"><i class="fas fa-paper-plane"></i></button>
+                            <button id="sendBtn" onclick="handleSendMessage()" style="background:var(--primary); border:none; width:40px; height:40px; border-radius:10px; cursor:pointer; color:black; transition: all 0.3s;">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
    <script>
     // 1. Verificação de Segurança
     (function() {
@@ -81,25 +282,22 @@
         if (!token) window.location.href = "login.html";
     })();
 
-    // 2. Base de Conhecimento (Contextos)
+    // 2. Configurações Markdown e Highlight
+    marked.setOptions({
+        highlight: function(code, lang) {
+            const language = highlight.getLanguage(lang) ? lang : 'plaintext';
+            return highlight.highlight(code, { language }).value;
+        },
+        langPrefix: 'hljs language-',
+        breaks: true // Importante para quebrar linha com Enter
+    });
+
+    // 3. Base de Conhecimento
     const knowledgeBase = {
-            juridico: [
-                { label: "REVISAR CONTRATO", desc: "Analisar cláusulas abusivas." },
-                { label: "JURISPRUDÊNCIA", desc: "Buscar decisões recentes." },
-                { label: "REDIGIR PETIÇÃO", desc: "Estrutura formal jurídica." }
-            ],
-            saude: [
-                { label: "INTERAÇÃO MEDICAMENTOSA", desc: "Verificar conflitos." },
-                { label: "EXPLICAÇÃO DE EXAME", desc: "Traduzir laudos técnicos." }
-            ],
-            tech: [
-                { label: "DEBUG CODE", desc: "Encontrar erros no código." },
-                { label: "DOCUMENTAR API", desc: "Gerar Swagger/OpenAPI." }
-            ],
-            geral: [
-                { label: "RESUMIR TEXTO", desc: "Criar síntese executiva." },
-                { label: "MELHORAR ESCRITA", desc: "Corrigir gramática e tom." }
-            ]
+            juridico: [ { label: "REVISAR CONTRATO", desc: "Analisar cláusulas abusivas." }, { label: "REDIGIR PETIÇÃO", desc: "Estrutura formal jurídica." } ],
+            saude: [ { label: "INTERAÇÃO MEDICAMENTOSA", desc: "Verificar conflitos." }, { label: "EXPLICAÇÃO DE EXAME", desc: "Traduzir laudos técnicos." } ],
+            tech: [ { label: "DEBUG CODE", desc: "Encontrar erros no código." }, { label: "DOCUMENTAR API", desc: "Gerar Swagger/OpenAPI." } ],
+            geral: [ { label: "RESUMIR TEXTO", desc: "Criar síntese executiva." }, { label: "MELHORAR ESCRITA", desc: "Corrigir gramática e tom." } ]
     };
 
     // Variáveis de Estado
@@ -109,16 +307,41 @@
     let currentAgentArea = "geral";
     let currentFile = null; 
     let currentSessionId = null;
+    let isGenerating = false;
+    let recognition = null; // Speech API
 
     // Elementos DOM
     const userInput = document.getElementById('userInput');
     const messagesArea = document.getElementById('messagesArea');
+    const sendBtn = document.getElementById('sendBtn');
+    const slashMenu = document.getElementById('slashMenu');
 
     // Inicialização
     document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('realFileInput').addEventListener('change', handleFileSelected);
         
-        // Pega params da URL
+        // Setup Speech API
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'pt-BR';
+            recognition.onresult = (event) => {
+                const text = event.results[0][0].transcript;
+                userInput.value += (userInput.value ? ' ' : '') + text;
+                userInput.focus();
+                document.getElementById('micBtn').style.color = '';
+            };
+            recognition.onerror = () => { document.getElementById('micBtn').style.color = 'red'; };
+            recognition.onend = () => { document.getElementById('micBtn').style.color = ''; };
+        }
+
+        // Setup Slash Commands
+        userInput.addEventListener('input', function() {
+            if (this.value === '/') slashMenu.style.display = 'block';
+            else if (!this.value.startsWith('/')) slashMenu.style.display = 'none';
+        });
+
+        // Params e Setup
         const params = new URLSearchParams(window.location.search);
         const agentName = params.get('name') || params.get('agent') || 'Assistente';
         const agentIcon = params.get('icon') || 'fa-robot';
@@ -127,7 +350,6 @@
         setupChat(agentName, agentIcon, agentArea);
         renderHistoryFromStorage(); 
         
-        // Ajuste Mobile: Garante que o ícone de menu apareça
         if(window.innerWidth <= 768) {
             const mobileMenu = document.querySelector('.mobile-only');
             if(mobileMenu) mobileMenu.style.display = 'block';
@@ -149,56 +371,82 @@
         activeContexts.clear(); 
         updateActiveBadges();
         messagesArea.innerHTML = "";
-
         loadSwitches(area);
-        
         addMessage('ai', `Olá! Sou seu ${name}. Como posso ajudar hoje?`, currentAgentIcon, false);
     }
-    // Função para copiar texto para a área de transferência
-function copiarTexto(btn, texto) {
-    navigator.clipboard.writeText(texto).then(() => {
-        // Feedback visual (Troca ícone para check)
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-check"></i> Copiado';
-        btn.style.color = 'var(--neon-green)';
-        
-        // Volta ao normal após 2 segundos
-        setTimeout(() => {
-            btn.innerHTML = originalHTML;
-            btn.style.color = '';
-        }, 2000);
-    }).catch(err => {
-        console.error('Erro ao copiar:', err);
-        showToast('Erro ao copiar texto', 'error');
-    });
-}
+
+    // --- INTERAÇÃO UX ---
+    function copiarTexto(btn, texto) {
+        navigator.clipboard.writeText(texto).then(() => {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> Copiado';
+            btn.style.color = 'var(--neon-green)';
+            setTimeout(() => { btn.innerHTML = originalHTML; btn.style.color = ''; }, 2000);
+        });
+    }
+
+    function toggleRecording() {
+        if(!recognition) return alert("Seu navegador não suporta reconhecimento de voz.");
+        recognition.start();
+        document.getElementById('micBtn').style.color = 'var(--neon-green)';
+    }
+
+    function insertSlash(cmd) {
+        userInput.value = cmd + ' ';
+        slashMenu.style.display = 'none';
+        userInput.focus();
+    }
+
+    function editUserMessage(text) {
+        userInput.value = text;
+        userInput.focus();
+    }
 
     // --- ENVIO DE MENSAGEM ---
     async function handleSendMessage() {
+        // Lógica de PARAR (Stop)
+        if (isGenerating) {
+            isGenerating = false;
+            setSendButtonState('send');
+            return;
+        }
+
         const text = userInput.value.trim();
         if (!text && !currentFile) return;
 
-        // Adiciona mensagem do usuário
+        slashMenu.style.display = 'none';
         if(text) addMessage("user", text);
-        if(currentFile) addMessage("user", `[Arquivo: ${currentFile.name}]`, null);
+        
+        // Exibição Rica do Arquivo no Chat
+        if(currentFile) {
+            const fileHTML = `<div class="rich-preview" style="background: rgba(255,255,255,0.1); display:inline-flex;">
+                <i class="fas fa-file" style="font-size:1.5rem; color:var(--primary)"></i>
+                <div class="file-info">
+                    <strong>${currentFile.name}</strong>
+                    <span class="file-meta">${(currentFile.size/1024).toFixed(1)} KB</span>
+                </div>
+            </div>`;
+            addMessage("user", fileHTML, null, false, true); 
+        }
 
-        // Cria a bolha da IA (estado digitando)
         const aiDiv = addMessage("ai", "", currentAgentIcon, true); 
         
         userInput.value = ""; 
         const fileToSend = currentFile;
         clearAttachments();
 
+        isGenerating = true;
+        setSendButtonState('stop');
+
         try {
             const token = localStorage.getItem('token'); 
-            let contextPrompt = "";
-            if(activeContexts.size > 0) {
-                contextPrompt = "Contextos ativos: " + Array.from(activeContexts).map(c => c.l).join(", ") + ". ";
-            }
-
+            let contextPrompt = activeContexts.size > 0 ? "Contextos: " + Array.from(activeContexts).map(c => c.l).join(", ") + ". " : "";
             let responseText = "";
             
-            // Tenta conectar com a API real
+            // Simulação de delay de rede
+            await new Promise(r => setTimeout(r, 800));
+
+            // INTEGRAÇÃO API (Simulada ou Real)
             if (typeof CONFIG !== 'undefined' && CONFIG.API_URL) {
                 try {
                     const formData = new FormData();
@@ -216,203 +464,177 @@ function copiarTexto(btn, texto) {
                         const data = await res.json();
                         responseText = data.reply;
                     } else throw new Error("API Error");
-                } catch(e) { console.log("API offline, usando simulação."); }
+                } catch(e) { 
+                    console.log("API offline, usando simulação.", e); 
+                }
             }
 
-            // Fallback para simulação se não tiver API
+            // Fallback (IA Treinada Genérica)
             if (!responseText) {
-                await new Promise(r => setTimeout(r, 1000 + Math.random() * 1000));
                 responseText = simulateAIResponse(text, currentAgentName);
             }
 
-            // 1. Limpa o estado de "digitando"
-            // ATENÇÃO: Mudamos de .msg-bubble para .message-bubble aqui
+            // --- RENDERIZAÇÃO PROGRESSIVA (CORREÇÃO APLICADA) ---
             const bubble = aiDiv.querySelector('.message-bubble');
             bubble.classList.remove('typing-cursor');
             bubble.innerHTML = ""; 
-            
-            // 2. Efeito de Datilografia (Typewriter)
+
             let i = 0; 
-            const speed = 15; 
-            
+            const speed = 10; 
+            let currentMarkdown = ""; // Acumulador de texto
+
             const typeLoop = () => { 
+                if(!isGenerating) { // Usuário clicou em parar
+                    finalizeMessage(aiDiv, currentMarkdown + " [Interrompido]");
+                    return;
+                }
+
                 if(i < responseText.length) { 
                     const char = responseText.charAt(i);
-                    bubble.innerHTML += char; 
+                    
+                    // Adiciona ao acumulador
+                    currentMarkdown += char;
+                    
+                    // AQUI ESTÁ A CORREÇÃO: Renderiza o HTML em tempo real
+                    // Isso faz os tópicos, negrito e listas aparecerem enquanto digita
+                    bubble.innerHTML = marked.parse(currentMarkdown); 
+
                     i++; 
-                    messagesArea.scrollTop = messagesArea.scrollHeight;
+                    smartScroll();
                     setTimeout(typeLoop, speed); 
                 } else {
-                    // --- FINAL DA ANIMAÇÃO ---
-                    
-                    // 1. Salva no histórico UMA vez
-                    saveMessageToHistory("ai", responseText);
-
-                    // 2. Renderiza Markdown simples (Bold e quebra de linha)
-                    bubble.innerHTML = responseText
-                        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
-                        .replace(/\n/g, '<br>');
-
-                    // 3. INJEÇÃO DOS BOTÕES (Copiar e Regerar)
-                    // Agora que terminou de digitar, adicionamos os botões
-                    const contentWrapper = aiDiv.querySelector('.message-content-wrapper');
-                    const actionsDiv = document.createElement('div');
-                    actionsDiv.className = 'action-row';
-                    
-                    // Note o uso de encodeURIComponent para não quebrar o HTML com aspas no texto
-                    actionsDiv.innerHTML = `
-                        <button class="icon-btn" onclick="copiarTexto(this, decodeURIComponent('${encodeURIComponent(responseText)}'))" title="Copiar">
-                            <i class="far fa-copy"></i>
-                        </button>
-                        <button class="icon-btn" title="Regerar resposta">
-                            <i class="fas fa-redo"></i>
-                        </button>
-                    `;
-                    contentWrapper.appendChild(actionsDiv);
+                    // Finalizou
+                    finalizeMessage(aiDiv, currentMarkdown);
                 }
             };
             typeLoop();
 
         } catch (e) {
-            // Tratamento de erro visual
             const bubble = aiDiv.querySelector('.message-bubble');
-            if(bubble) bubble.innerText = "Erro: " + e.message;
-            console.error(e);
+            bubble.innerText = "Erro: " + e.message;
+            isGenerating = false;
+            setSendButtonState('send');
+        }
+    }
+
+    function finalizeMessage(aiDiv, text) {
+        const bubble = aiDiv.querySelector('.message-bubble');
+        
+        // 1. Renderiza Markdown Final (garantia de fechamento de tags)
+        bubble.innerHTML = marked.parse(text);
+        
+        // 2. Aplica Highlight.js nos blocos de código
+        bubble.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightElement(block);
+            
+            // Adiciona Header e Botão Copiar no Bloco
+            const pre = block.parentElement;
+            const lang = block.className.replace('hljs language-', '') || 'Code';
+            
+            if (!pre.querySelector('.code-header')) { // Evita duplicar se já renderizou
+                const header = document.createElement('div');
+                header.className = 'code-header';
+                header.innerHTML = `<span>${lang}</span> <button class="copy-code-btn" onclick="copiarTexto(this, this.parentElement.nextElementSibling.innerText)"><i class="far fa-copy"></i> Copiar Código</button>`;
+                pre.insertBefore(header, block);
+            }
+        });
+
+        // 3. Salva e Reseta
+        saveMessageToHistory("ai", text);
+        isGenerating = false;
+        setSendButtonState('send');
+        smartScroll();
+
+        // 4. Adiciona Ações da Mensagem
+        const contentWrapper = aiDiv.querySelector('.message-content-wrapper');
+        // Verifica se já existe action-row para não duplicar
+        if (!contentWrapper.querySelector('.action-row')) {
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'action-row';
+            actionsDiv.innerHTML = `
+                <button class="icon-btn" onclick="copiarTexto(this, decodeURIComponent('${encodeURIComponent(text)}'))" title="Copiar Resposta"><i class="far fa-copy"></i></button>
+                <button class="icon-btn" title="Regerar resposta"><i class="fas fa-redo"></i></button>
+            `;
+            contentWrapper.appendChild(actionsDiv);
+        }
+    }
+
+    function setSendButtonState(state) {
+        if (state === 'stop') {
+            sendBtn.innerHTML = '<i class="fas fa-stop"></i>';
+            sendBtn.classList.add('stop-btn');
+        } else {
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            sendBtn.classList.remove('stop-btn');
+        }
+    }
+
+    function smartScroll() {
+        const threshold = 100; // px do fundo
+        const position = messagesArea.scrollTop + messagesArea.offsetHeight;
+        const height = messagesArea.scrollHeight;
+        
+        if (height - position < threshold || isGenerating) {
+            messagesArea.scrollTop = height;
         }
     }
 
     function simulateAIResponse(input, role) {
-        const lowerInput = input.toLowerCase();
-        if (lowerInput.includes("olá") || lowerInput.includes("oi")) return `Olá! Como posso auxiliar você em suas tarefas de ${role} hoje?`;
-        if (lowerInput.includes("resumo") || lowerInput.includes("resumir")) return `Com certeza. Para gerar um resumo eficiente como ${role}, preciso que você forneça o texto original ou os pontos principais.`;
-        return `Como ${role}, analisei sua solicitação: "${input}".\n\nEssa é uma questão interessante que envolve múltiplos aspectos da nossa área. Recomendo uma abordagem estruturada:\n\n1. Análise preliminar dos dados.\n2. Verificação das normas vigentes.\n3. Aplicação da solução técnica.`;
+        const lower = input.toLowerCase();
+        if (lower.includes("/codigo") || lower.includes("html")) return "Aqui está o exemplo solicitado:\n\n```html\n<div class='container'>\n  <h1>Exemplo</h1>\n  <p>Teste de código.</p>\n</div>\n```";
+        
+        return `Compreendi sua solicitação sobre **${input.substring(0, 20)}...**. \n\nComo ${role}, aqui está minha análise:\n\n1. **Contexto**: Identifiquei a necessidade técnica.\n2. **Solução**: Recomendo seguir os padrões de desenvolvimento.\n\nSe precisar de mais detalhes ou código específico, utilize os comandos como \`/codigo\`.`;
     }
 
-   function addMessage(sender, text, icon, typing = false) {
-    const d = document.createElement('div');
-    // Usa classes semânticas: 'message-row' é o container, 'ai-message' ou 'user-message' define o lado
-    const isAI = sender === 'ai';
-    d.className = `message-row ${isAI ? 'ai-message' : 'user-message'}`;
+    function addMessage(sender, text, icon, typing = false, isHTML = false) {
+        const d = document.createElement('div');
+        const isAI = sender === 'ai';
+        d.className = `message-row ${isAI ? 'ai-message' : 'user-message'}`;
 
-    // Ícone da IA (Gradiente do Google/Gemini ou o seu ícone definido)
-    const avatarHTML = isAI 
-        ? `<div class="ai-avatar"><i class="fas fa-${icon || 'robot'}"></i></div>` 
-        : ''; // Usuário não precisa de avatar no estilo Gemini
+        const avatarHTML = isAI ? `<div class="ai-avatar"><i class="fas fa-${icon || 'robot'}"></i></div>` : '';
+        // Se for user e não HTML, converte quebras de linha para <br>
+        // Se for IA (typing), o conteúdo inicial é vazio ou spinner, depois entra o markdown
+        let content = typing ? '<i class="fas fa-circle-notch fa-spin"></i> Processando...' : (isHTML ? text : text.replace(/\n/g, '<br>')); 
 
-    // Conteúdo da mensagem
-    let content = text;
-    if (typing) content = '<i class="fas fa-circle-notch fa-spin"></i> Gerando resposta...';
+        const editBtn = (!isAI && !typing) ? `<i class="fas fa-pencil-alt edit-msg-btn" onclick="editUserMessage('${text.replace(/'/g, "\\'")}')" title="Editar e reenviar"></i>` : '';
 
-    // Formata negrito **texto** para <b>texto</b> se não estiver digitando
-    if (!typing && text) {
-        content = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+        d.innerHTML = `
+            ${avatarHTML}
+            <div class="message-content-wrapper">
+                <div class="message-bubble ${typing ? 'typing-cursor' : ''}">${content}</div>
+                ${!isAI ? editBtn : ''}
+            </div>
+        `;
+
+        messagesArea.appendChild(d);
+        smartScroll();
+        if (!typing && sender === 'user') saveMessageToHistory(sender, text);
+        return d;
     }
 
-    // Botão de copiar (Só aparece para IA e se não estiver digitando)
-    // Usamos o encodeURIComponent para garantir que aspas ou caracteres especiais não quebrem o HTML
-    const actionsHTML = (isAI && !typing) 
-        ? `
-        <div class="action-row">
-            <button class="icon-btn" onclick="copiarTexto(this, decodeURIComponent('${encodeURIComponent(text)}'))" title="Copiar resposta">
-                <i class="far fa-copy"></i>
-            </button>
-            <button class="icon-btn" title="Regerar resposta">
-                <i class="fas fa-redo"></i>
-            </button>
-        </div>` 
-        : '';
-
-    // Montagem do HTML Final
-    d.innerHTML = `
-        ${avatarHTML}
-        <div class="message-content-wrapper">
-            <div class="message-bubble ${typing ? 'typing-cursor' : ''}">${content}</div>
-            ${actionsHTML}
-        </div>
-    `;
-
-    messagesArea.appendChild(d);
-    messagesArea.scrollTop = messagesArea.scrollHeight;
-
-    // Salva no histórico se for usuário
-    if (!typing && sender === 'user') saveMessageToHistory(sender, text);
-
-    return d;
-}
-    
-
-    function triggerFileUpload(accept) { 
-        toggleMenu('attachMenu'); 
-        const i = document.getElementById('realFileInput'); 
-        i.accept = accept; i.click(); 
-    }
+    // --- UPLOAD RICO ---
+    function triggerFileUpload(accept) { toggleMenu('attachMenu'); const i = document.getElementById('realFileInput'); i.accept = accept; i.click(); }
     
     function handleFileSelected(e) { 
         const f = e.target.files[0]; if(!f) return; currentFile = f;
-        document.getElementById('attachmentsPreview').innerHTML = `<div class="attachment-chip"><i class="fas fa-file"></i> ${f.name} <i class="fas fa-times" onclick="clearAttachments()" style="cursor:pointer"></i></div>`;
-    }
-    
-    function clearAttachments() { 
-        currentFile = null; 
-        document.getElementById('realFileInput').value=""; 
-        document.getElementById('attachmentsPreview').innerHTML=""; 
-    }
-
-    function loadSwitches(area) {
-        let key = 'geral';
-        if (area.includes('jur')) key = 'juridico';
-        else if (area.includes('sau') || area.includes('med')) key = 'saude';
-        else if (area.includes('tech') || area.includes('dev')) key = 'tech';
-
-        const list = knowledgeBase[key] || knowledgeBase['geral'];
-        const container = document.getElementById('switchesContainer');
         
-        container.innerHTML = "";
-        list.forEach((p, i) => {
-             const id = `p_${i}`;
-             container.innerHTML += `
-                <div class="prompt-switch-item">
-                    <div>
-                        <div style="font-weight:bold; font-size:0.85rem; color:#eee;">${p.label}</div>
-                        <div style="font-size:0.75rem; color:#888;">${p.desc}</div>
-                    </div>
-                    <label class="mini-switch">
-                        <input type="checkbox" onchange="toggleContext('${id}', '${p.label}', this.checked)">
-                        <span class="mini-slider"></span>
-                    </label>
-                </div>`;
-        });
+        let previewHTML = `<div class="attachment-chip"><i class="fas fa-file"></i> ${f.name} <i class="fas fa-times" onclick="clearAttachments()"></i></div>`;
+        
+        if (f.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const imgThumb = `<div class="attachment-chip" style="padding:0; overflow:hidden;"><img src="${e.target.result}" style="height:30px; border-radius:15px; margin-right:5px;"> ${f.name} <i class="fas fa-times" onclick="clearAttachments()" style="margin-left:5px; margin-right:10px;"></i></div>`;
+                document.getElementById('attachmentsPreview').innerHTML = imgThumb;
+            };
+            reader.readAsDataURL(f);
+        } else {
+            document.getElementById('attachmentsPreview').innerHTML = previewHTML;
+        }
     }
     
-    function toggleContext(id, label, checked) {
-        if(checked) activeContexts.add({id, l: label});
-        else activeContexts.forEach(i=>{if(i.id===id)activeContexts.delete(i)});
-        updateActiveBadges();
-    }
+    function clearAttachments() { currentFile = null; document.getElementById('realFileInput').value=""; document.getElementById('attachmentsPreview').innerHTML=""; }
 
-    function updateActiveBadges() {
-        const area = document.getElementById('activeModulesArea');
-        area.innerHTML = "";
-        activeContexts.forEach(c => {
-            area.innerHTML += `<div class="module-badge"><i class="fas fa-bolt"></i> ${c.l}</div>`;
-        });
-    }
-
-    function toggleMenu(id) {
-        const m = document.getElementById(id);
-        m.style.display = m.style.display === 'block' ? 'none' : 'block';
-    }
-    
-    function togglePanel() {
-        const p = document.getElementById('promptsPanel');
-        p.style.display = p.style.display === 'block' ? 'none' : 'block';
-    }
-
-    function toggleSidebarMobile() {
-        const sb = document.getElementById('mainSidebar');
-        sb.classList.toggle('active');
-    }
-
+    // --- HISTÓRICO POR DATA ---
     function getHistory() { return JSON.parse(localStorage.getItem('chatHistory') || '[]'); }
     
     function saveMessageToHistory(sender, text) {
@@ -431,27 +653,82 @@ function copiarTexto(btn, texto) {
         const list = document.getElementById('historyList');
         const history = getHistory();
         list.innerHTML = "";
-        history.reverse().forEach(h => {
-            list.innerHTML += `
-                <div class="history-item" onclick="alert('Carregar chat ${h.id}')">
-                    <i class="fas fa-comment"></i>
-                    <div style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">${h.title}</div>
-                </div>`;
+        
+        const groups = { 'Hoje': [], 'Ontem': [], 'Antigos': [] };
+        const now = new Date();
+        const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
+
+        history.sort((a,b) => b.timestamp - a.timestamp).forEach(h => {
+            const date = new Date(h.timestamp);
+            if(date.toDateString() === now.toDateString()) groups['Hoje'].push(h);
+            else if(date.toDateString() === yesterday.toDateString()) groups['Ontem'].push(h);
+            else groups['Antigos'].push(h);
         });
+
+        for (const [label, items] of Object.entries(groups)) {
+            if(items.length > 0) {
+                list.innerHTML += `<div class="history-date-header">${label}</div>`;
+                items.forEach(h => {
+                    list.innerHTML += `
+                        <div class="history-item" onclick="loadSession('${h.id}')">
+                            <i class="fas fa-comment"></i>
+                            <div style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">${h.title}</div>
+                        </div>`;
+                });
+            }
+        }
+    }
+    
+    function loadSession(id) { alert('Carregar sessão ' + id); }
+
+    // --- EXPORTAR ---
+    function exportChat(format) {
+        const element = document.getElementById('messagesArea');
+        if(format === 'pdf') {
+            const opt = { margin: 1, filename: `chat-${currentAgentName}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
+            html2pdf().set(opt).from(element).save();
+        } else {
+            let text = "";
+            getHistory().find(h => h.id === currentSessionId)?.messages.forEach(m => {
+                text += `[${m.sender.toUpperCase()}]: ${m.text}\n----------------\n`;
+            });
+            const blob = new Blob([text], { type: "text/plain" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `chat-${currentAgentName}.txt`;
+            a.click();
+        }
     }
 
+    // Funcionalidades Auxiliares (Switches, Menus)
+    function loadSwitches(area) {
+        let key = 'geral';
+        if (area.includes('jur')) key = 'juridico';
+        else if (area.includes('sau') || area.includes('med')) key = 'saude';
+        else if (area.includes('tech') || area.includes('dev')) key = 'tech';
+
+        const list = knowledgeBase[key] || knowledgeBase['geral'];
+        const container = document.getElementById('switchesContainer');
+        container.innerHTML = "";
+        list.forEach((p, i) => {
+             const id = `p_${i}`;
+             container.innerHTML += `<div class="prompt-switch-item"><div><div style="font-weight:bold; font-size:0.85rem; color:#eee;">${p.label}</div><div style="font-size:0.75rem; color:#888;">${p.desc}</div></div><label class="mini-switch"><input type="checkbox" onchange="toggleContext('${id}', '${p.label}', this.checked)"><span class="mini-slider"></span></label></div>`;
+        });
+    }
+    function toggleContext(id, label, checked) { if(checked) activeContexts.add({id, l: label}); else activeContexts.forEach(i=>{if(i.id===id)activeContexts.delete(i)}); updateActiveBadges(); }
+    function updateActiveBadges() { document.getElementById('activeModulesArea').innerHTML = Array.from(activeContexts).map(c => `<div class="module-badge"><i class="fas fa-bolt"></i> ${c.l}</div>`).join(''); }
+    function toggleMenu(id) { const m = document.getElementById(id); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
+    function togglePanel() { const p = document.getElementById('promptsPanel'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; }
+    function toggleSidebarMobile() { document.getElementById('mainSidebar').classList.toggle('active'); }
+
+    // Listeners Globais
     document.addEventListener('click', (e) => {
-        if(!e.target.closest('.action-icon') && !e.target.closest('.floating-menu')) 
-            document.querySelectorAll('.floating-menu').forEach(m => m.style.display = 'none');
-        if(!e.target.closest('.prompts') && !e.target.closest('.floating-panel')) 
-            document.getElementById('promptsPanel').style.display = 'none';
+        if(!e.target.closest('.action-icon') && !e.target.closest('.floating-menu')) document.querySelectorAll('.floating-menu').forEach(m => m.style.display = 'none');
+        if(!e.target.closest('.prompts') && !e.target.closest('.floating-panel')) document.getElementById('promptsPanel').style.display = 'none';
     });
 
     userInput.addEventListener('keydown', (e) => {
-        if(e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage();
-        }
+        if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
     });
    </script>
 </body>
