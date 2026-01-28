@@ -30,22 +30,16 @@ namespace PROJFACILITY.IA.Services
             var apiKey = configuration["OpenAI:ApiKey"];
             var pineconeKey = configuration["Pinecone:ApiKey"] ?? "";
 
-            if (string.IsNullOrEmpty(apiKey)) _logger.LogWarning("OpenAI:ApiKey não encontrada.");
-            if (string.IsNullOrEmpty(pineconeKey)) _logger.LogWarning("Pinecone:ApiKey não encontrada.");
-
-            // Inicializa Pinecone
             if (!string.IsNullOrEmpty(pineconeKey))
             {
                 try { _pinecone = new PineconeClient(pineconeKey); }
                 catch (Exception ex) { _logger.LogError(ex, "Erro ao iniciar Pinecone"); }
             }
 
-            // Inicializa OpenAI
             if (!string.IsNullOrEmpty(apiKey))
             {
                 try
                 {
-                    // CORREÇÃO: Passando parâmetros posicionais para evitar erro CS1739
                     _chatClient = new ChatClient("gpt-4o-mini", apiKey);
                     _embeddingClient = new EmbeddingClient("text-embedding-3-small", apiKey);
                 }
@@ -56,9 +50,9 @@ namespace PROJFACILITY.IA.Services
         public async Task<(string Response, int Tokens)> GetAIResponse(
             string userMessage, 
             string agentId, 
-            List<PROJFACILITY.IA.Models.ChatMessage> historicoDb, // CORREÇÃO: Caminho explícito para evitar erro CS0104
+            List<PROJFACILITY.IA.Models.ChatMessage> historicoDb, 
             int userId,
-            CancellationToken ct) // MANTIDO: Necessário para o botão Stop funcionar
+            CancellationToken ct) 
         {
             // 1. VERIFICA PLANO
             var user = await _context.Users.FindAsync(userId);
@@ -77,17 +71,19 @@ namespace PROJFACILITY.IA.Services
                 return ($"Limite do plano {user.Plan} atingido. Faça upgrade para continuar.", 0);
             }
 
-            // 2. BUSCA CONTEXTO (RAG) - Lógica interna restaurada
+            // 2. BUSCA CONTEXTO (RAG)
             var agent = await _context.Agents.FirstOrDefaultAsync(a => a.Name == agentId, ct);
             string systemInstruction = agent?.SystemInstruction ?? "Você é um assistente virtual útil e profissional.";
 
-            // Chama o método privado desta mesma classe
+            // --- RAG COM LOGS ---
             string contextoExtraido = await BuscarConhecimentoNoPinecone(userMessage, agentId, userId);
 
             if (!string.IsNullOrEmpty(contextoExtraido))
             {
-                systemInstruction += $"\n\nBASE DE CONHECIMENTO (Use isso para responder):\n{contextoExtraido}\n";
+                // Adiciona o contexto ao prompt do sistema
+                systemInstruction += $"\n\n[BASE DE CONHECIMENTO - INFORMAÇÕES EXTRAS]:\nUse as informações abaixo para responder à pergunta do usuário. Se a resposta estiver aqui, use-a. Se não, use seu conhecimento geral.\n---\n{contextoExtraido}\n---\n";
             }
+            // --------------------
 
             if (_chatClient == null) return (GerarRespostaSimulada(agentId, userMessage), 0);
 
@@ -103,7 +99,6 @@ namespace PROJFACILITY.IA.Services
 
                 messages.Add(new UserChatMessage(userMessage));
 
-                // ENVIA (Passando o CancellationToken para permitir cancelar)
                 ChatCompletion completion = await _chatClient.CompleteChatAsync(messages, null, ct);
                 
                 if (completion.Content != null && completion.Content.Count > 0)
@@ -121,17 +116,15 @@ namespace PROJFACILITY.IA.Services
             }
             catch (OperationCanceledException)
             {
-                // Isso é normal quando o usuário clica em Stop
                 throw; 
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao comunicar com OpenAI para o usuário {UserId}", userId);
+                _logger.LogError(ex, "Erro OpenAI");
                 return ($"Erro de comunicação com a IA: {ex.Message}", 0);
             }
         }
 
-        // Método Privado Restaurado (Lógica antiga de Pinecone dentro do ChatService)
         private async Task<string> BuscarConhecimentoNoPinecone(string query, string profissao, int userId)
         {
             if (_embeddingClient == null || _pinecone == null) return "";
@@ -142,24 +135,33 @@ namespace PROJFACILITY.IA.Services
                 float[] vetorPergunta = embeddingResult.Value.Vector.ToArray();
 
                 var index = _pinecone.Index(_indexName);
+                
+                // CORREÇÃO CRÍTICA AQUI:
+                // Criamos o filtro explicitamente usando o operador "$in" (contido em)
+                // Isso resolve o erro gRPC status 3
+                
+                var filtroUserId = new Metadata();
+                filtroUserId.Add("$in", new List<string> { userId.ToString(), "system" });
+
+                var filtroPrincipal = new Metadata();
+                filtroPrincipal.Add("tag", profissao);
+                filtroPrincipal.Add("userId", filtroUserId); // Aninha o filtro $in dentro do campo userId
+
                 var searchRequest = new QueryRequest
                 {
                     Vector = vetorPergunta,
-                    TopK = 3,
+                    TopK = 4,
                     IncludeMetadata = true,
-                    // Filtro ajustado para usar 'tag' (onde guardamos a profissão) e userId
-                    Filter = new Metadata { 
-                        { "tag", profissao }, 
-                        { "userId", userId.ToString() }
-                    }
+                    Filter = filtroPrincipal
                 };
 
                 var searchResponse = await index.QueryAsync(searchRequest);
 
                 if (searchResponse.Matches != null && searchResponse.Matches.Any())
                 {
+                    // Filtra apenas matches com relevância decente (> 0.70)
                     var trechos = searchResponse.Matches
-                        .Where(m => m.Metadata != null && m.Metadata.ContainsKey("text"))
+                        .Where(m => m.Score > 0.70 && m.Metadata != null && m.Metadata.ContainsKey("text"))
                         .Select(m => m.Metadata?["text"]?.ToString() ?? "")
                         .Where(t => !string.IsNullOrEmpty(t));
 

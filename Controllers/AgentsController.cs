@@ -23,14 +23,20 @@ namespace PROJFACILITY.IA.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Agent>>> GetAgents([FromQuery] int? userId)
         {
-            if (userId == null)
+            // Tenta pegar o ID de várias formas para garantir que funcione
+            if (userId == null || userId == 0)
             {
-                var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
-                if (!string.IsNullOrEmpty(userIdStr)) userId = int.Parse(userIdStr);
+                var idClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("id") ?? User.FindFirst(ClaimTypes.Name);
+                if (idClaim != null && int.TryParse(idClaim.Value, out int idParsed))
+                {
+                    userId = idParsed;
+                }
             }
+
+            // Retorna agentes PÚBLICOS (Null) + Agentes do Usuário
             return await _context.Agents
-                .Where(a => a.UserId == null || a.UserId == userId)
-                .OrderByDescending(a => a.Id) // Mais recentes primeiro
+                .Where(a => a.UserId == null || (userId.HasValue && a.UserId == userId))
+                .OrderByDescending(a => a.Id) 
                 .ToListAsync();
         }
 
@@ -59,7 +65,7 @@ namespace PROJFACILITY.IA.Controllers
             return Ok(new { message = "Criado com sucesso!", id = agent.Id });
         }
 
-        // EDITAR (NOVO)
+        // EDITAR
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAgent(int id, [FromBody] CreateAgentRequest request)
         {
@@ -77,7 +83,7 @@ namespace PROJFACILITY.IA.Controllers
             return Ok(new { message = "Atualizado!" });
         }
 
-        // EXCLUIR (NOVO)
+        // EXCLUIR
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAgent(int id)
         {
