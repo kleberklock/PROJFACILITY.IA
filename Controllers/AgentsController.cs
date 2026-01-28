@@ -19,18 +19,27 @@ namespace PROJFACILITY.IA.Controllers
             _context = context;
         }
 
+        // Método auxiliar seguro para pegar o ID do Usuário
+        private int GetUserId()
+        {
+            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("id") ?? User.FindFirst(ClaimTypes.Name);
+            if (idClaim != null && int.TryParse(idClaim.Value, out int idParsed))
+            {
+                return idParsed;
+            }
+            return 0;
+        }
+
         // LISTAR
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Agent>>> GetAgents([FromQuery] int? userId)
         {
-            // Tenta pegar o ID de várias formas para garantir que funcione
+            int currentUserId = GetUserId();
+
+            // Se não veio userId na query, usa o do token
             if (userId == null || userId == 0)
             {
-                var idClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("id") ?? User.FindFirst(ClaimTypes.Name);
-                if (idClaim != null && int.TryParse(idClaim.Value, out int idParsed))
-                {
-                    userId = idParsed;
-                }
+                userId = currentUserId;
             }
 
             // Retorna agentes PÚBLICOS (Null) + Agentes do Usuário
@@ -44,18 +53,20 @@ namespace PROJFACILITY.IA.Controllers
         [HttpPost]
         public async Task<IActionResult> PostAgent([FromBody] CreateAgentRequest request)
         {
-            var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
-            int finalUserId = request.CreatorId;
-            if (!string.IsNullOrEmpty(userIdStr)) finalUserId = int.Parse(userIdStr);
+            int userId = GetUserId();
+            
+            // Fallback: se o token falhar, tenta usar o enviado pelo front (menos seguro, mas funcional)
+            if (userId == 0 && request.CreatorId > 0) 
+                userId = request.CreatorId;
 
-            if (finalUserId == 0) return Unauthorized();
+            if (userId == 0) return Unauthorized("Usuário inválido.");
 
             var agent = new Agent
             {
                 Name = request.Name,
                 Specialty = "Personalizado",
                 SystemInstruction = request.Prompt,
-                UserId = finalUserId,
+                UserId = userId,
                 IsPublic = false,
                 Icon = "fa-robot"
             };
@@ -69,8 +80,8 @@ namespace PROJFACILITY.IA.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAgent(int id, [FromBody] CreateAgentRequest request)
         {
-            var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
-            if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
+            int userId = GetUserId();
+            if (userId == 0) return Unauthorized();
 
             var agent = await _context.Agents.FindAsync(id);
             if (agent == null) return NotFound();
@@ -87,8 +98,8 @@ namespace PROJFACILITY.IA.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAgent(int id)
         {
-            var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
-            if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
+            int userId = GetUserId();
+            if (userId == 0) return Unauthorized();
 
             var agent = await _context.Agents.FindAsync(id);
             if (agent == null) return NotFound();

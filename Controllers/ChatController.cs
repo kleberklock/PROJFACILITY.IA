@@ -5,9 +5,9 @@ using PROJFACILITY.IA.Data;
 using PROJFACILITY.IA.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using Microsoft.Extensions.Configuration; // Necessário para ler appsettings
-using Pinecone; // Necessário para o Debug
-using System.Linq; // Necessário para listas e Count()
+using Microsoft.Extensions.Configuration; 
+using Pinecone; 
+using System.Linq; 
 
 namespace PROJFACILITY.IA.Controllers
 {
@@ -18,9 +18,8 @@ namespace PROJFACILITY.IA.Controllers
     {
         private readonly ChatService _chatService;
         private readonly AppDbContext _context;
-        private readonly IConfiguration _configuration; // Variável para a chave da API
+        private readonly IConfiguration _configuration; 
 
-        // Construtor atualizado
         public ChatController(ChatService chatService, AppDbContext context, IConfiguration configuration)
         {
             _chatService = chatService;
@@ -28,11 +27,10 @@ namespace PROJFACILITY.IA.Controllers
             _configuration = configuration;
         }
 
-        // 1. LISTAR SESSÕES (Histórico Lateral)
+        // 1. LISTAR SESSÕES
         [HttpGet("sessions")]
         public async Task<IActionResult> GetSessions()
         {
-            // Correção de warning CS8602: Uso de '?' e verificação segura
             var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) return Unauthorized();
 
@@ -46,7 +44,7 @@ namespace PROJFACILITY.IA.Controllers
                              .OrderBy(m => m.Timestamp)
                              .Select(m => m.Text)
                              .FirstOrDefault() ?? "Nova Conversa",
-                    AgentId = g.FirstOrDefault()!.AgentId, // '!' garante que não é nulo (banco garante)
+                    AgentId = g.FirstOrDefault()!.AgentId, 
                     Timestamp = g.Max(m => m.Timestamp)
                 })
                 .OrderByDescending(x => x.Timestamp)
@@ -56,7 +54,7 @@ namespace PROJFACILITY.IA.Controllers
             return Ok(sessions);
         }
 
-        // 2. CARREGAR HISTÓRICO
+        // 2. HISTÓRICO
         [HttpGet("history/{sessionId}")]
         public async Task<IActionResult> GetSessionMessages(string sessionId)
         {
@@ -72,7 +70,7 @@ namespace PROJFACILITY.IA.Controllers
             return Ok(messages);
         }
 
-        // 3. ENVIAR MENSAGEM
+        // 3. ENVIAR
         [HttpPost("enviar")]
         public async Task<IActionResult> EnviarMensagem(
             [FromForm] string message, 
@@ -86,7 +84,6 @@ namespace PROJFACILITY.IA.Controllers
                 if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) 
                     return Unauthorized(new { message = "Usuário não identificado." });
 
-                // Busca contexto (últimas 10 msgs)
                 var history = await _context.ChatMessages
                     .Where(m => m.UserId == userId && m.SessionId == sessionId) 
                     .OrderByDescending(m => m.Timestamp)
@@ -94,40 +91,25 @@ namespace PROJFACILITY.IA.Controllers
                     .OrderBy(m => m.Timestamp)
                     .ToListAsync(ct);
 
-                // Salva pergunta do usuário
                 var userMsg = new ChatMessage 
                 { 
-                    UserId = userId, 
-                    AgentId = agentId, 
-                    SessionId = sessionId,
-                    Text = message, 
-                    Sender = "user", 
-                    Timestamp = DateTime.UtcNow 
+                    UserId = userId, AgentId = agentId, SessionId = sessionId,
+                    Text = message, Sender = "user", Timestamp = DateTime.UtcNow 
                 };
                 _context.ChatMessages.Add(userMsg);
                 await _context.SaveChangesAsync(ct);
                 
-                // Gera resposta da IA
                 var (responseAI, tokens) = await _chatService.GetAIResponse(message, agentId, history, userId, ct);
 
-                // Salva resposta da IA
                 var aiMsg = new ChatMessage 
                 { 
-                    UserId = userId, 
-                    AgentId = agentId, 
-                    SessionId = sessionId,
-                    Text = responseAI, 
-                    Sender = "assistant", 
-                    Timestamp = DateTime.UtcNow 
+                    UserId = userId, AgentId = agentId, SessionId = sessionId,
+                    Text = responseAI, Sender = "assistant", Timestamp = DateTime.UtcNow 
                 };
                 _context.ChatMessages.Add(aiMsg);
                 await _context.SaveChangesAsync(ct);
 
                 return Ok(new { reply = responseAI, tokens = tokens });
-            }
-            catch (OperationCanceledException)
-            {
-                return StatusCode(499, new { message = "Cancelado pelo usuário." });
             }
             catch (Exception ex)
             {
@@ -135,59 +117,27 @@ namespace PROJFACILITY.IA.Controllers
             }
         }
 
-        // --- 4. DEBUG PINECONE (CORRIGIDO) ---
+        // --- 4. DEBUG DE RECUPERAÇÃO REAL (NOVO) ---
+        // Acesse no navegador: /api/chat/debug-search?query=codigo&agentName=Agente%20de%20Teste%2001
+        [HttpGet("debug-search")]
+        public async Task<IActionResult> DebugSearch([FromQuery] string query, [FromQuery] string agentName)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) return Unauthorized();
+
+            var resultado = await _chatService.DebugRetrieval(query, agentName, userId);
+            return Ok(resultado);
+        }
+
+        // --- 5. DEBUG PINECONE SIMPLES ---
         [HttpGet("debug-pinecone/{agentName}")]
         public async Task<IActionResult> DebugPinecone(string agentName)
         {
             var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) return Unauthorized();
 
-            var pineconeKey = _configuration["Pinecone:ApiKey"];
-            if (string.IsNullOrEmpty(pineconeKey)) return BadRequest("Sem chave Pinecone.");
-
-            try 
-            {
-                var pinecone = new PineconeClient(pineconeKey);
-                var index = pinecone.Index("facility-ia");
-
-                // Filtros de segurança
-                var filtroUserId = new Metadata();
-                filtroUserId.Add("$in", new List<string> { userId.ToString(), "system" });
-
-                var filtroPrincipal = new Metadata();
-                filtroPrincipal.Add("tag", agentName);
-                filtroPrincipal.Add("userId", filtroUserId);
-
-                // Busca dummy apenas para listar o que tem lá
-                var dummyVector = new float[1536]; 
-                var search = await index.QueryAsync(new QueryRequest 
-                { 
-                    Vector = dummyVector, 
-                    TopK = 10, 
-                    IncludeMetadata = true,
-                    Filter = filtroPrincipal 
-                });
-
-                // Normaliza para IEnumerable para evitar erros de nulidade
-                var matches = search.Matches ?? new List<ScoredVector>(); 
-
-                var arquivosEncontrados = matches
-                    .Where(m => m.Metadata != null && m.Metadata.ContainsKey("filename"))
-                    .Select(m => m.Metadata!["filename"]!.ToString())
-                    .Distinct()
-                    .ToList();
-
-                return Ok(new { 
-                    Status = "Sucesso",
-                    Agente = agentName, 
-                    ArquivosNoCerebro = arquivosEncontrados,
-                    TotalTrechos = matches.Count() // <--- CORREÇÃO AQUI: Adicionado () pois é um método LINQ
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Erro = ex.Message });
-            }
+            var resultado = await _chatService.DebugRetrieval("teste", agentName, userId);
+            return Ok(resultado);
         }
     }
 }

@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.IO.Compression; 
 using System.Xml;
+using System.IO; // Necessário para MemoryStream
 
 namespace PROJFACILITY.IA.Services
 {
@@ -43,7 +44,8 @@ namespace PROJFACILITY.IA.Services
             }
         }
 
-        // --- COMPATIBILIDADE ---
+        // --- MÉTODOS PÚBLICOS (Agora retornam bool para indicar sucesso) ---
+
         public async Task IngerirConhecimento(string caminhoArquivo, string nome, string profissao, int userId)
         {
             using (var stream = File.OpenRead(caminhoArquivo))
@@ -52,7 +54,7 @@ namespace PROJFACILITY.IA.Services
             }
         }
 
-        public Task IngerirConhecimento(Stream stream, string nome, string profissao, int userId)
+        public Task<bool> IngerirConhecimento(Stream stream, string nome, string profissao, int userId)
         {
             return ProcessarArquivoEIngerir(stream, nome, profissao, userId);
         }
@@ -68,50 +70,54 @@ namespace PROJFACILITY.IA.Services
         }
         
         // --- PROCESSAMENTO PRINCIPAL ---
-        public async Task ProcessarArquivoEIngerir(Stream arquivoStream, string nomeArquivo, string profissao, int userId, bool isSystem = false)
+        // Alterado para retornar Task<bool>
+        public async Task<bool> ProcessarArquivoEIngerir(Stream inputConfigStream, string nomeArquivo, string profissao, int userId, bool isSystem = false)
         {
             if (_pinecone == null || _embeddingClient == null) throw new Exception("IA Services offline");
 
             try 
             {
+                // CRUCIAL: Copia para MemoryStream para garantir que ZipArchive (DOCX) e PdfPig funcionem
+                using var memoryStream = new MemoryStream();
+                await inputConfigStream.CopyToAsync(memoryStream);
+                memoryStream.Position = 0;
+
                 string extensao = Path.GetExtension(nomeArquivo).ToLower();
                 string textoExtraido = "";
 
-                // 1. Lógica de Leitura por Extensão
                 if (extensao == ".pdf") 
                 {
-                    textoExtraido = ExtrairTextoPDF(arquivoStream);
+                    textoExtraido = ExtrairTextoPDF(memoryStream);
                 }
                 else if (extensao == ".jpg" || extensao == ".png" || extensao == ".jpeg") 
                 {
-                    textoExtraido = ExtrairTextoImagem(arquivoStream);
+                    textoExtraido = ExtrairTextoImagem(memoryStream);
                 }
                 else if (extensao == ".docx") 
                 {
-                    textoExtraido = ExtrairTextoDocx(arquivoStream);
+                    textoExtraido = ExtrairTextoDocx(memoryStream);
                 }
-                else if (extensao == ".xlsx") // <--- NOVO: EXCEL
+                else if (extensao == ".xlsx") 
                 {
-                    textoExtraido = ExtrairTextoExcel(arquivoStream);
+                    textoExtraido = ExtrairTextoExcel(memoryStream);
                 }
-                // <--- NOVO: Suporte a arquivos de código e web
                 else if (new[] { ".txt", ".md", ".json", ".csv", ".html", ".css", ".js", ".cs", ".sql", ".py", ".xml" }.Contains(extensao))
                 {
-                    using (var reader = new StreamReader(arquivoStream))
+                    using (var reader = new StreamReader(memoryStream, Encoding.UTF8, leaveOpen: true))
                     {
-                        if(arquivoStream.CanSeek) arquivoStream.Position = 0;
+                        memoryStream.Position = 0;
                         textoExtraido = await reader.ReadToEndAsync();
                     }
                 }
                 else
                 {
                     _logger.LogWarning($"Formato não suportado: {extensao}");
-                    return; 
+                    return false; // Retorna erro se formato for inválido
                 }
 
                 if (string.IsNullOrWhiteSpace(textoExtraido)) {
                     _logger.LogWarning($"Nenhum texto extraído: {nomeArquivo}");
-                    return;
+                    return false; // Retorna erro se não extraiu nada
                 }
 
                 // 2. Salvar Metadados no Banco SQL
@@ -159,11 +165,13 @@ namespace PROJFACILITY.IA.Services
                 }
 
                 await index.UpsertAsync(new UpsertRequest { Vectors = vectors });
+                return true; // SUCESSO
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro no upload");
-                throw;
+                // Importante: Não relança o erro, mas retorna false para o controller saber
+                return false; 
             }
         }
 
@@ -173,8 +181,10 @@ namespace PROJFACILITY.IA.Services
         {
             try
             {
+                // MemoryStream garante que Position=0 funciona
                 if (stream.CanSeek) stream.Position = 0;
-                using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
+                
+                using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
                 {
                     var entry = archive.GetEntry("word/document.xml");
                     if (entry != null)
@@ -186,6 +196,7 @@ namespace PROJFACILITY.IA.Services
                             var xmlDoc = new XmlDocument();
                             xmlDoc.LoadXml(xmlContent);
                             var sb = new StringBuilder();
+                            // Pega o texto e adiciona um espaço para não grudar tudo
                             foreach (XmlNode node in xmlDoc.GetElementsByTagName("w:t"))
                                 sb.Append(node.InnerText + " ");
                             return sb.ToString();
@@ -193,19 +204,20 @@ namespace PROJFACILITY.IA.Services
                     }
                 }
             }
-            catch (Exception ex) { _logger.LogError(ex, "Erro DOCX"); }
+            catch (Exception ex) 
+            { 
+                _logger.LogError(ex, "Erro DOCX"); 
+            }
             return "";
         }
 
-        // NOVO: Extração simples de Excel (Lê as strings compartilhadas)
         private string ExtrairTextoExcel(Stream stream)
         {
             try
             {
                 if (stream.CanSeek) stream.Position = 0;
-                using (var archive = new ZipArchive(stream, ZipArchiveMode.Read))
+                using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
                 {
-                    // O Excel guarda a maioria dos textos aqui para economizar espaço
                     var entry = archive.GetEntry("xl/sharedStrings.xml");
                     if (entry != null)
                     {
@@ -216,7 +228,6 @@ namespace PROJFACILITY.IA.Services
                             var xmlDoc = new XmlDocument();
                             xmlDoc.LoadXml(xmlContent);
                             var sb = new StringBuilder();
-                            // As strings ficam dentro de <t>
                             foreach (XmlNode node in xmlDoc.GetElementsByTagName("t"))
                                 sb.Append(node.InnerText + " | ");
                             return sb.ToString();
@@ -224,9 +235,9 @@ namespace PROJFACILITY.IA.Services
                     }
                     else
                     {
-                        // Se não tiver sharedStrings, tenta ler a Planilha 1 bruta (menos comum para texto)
-                        var sheet1 = archive.GetEntry("xl/worksheets/sheet1.xml");
-                        if (sheet1 != null) return "[Planilha Excel detectada, mas sem textos indexáveis simples]";
+                        // Fallback se não achar sharedStrings
+                         var sheet1 = archive.GetEntry("xl/worksheets/sheet1.xml");
+                        if (sheet1 != null) return "[Excel detectado. Conteúdo não textual ou complexo.]";
                     }
                 }
             }

@@ -1,4 +1,4 @@
-using System.Linq; // <--- ADICIONADO (Essencial para .Any(), .Where(), .Select())
+using System.Linq;
 using OpenAI.Chat;
 using OpenAI.Embeddings;
 using Pinecone;
@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using PROJFACILITY.IA.Data;
 using PROJFACILITY.IA.Models;
 using Microsoft.Extensions.Logging;
+using System.Text.Json; 
+using System.Collections.Generic; // Garante uso de List
 
 namespace PROJFACILITY.IA.Services
 {
@@ -19,7 +21,6 @@ namespace PROJFACILITY.IA.Services
         private readonly ILogger<ChatService> _logger;
         private readonly string _indexName = "facility-ia";
 
-        // Limites de Plano
         private const int LIMIT_FREE = 5000; 
         private const int LIMIT_PRO = 100000;
 
@@ -55,7 +56,6 @@ namespace PROJFACILITY.IA.Services
             int userId,
             CancellationToken ct) 
         {
-            // 1. VERIFICA PLANO
             var user = await _context.Users.FindAsync(userId);
             if (user == null) return ("Erro: Usuário não encontrado.", 0);
 
@@ -66,25 +66,18 @@ namespace PROJFACILITY.IA.Services
             }
 
             int limiteAtual = user.Plan == "Pro" ? LIMIT_PRO : user.Plan == "Enterprise" ? int.MaxValue : LIMIT_FREE;
-
             if (user.UsedTokensCurrentMonth >= limiteAtual)
-            {
-                return ($"Limite do plano {user.Plan} atingido. Faça upgrade para continuar.", 0);
-            }
+                return ($"Limite do plano {user.Plan} atingido.", 0);
 
-            // 2. BUSCA CONTEXTO (RAG)
             var agent = await _context.Agents.FirstOrDefaultAsync(a => a.Name == agentId, ct);
-            string systemInstruction = agent?.SystemInstruction ?? "Você é um assistente virtual útil e profissional.";
+            string systemInstruction = agent?.SystemInstruction ?? "Você é um assistente virtual útil.";
 
-            // --- RAG COM LOGS ---
             string contextoExtraido = await BuscarConhecimentoNoPinecone(userMessage, agentId, userId);
 
             if (!string.IsNullOrEmpty(contextoExtraido))
             {
-                // Adiciona o contexto ao prompt do sistema
-                systemInstruction += $"\n\n[BASE DE CONHECIMENTO - INFORMAÇÕES EXTRAS]:\nUse as informações abaixo para responder à pergunta do usuário. Se a resposta estiver aqui, use-a. Se não, use seu conhecimento geral.\n---\n{contextoExtraido}\n---\n";
+                systemInstruction += $"\n\n[BASE DE CONHECIMENTO]:\nUse as informações a seguir para responder. Se a resposta estiver aqui, priorize-a:\n---\n{contextoExtraido}\n---\n";
             }
-            // --------------------
 
             if (_chatClient == null) return (GerarRespostaSimulada(agentId, userMessage), 0);
 
@@ -97,7 +90,6 @@ namespace PROJFACILITY.IA.Services
                     if (msg.Sender == "user") messages.Add(new UserChatMessage(msg.Text));
                     else messages.Add(new AssistantChatMessage(msg.Text));
                 }
-
                 messages.Add(new UserChatMessage(userMessage));
 
                 ChatCompletion completion = await _chatClient.CompleteChatAsync(messages, null, ct);
@@ -115,14 +107,10 @@ namespace PROJFACILITY.IA.Services
                 }
                 return ("A IA não retornou resposta.", 0);
             }
-            catch (OperationCanceledException)
-            {
-                throw; 
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro OpenAI");
-                return ($"Erro de comunicação com a IA: {ex.Message}", 0);
+                return ($"Erro: {ex.Message}", 0);
             }
         }
 
@@ -137,9 +125,8 @@ namespace PROJFACILITY.IA.Services
 
                 var index = _pinecone.Index(_indexName);
                 
-                // CORREÇÃO: Filtro $in explícito
                 var filtroUserId = new Metadata();
-                filtroUserId.Add("$in", new List<string> { userId.ToString(), "system" });
+                filtroUserId.Add("$in", new string[] { userId.ToString(), "system" });
 
                 var filtroPrincipal = new Metadata();
                 filtroPrincipal.Add("tag", profissao);
@@ -148,35 +135,86 @@ namespace PROJFACILITY.IA.Services
                 var searchRequest = new QueryRequest
                 {
                     Vector = vetorPergunta,
-                    TopK = 4,
+                    TopK = 5,
                     IncludeMetadata = true,
                     Filter = filtroPrincipal
                 };
 
                 var searchResponse = await index.QueryAsync(searchRequest);
 
-                if (searchResponse.Matches != null && searchResponse.Matches.Any())
+                // CORREÇÃO: Tratamento seguro da lista de matches
+                var matches = searchResponse.Matches ?? new ScoredVector[0]; // fallback array vazio
+
+                if (matches.Any())
                 {
-                    // Filtra apenas matches com relevância > 0.70
-                    // O erro CS1503 geralmente ocorre aqui se faltar os parênteses no ToString()
-                    var trechos = searchResponse.Matches
-                        .Where(m => m.Score > 0.70 && m.Metadata != null && m.Metadata.ContainsKey("text"))
-                        .Select(m => m.Metadata?["text"]?.ToString() ?? "") // Garante ToString()
-                        .Where(t => !string.IsNullOrEmpty(t));
+                    var trechos = matches
+                        .Where(m => m.Score > 0.65 && m.Metadata != null && m.Metadata.ContainsKey("text"))
+                        .Select(m => m.Metadata?["text"]?.ToString() ?? "")
+                        .Where(t => !string.IsNullOrWhiteSpace(t));
 
                     return string.Join("\n---\n", trechos);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao buscar no Pinecone index {IndexName}", _indexName);
+                _logger.LogError(ex, "Erro Pinecone Search");
             }
             return "";
         }
 
-        private string GerarRespostaSimulada(string agentId, string userMessage)
+        private string GerarRespostaSimulada(string agentId, string userMessage) => "[MODO OFFLINE] Verifique API Keys.";
+
+        // --- MÉTODO DE DIAGNÓSTICO (CORRIGIDO) ---
+        public async Task<object> DebugRetrieval(string query, string agentName, int userId)
         {
-             return $"[MODO OFFLINE] A IA não está respondendo. Verifique a Chave da API.";
+            if (_embeddingClient == null || _pinecone == null) return new { Error = "Serviços offline" };
+
+            try
+            {
+                // 1. Gera Embedding
+                var emb = await _embeddingClient.GenerateEmbeddingAsync(query);
+                float[] vec = emb.Value.Vector.ToArray();
+
+                // 2. Filtros
+                var filtroUserId = new Metadata();
+                filtroUserId.Add("$in", new string[] { userId.ToString(), "system" });
+
+                var filtroPrincipal = new Metadata();
+                filtroPrincipal.Add("tag", agentName);
+                filtroPrincipal.Add("userId", filtroUserId);
+
+                // 3. Busca
+                var index = _pinecone.Index(_indexName);
+                var resp = await index.QueryAsync(new QueryRequest
+                {
+                    Vector = vec,
+                    TopK = 5,
+                    IncludeMetadata = true,
+                    Filter = filtroPrincipal
+                });
+
+                // 4. CORREÇÃO CRÍTICA AQUI:
+                // Normaliza a lista antes de usar LINQ para evitar erro CS8978
+                var safeMatches = resp.Matches ?? new ScoredVector[0];
+
+                return new 
+                {
+                    Query = query,
+                    UserIdBuscado = userId,
+                    AgentTagBuscada = agentName,
+                    MatchesEncontrados = safeMatches.Count(), // Agora usa .Count() no IEnumerable seguro
+                    Detalhes = safeMatches.Select(m => new 
+                    {
+                        Score = m.Score,
+                        Id = m.Id,
+                        Metadata = m.Metadata
+                    })
+                };
+            }
+            catch (Exception ex)
+            {
+                return new { Error = ex.Message, Stack = ex.StackTrace };
+            }
         }
     }
 }
