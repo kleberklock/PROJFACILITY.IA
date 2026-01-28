@@ -3,9 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using PROJFACILITY.IA.Data;
 using PROJFACILITY.IA.Models;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PROJFACILITY.IA.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/agents")]
     public class AgentsController : ControllerBase

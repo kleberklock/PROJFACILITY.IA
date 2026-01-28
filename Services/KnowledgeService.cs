@@ -7,27 +7,80 @@ using System.Text;
 using PROJFACILITY.IA.Data; 
 using PROJFACILITY.IA.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace PROJFACILITY.IA.Services
 {
     public class KnowledgeService
     {
-        private readonly PineconeClient _pinecone;
-        private readonly EmbeddingClient _embeddingClient;
+        private readonly PineconeClient? _pinecone;
+        private readonly EmbeddingClient? _embeddingClient;
         private readonly AppDbContext _context;
+        private readonly ILogger<KnowledgeService> _logger;
         
         private readonly string _indexName = "facility-ia"; 
 
-        public KnowledgeService(IConfiguration config, AppDbContext context)
+        public KnowledgeService(IConfiguration config, AppDbContext context, ILogger<KnowledgeService> logger)
         {
-            _pinecone = new PineconeClient(config["Pinecone:ApiKey"] ?? "");
-            _embeddingClient = new EmbeddingClient("text-embedding-3-small", config["OpenAI:ApiKey"] ?? "");
             _context = context;
+            _logger = logger;
+
+            string pineconeKey = config["Pinecone:ApiKey"] ?? "";
+            string openAiKey = config["OpenAI:ApiKey"] ?? "";
+
+            if (!string.IsNullOrEmpty(pineconeKey))
+            {
+                try { _pinecone = new PineconeClient(pineconeKey); }
+                catch (Exception ex) { _logger.LogError(ex, "Erro Pinecone"); }
+            }
+            
+            if (!string.IsNullOrEmpty(openAiKey))
+            {
+                try { _embeddingClient = new EmbeddingClient("text-embedding-3-small", openAiKey); }
+                catch (Exception ex) { _logger.LogError(ex, "Erro OpenAI"); }
+            }
         }
 
-        // ALTERADO: Recebe userId
+        // ========================================================================================
+        // ÁREA DE COMPATIBILIDADE (CORREÇÃO DOS ERROS DE COMPILAÇÃO)
+        // ========================================================================================
+
+        // CORREÇÃO 1: Sobrecarga para aceitar STRING (Caminho do arquivo) como o Controller antigo faz
+        public async Task IngerirConhecimento(string caminhoArquivo, string nome, string profissao, int userId)
+        {
+            // Abre o arquivo do disco como Stream e manda processar
+            using (var stream = File.OpenRead(caminhoArquivo))
+            {
+                await ProcessarArquivoEIngerir(stream, nome, profissao, userId);
+            }
+        }
+
+        // Mantém a versão com Stream caso algum outro lugar use
+        public Task IngerirConhecimento(Stream stream, string nome, string profissao, int userId)
+        {
+            return ProcessarArquivoEIngerir(stream, nome, profissao, userId);
+        }
+
+        // CORREÇÃO 2: Sobrecarga para o AdminController (que só manda o ID do arquivo, sem UserID)
+        public async Task<bool> ExcluirArquivo(int id)
+        {
+            // Admin pode excluir qualquer arquivo, então buscamos apenas pelo ID
+            return await ExcluirDocumentoAdmin(id);
+        }
+
+        public Task<bool> ExcluirArquivo(int id, int userId)
+        {
+            return ExcluirDocumento(id, userId);
+        }
+        
+        // ========================================================================================
+        // LÓGICA PRINCIPAL
+        // ========================================================================================
+
         public async Task ProcessarArquivoEIngerir(Stream arquivoStream, string nomeArquivo, string profissao, int userId)
         {
+            if (_pinecone == null || _embeddingClient == null) throw new Exception("IA Services offline");
+
             try 
             {
                 string extensao = Path.GetExtension(nomeArquivo).ToLower();
@@ -35,96 +88,109 @@ namespace PROJFACILITY.IA.Services
 
                 if (extensao == ".pdf") textoExtraido = ExtrairTextoPDF(arquivoStream);
                 else if (extensao == ".jpg" || extensao == ".png") textoExtraido = ExtrairTextoImagem(arquivoStream);
-                else {
-                    using var reader = new StreamReader(arquivoStream);
-                    textoExtraido = await reader.ReadToEndAsync();
-                }
-
-                if (!string.IsNullOrEmpty(textoExtraido))
+                else 
                 {
-                    // Passa userId adiante
-                    await IngerirConhecimento(textoExtraido, profissao, nomeArquivo, userId);
+                    using (var reader = new StreamReader(arquivoStream))
+                    {
+                        if(arquivoStream.CanSeek) arquivoStream.Position = 0;
+                        textoExtraido = await reader.ReadToEndAsync();
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ERRO PROCESSAMENTO]: {ex.Message}");
-                throw;
-            }
-        }
 
-        // ALTERADO: Recebe userId, salva no banco e no Pinecone
-        public async Task IngerirConhecimento(string textoBruto, string profissao, string nomeArquivo, int userId)
-        {
-            var doc = new KnowledgeDocument 
-            { 
-                UserId = userId, // Salva dono
-                FileName = nomeArquivo, 
-                AgentName = profissao, 
-                UploadedAt = DateTime.UtcNow 
-            };
-            
-            _context.KnowledgeDocuments.Add(doc);
-            await _context.SaveChangesAsync();
+                if (string.IsNullOrWhiteSpace(textoExtraido)) return;
 
-            try 
-            {
-                var chunks = QuebrarTexto(textoBruto, 1000);
-                var index = _pinecone.Index(_indexName);
+                var doc = new KnowledgeDocument
+                {
+                    UserId = userId,
+                    FileName = nomeArquivo,
+                    FileType = extensao,
+                    VectorIdPrefix = $"{userId}_{Guid.NewGuid()}",
+                    CreatedAt = DateTime.UtcNow,
+                    Tag = profissao
+                };
+                _context.KnowledgeDocuments.Add(doc);
+                await _context.SaveChangesAsync();
+
+                var chunks = QuebrarTexto(textoExtraido, 1000);
                 var vectors = new List<Vector>();
+                var index = _pinecone.Index(_indexName);
 
+                int chunkIndex = 0;
                 foreach (var chunk in chunks)
                 {
                     var embedding = await _embeddingClient.GenerateEmbeddingAsync(chunk);
-                    vectors.Add(new Vector {
-                        Id = Guid.NewGuid().ToString(),
-                        Values = embedding.Value.Vector.ToArray(),
-                        Metadata = new Metadata {
-                            { "texto", chunk },
-                            { "profissao", profissao },
-                            { "origem", nomeArquivo },
-                            { "userId", userId.ToString() } // Salva no Pinecone
-                        }
+                    float[] vetor = embedding.Value.Vector.ToArray();
+
+                    var metadata = new Metadata
+                    {
+                        { "text", chunk }, 
+                        { "tag", profissao }, 
+                        { "userId", userId.ToString() },
+                        { "filename", nomeArquivo },
+                        { "docId", doc.Id.ToString() }
+                    };
+
+                    vectors.Add(new Vector
+                    {
+                        Id = $"{doc.VectorIdPrefix}_{chunkIndex}",
+                        Values = vetor,
+                        Metadata = metadata
                     });
+                    chunkIndex++;
                 }
+
                 await index.UpsertAsync(new UpsertRequest { Vectors = vectors });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERRO PINECONE]: {ex.Message}");
-                _context.KnowledgeDocuments.Remove(doc);
-                await _context.SaveChangesAsync();
-                throw; 
+                _logger.LogError(ex, "Erro upload");
+                throw;
             }
         }
 
-        public async Task<bool> ExcluirArquivo(int docId)
+        // Exclusão Segura (Usuário só apaga o seu)
+        public async Task<bool> ExcluirDocumento(int docId, int userId)
         {
-            var doc = await _context.KnowledgeDocuments.FindAsync(docId);
+            var doc = await _context.KnowledgeDocuments.FirstOrDefaultAsync(d => d.Id == docId && d.UserId == userId);
             if (doc == null) return false;
+            return await ExecutarExclusao(doc);
+        }
 
+        // Exclusão Admin (Apaga qualquer um pelo ID)
+        private async Task<bool> ExcluirDocumentoAdmin(int docId)
+        {
+            var doc = await _context.KnowledgeDocuments.FirstOrDefaultAsync(d => d.Id == docId);
+            if (doc == null) return false;
+            return await ExecutarExclusao(doc);
+        }
+
+        private async Task<bool> ExecutarExclusao(KnowledgeDocument doc)
+        {
+            if (_pinecone == null) return false;
             try
             {
                 var index = _pinecone.Index(_indexName);
-                var filter = new Metadata { { "origem", doc.FileName } };
+                var filter = new Metadata { { "docId", doc.Id.ToString() } };
                 await index.DeleteAsync(new DeleteRequest { Filter = filter });
+
+                _context.KnowledgeDocuments.Remove(doc);
+                await _context.SaveChangesAsync();
+                return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[AVISO PINECONE]: Falha ao apagar vetores: {ex.Message}");
+                _logger.LogError(ex, "Erro delete");
+                return false;
             }
-
-            _context.KnowledgeDocuments.Remove(doc);
-            await _context.SaveChangesAsync();
-            return true;
         }
 
-        // --- Métodos Auxiliares (Sem alterações) ---
+        // --- Métodos Auxiliares ---
 
         private string ExtrairTextoPDF(Stream stream)
         {
             var sb = new StringBuilder();
             try {
+                if(stream.CanSeek) stream.Position = 0;
                 using (var pdf = PdfDocument.Open(stream))
                     foreach (var page in pdf.GetPages()) sb.AppendLine(page.Text);
             } catch { }
@@ -134,7 +200,9 @@ namespace PROJFACILITY.IA.Services
         private string ExtrairTextoImagem(Stream stream)
         {
             try {
-                using var engine = new TesseractEngine(@"./tessdata", "por", EngineMode.Default);
+                if(stream.CanSeek) stream.Position = 0;
+                string tessPath = Path.Combine(Directory.GetCurrentDirectory(), "tessdata");
+                using var engine = new TesseractEngine(tessPath, "por", EngineMode.Default);
                 using var ms = new MemoryStream();
                 stream.CopyTo(ms);
                 using var pix = Pix.LoadFromMemory(ms.ToArray());

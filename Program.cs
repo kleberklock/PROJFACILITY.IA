@@ -82,5 +82,24 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+// --- NOVO BLOCO: Inicialização do Banco ---
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<PROJFACILITY.IA.Data.AppDbContext>();
+        // Garante que o banco existe
+        context.Database.EnsureCreated(); 
+        // Roda o Seeder que criamos
+        PROJFACILITY.IA.Data.DbSeeder.Seed(context);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ocorreu um erro ao popular o banco de dados.");
+    }
+}
+// ------------------------------------------
 
 app.Run();

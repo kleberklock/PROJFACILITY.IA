@@ -13,7 +13,7 @@ namespace PROJFACILITY.IA.Services
     {
         private readonly ChatClient? _chatClient;
         private readonly EmbeddingClient? _embeddingClient;
-        private readonly PineconeClient _pinecone;
+        private readonly PineconeClient? _pinecone;
         private readonly AppDbContext _context;
         private readonly ILogger<ChatService> _logger;
         private readonly string _indexName = "facility-ia";
@@ -33,16 +33,19 @@ namespace PROJFACILITY.IA.Services
             if (string.IsNullOrEmpty(apiKey)) _logger.LogWarning("OpenAI:ApiKey não encontrada.");
             if (string.IsNullOrEmpty(pineconeKey)) _logger.LogWarning("Pinecone:ApiKey não encontrada.");
 
+            // Inicializa Pinecone
             if (!string.IsNullOrEmpty(pineconeKey))
             {
                 try { _pinecone = new PineconeClient(pineconeKey); }
                 catch (Exception ex) { _logger.LogError(ex, "Erro ao iniciar Pinecone"); }
             }
 
+            // Inicializa OpenAI
             if (!string.IsNullOrEmpty(apiKey))
             {
                 try
                 {
+                    // CORREÇÃO: Passando parâmetros posicionais para evitar erro CS1739
                     _chatClient = new ChatClient("gpt-4o-mini", apiKey);
                     _embeddingClient = new EmbeddingClient("text-embedding-3-small", apiKey);
                 }
@@ -50,7 +53,12 @@ namespace PROJFACILITY.IA.Services
             }
         }
 
-        public async Task<(string Response, int Tokens)> GetAIResponse(string userMessage, string agentId, List<PROJFACILITY.IA.Models.ChatMessage> historicoDb, int userId)
+        public async Task<(string Response, int Tokens)> GetAIResponse(
+            string userMessage, 
+            string agentId, 
+            List<PROJFACILITY.IA.Models.ChatMessage> historicoDb, // CORREÇÃO: Caminho explícito para evitar erro CS0104
+            int userId,
+            CancellationToken ct) // MANTIDO: Necessário para o botão Stop funcionar
         {
             // 1. VERIFICA PLANO
             var user = await _context.Users.FindAsync(userId);
@@ -69,10 +77,11 @@ namespace PROJFACILITY.IA.Services
                 return ($"Limite do plano {user.Plan} atingido. Faça upgrade para continuar.", 0);
             }
 
-            // 2. BUSCA CONTEXTO (RAG) - Passando userId
-            var agent = await _context.Agents.FirstOrDefaultAsync(a => a.Name == agentId);
+            // 2. BUSCA CONTEXTO (RAG) - Lógica interna restaurada
+            var agent = await _context.Agents.FirstOrDefaultAsync(a => a.Name == agentId, ct);
             string systemInstruction = agent?.SystemInstruction ?? "Você é um assistente virtual útil e profissional.";
 
+            // Chama o método privado desta mesma classe
             string contextoExtraido = await BuscarConhecimentoNoPinecone(userMessage, agentId, userId);
 
             if (!string.IsNullOrEmpty(contextoExtraido))
@@ -94,7 +103,8 @@ namespace PROJFACILITY.IA.Services
 
                 messages.Add(new UserChatMessage(userMessage));
 
-                ChatCompletion completion = await _chatClient.CompleteChatAsync(messages);
+                // ENVIA (Passando o CancellationToken para permitir cancelar)
+                ChatCompletion completion = await _chatClient.CompleteChatAsync(messages, null, ct);
                 
                 if (completion.Content != null && completion.Content.Count > 0)
                 {
@@ -103,11 +113,16 @@ namespace PROJFACILITY.IA.Services
 
                     user.UsedTokensCurrentMonth += totalTokens;
                     user.LastLogin = DateTime.UtcNow;
-                    await _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync(ct);
 
                     return (resposta, totalTokens);
                 }
                 return ("A IA não retornou resposta.", 0);
+            }
+            catch (OperationCanceledException)
+            {
+                // Isso é normal quando o usuário clica em Stop
+                throw; 
             }
             catch (Exception ex)
             {
@@ -116,7 +131,7 @@ namespace PROJFACILITY.IA.Services
             }
         }
 
-        // ALTERADO: Adicionado userId e filtro
+        // Método Privado Restaurado (Lógica antiga de Pinecone dentro do ChatService)
         private async Task<string> BuscarConhecimentoNoPinecone(string query, string profissao, int userId)
         {
             if (_embeddingClient == null || _pinecone == null) return "";
@@ -132,9 +147,9 @@ namespace PROJFACILITY.IA.Services
                     Vector = vetorPergunta,
                     TopK = 3,
                     IncludeMetadata = true,
-                    // FILTRO DE PRIVACIDADE: Só traz dados desse userId E dessa profissão
+                    // Filtro ajustado para usar 'tag' (onde guardamos a profissão) e userId
                     Filter = new Metadata { 
-                        { "profissao", profissao },
+                        { "tag", profissao }, 
                         { "userId", userId.ToString() }
                     }
                 };
@@ -144,8 +159,8 @@ namespace PROJFACILITY.IA.Services
                 if (searchResponse.Matches != null && searchResponse.Matches.Any())
                 {
                     var trechos = searchResponse.Matches
-                        .Where(m => m.Metadata != null && m.Metadata.ContainsKey("texto"))
-                        .Select(m => m.Metadata?["texto"]?.ToString() ?? "")
+                        .Where(m => m.Metadata != null && m.Metadata.ContainsKey("text"))
+                        .Select(m => m.Metadata?["text"]?.ToString() ?? "")
                         .Where(t => !string.IsNullOrEmpty(t));
 
                     return string.Join("\n---\n", trechos);

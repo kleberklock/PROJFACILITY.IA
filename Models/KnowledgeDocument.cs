@@ -8,11 +8,13 @@ namespace PROJFACILITY.IA.Models
         [Key]
         public int Id { get; set; }
         
-        // NOVO: Vincula o documento a um usuário específico
-        public int UserId { get; set; } 
-        
+        public int UserId { get; set; }
         public string FileName { get; set; } = string.Empty;
-        public string AgentName { get; set; } = string.Empty;
-        public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
+        
+        // --- NOVAS PROPRIEDADES ---
+        public string FileType { get; set; } = string.Empty;
+        public string VectorIdPrefix { get; set; } = string.Empty;
+        public string Tag { get; set; } = string.Empty; // Profissão
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

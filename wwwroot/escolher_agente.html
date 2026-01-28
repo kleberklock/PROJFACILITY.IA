@@ -212,25 +212,15 @@
 
     <script>
         const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : ''; 
-        let todosAgentes = []; // Cache local de todos os agentes
+        let todosAgentes = [];
 
         async function carregarTudo() {
             todosAgentes = [];
+            const grid = document.getElementById('gridAgentes');
+            
+            // Loading
+            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;"><i class="fas fa-circle-notch fa-spin fa-2x"></i><p style="margin-top:10px">Sincronizando inteligências...</p></div>';
 
-            // 1. Carrega Oficiais (do constants.js)
-            if (typeof AGENTES_DB !== 'undefined') {
-                const estaticos = AGENTES_DB.map(a => ({
-                    id: 'static_' + a.name,
-                    name: a.name,
-                    icon: a.icon || 'fa-robot',
-                    area: a.area || 'geral',
-                    description: "Especialista Facility.IA",
-                    isCustom: false
-                }));
-                todosAgentes = [...estaticos];
-            }
-
-            // 2. Carrega Meus Agentes (da API)
             try {
                 const response = await fetch(`${baseUrl}/api/agents`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -239,25 +229,26 @@
                 if (response.ok) {
                     const apiAgents = await response.json();
                     
-                    // Filtra apenas os que têm userId (Customizados)
-                    const meus = apiAgents.filter(a => a.userId !== null).map(a => ({
+                    // Mapeia os dados do banco para o formato visual
+                    todosAgentes = apiAgents.map(a => ({
                         id: a.id,
                         name: a.name,
-                        icon: a.icon || 'fa-robot',
-                        area: 'meus', // Categoria especial para filtro
-                        description: "Criado por você",
-                        isCustom: true
+                        // Usa ícone do banco ou padrão
+                        icon: a.icon || 'fa-robot', 
+                        // Mapeia Specialty (Banco) -> area (Front)
+                        area: a.userId === null ? (a.specialty || 'geral') : 'meus', 
+                        description: a.description || "Agente Personalizado",
+                        isCustom: a.userId !== null // Se tem userId, é customizado
                     }));
-
-                    // Adiciona no topo da lista
-                    todosAgentes = [...meus, ...todosAgentes];
+                } else {
+                    console.error("Erro ao buscar agentes");
                 }
             } catch (error) {
                 console.error("Erro API Agentes:", error);
             }
 
-            // Renderiza estado inicial
-            renderizar(todosAgentes);
+            // Renderiza
+            filtrarAba('todos', document.querySelector('.agent-tab-btn.active'));
         }
 
         function renderizar(lista) {
@@ -275,14 +266,19 @@
 
             lista.forEach((agent, index) => {
                 const card = document.createElement('a');
-                const linkParam = agent.name; 
+                // Passa o NOME, ICONE e se é CUSTOM para a URL
+                card.href = `chatcomIA.html?agent=${encodeURIComponent(agent.name)}&icon=${agent.icon}&area=${agent.area}`;
                 
-                card.href = `chatcomIA.html?agent=${encodeURIComponent(linkParam)}&icon=${agent.icon}&custom=${agent.isCustom}`;
-                card.className = `app-card fade-in ${agent.isCustom ? 'custom-agent-card' : ''}`;
-                card.style.animationDelay = `${index * 0.05}s`; // Efeito cascata
+                // Estilo diferente para Meus Agentes
+                const customClass = agent.isCustom ? 'custom-agent-card' : '';
+                // Ícone colorido baseado na área (se não for custom)
+                const iconClass = agent.isCustom ? '' : `icon-${agent.area}`;
+                
+                card.className = `app-card fade-in ${customClass}`;
+                card.style.animationDelay = `${index * 0.05}s`;
                 
                 card.innerHTML = `
-                    <div class="card-icon ${agent.isCustom ? '' : 'icon-'+agent.area}">
+                    <div class="card-icon ${iconClass}">
                         <i class="fas ${agent.icon}"></i>
                     </div>
                     <div class="card-title">${agent.name}</div>
@@ -294,33 +290,29 @@
             });
         }
 
-        // --- FILTROS ---
-
         function filtrarAba(categoria, btn) {
-            // Limpa busca visualmente para indicar que estamos usando abas
             document.getElementById('inputBusca').value = '';
             
-            // Atualiza UI dos botões
-            document.querySelectorAll('.agent-tab-btn').forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active');
+            if(btn) {
+                document.querySelectorAll('.agent-tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
 
             if (categoria === 'todos') {
                 renderizar(todosAgentes);
             } else if (categoria === 'meus') {
                 renderizar(todosAgentes.filter(a => a.isCustom === true));
             } else {
-                renderizar(todosAgentes.filter(a => a.area === categoria && !a.isCustom));
+                // Filtra pela propriedade 'area' que mapeamos do 'specialty'
+                renderizar(todosAgentes.filter(a => a.area === categoria));
             }
         }
 
         function executarBusca() {
             const termo = document.getElementById('inputBusca').value.toLowerCase();
-            
-            // Remove 'active' das abas para mostrar que é uma busca global
             document.querySelectorAll('.agent-tab-btn').forEach(b => b.classList.remove('active'));
 
             if (termo === '') {
-                // Se limpar, volta para 'todos' por padrão
                 document.querySelector('.agent-tab-btn').classList.add('active');
                 renderizar(todosAgentes);
                 return;
@@ -328,7 +320,6 @@
 
             const filtrados = todosAgentes.filter(a => 
                 a.name.toLowerCase().includes(termo) || 
-                a.area.toLowerCase().includes(termo) ||
                 (a.description && a.description.toLowerCase().includes(termo))
             );
 

@@ -6,6 +6,7 @@
     <title>Treinamento Neural | Facility.IA</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Verificação de Acesso (Admin)
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
         try {
@@ -17,6 +18,13 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style-master.css">
+    <style>
+        /* Estilo para o Select ficar bonito igual ao resto */
+        .modal-input option {
+            background: #1a1a2e;
+            color: white;
+        }
+    </style>
 </head>
 <body>
 
@@ -52,15 +60,16 @@
             <div class="hero-banner" style="background: linear-gradient(135deg, #062c2c 0%, #1a1a1a 100%); border-color: rgba(0, 243, 255, 0.2);">
                 <div class="hero-content">
                     <h2 class="hero-title" style="color: #00F3FF;">Laboratório de Treinamento</h2>
-                    <p class="hero-desc">Faça upload de manuais e livros para especializar os agentes.</p>
+                    <p class="hero-desc">Faça upload de manuais para que um Agente específico aprenda sobre eles.</p>
                 </div>
             </div>
 
             <div class="table-container" style="max-width: 800px; margin: 0 auto; text-align: center;">
+                
                 <div id="dropZone" class="drop-zone">
                     <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #00F3FF; margin-bottom: 20px;"></i>
-                    <h3 style="margin: 0 0 10px 0; color: white;">Arraste arquivos ou clique aqui</h3>
-                    <p style="color: #666; font-size: 0.9rem;">Suporta PDF, DOCX e TXT (Máx 10MB)</p>
+                    <h3 style="margin: 0 0 10px 0; color: white;">Selecione o Documento</h3>
+                    <p style="color: #666; font-size: 0.9rem;">PDF ou TXT com o conhecimento técnico</p>
                     <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(this)">
                 </div>
 
@@ -72,12 +81,17 @@
                 </div>
 
                 <div style="margin-top: 30px; text-align: left;">
-                    <label style="color: #ccc; font-size: 0.9rem;">Tags de Conhecimento (Opcional)</label>
-                    <input type="text" id="textContent" placeholder="Ex: engenharia, normas, abnt..." class="modal-input">
+                    <label style="color: #00F3FF; font-size: 0.9rem; font-weight: bold;">Qual Agente deve aprender isso?</label>
+                    <select id="agentSelect" class="modal-input" onchange="checkButtonState()" style="cursor: pointer;">
+                        <option value="">Carregando lista de agentes...</option>
+                    </select>
+                    <p style="color: #666; font-size: 0.75rem; margin-top: 5px;">
+                        <i class="fas fa-info-circle"></i> O arquivo será vinculado exclusivamente a este agente.
+                    </p>
                 </div>
 
                 <button id="uploadBtn" onclick="uploadFile()" disabled style="width: 100%; margin-top: 30px; padding: 15px; background: rgba(255,255,255,0.1); color: #666; font-weight: bold; border: none; border-radius: 10px; cursor: not-allowed; transition: 0.3s;">
-                    <i class="fas fa-microchip"></i> INICIAR PROCESSAMENTO
+                    <i class="fas fa-microchip"></i> INICIAR TREINAMENTO
                 </button>
 
                 <div id="progressContainer" style="margin-top: 30px; display: none;">
@@ -95,6 +109,48 @@
     <script src="script.js"></script>
 
     <script>
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAgents(); // Carrega a lista do banco
+            
+            if(typeof particlesJS !== 'undefined') {
+                particlesJS("particles-js", {
+                    "particles": { "number": { "value": 20 }, "color": { "value": "#00F3FF" }, "opacity": { "value": 0.1 }, "size": { "value": 2 }, "move": { "enable": true, "speed": 0.5 } }
+                });
+            }
+        });
+
+        // 1. CARREGAR AGENTES DO BANCO
+        async function loadAgents() {
+            const select = document.getElementById('agentSelect');
+            try {
+                // Chama a API de Agentes que você já tem
+                const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : ''; 
+                const res = await fetch(`${baseUrl}/api/agents`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (res.ok) {
+                    const agents = await res.json();
+                    
+                    // Ordena alfabeticamente para facilitar
+                    agents.sort((a, b) => a.name.localeCompare(b.name));
+
+                    select.innerHTML = '<option value="">Selecione um Agente...</option>';
+                    agents.forEach(agent => {
+                        // Value = Nome do Agente (Isso é o que o ChatService usa para filtrar)
+                        select.innerHTML += `<option value="${agent.name}">${agent.name} (${agent.specialty})</option>`;
+                    });
+                } else {
+                    select.innerHTML = '<option value="">Erro ao carregar agentes</option>';
+                }
+            } catch (e) {
+                console.error(e);
+                select.innerHTML = '<option value="">Erro de conexão</option>';
+            }
+        }
+
+        // 2. LÓGICA DE UI
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
         
@@ -110,8 +166,10 @@
 
         function checkButtonState() {
             const hasFile = document.getElementById('fileInput').files.length > 0;
+            const hasAgent = document.getElementById('agentSelect').value !== "";
             const btn = document.getElementById('uploadBtn');
-            if(hasFile) {
+            
+            if(hasFile && hasAgent) {
                 btn.disabled = false;
                 btn.style.background = '#00F3FF';
                 btn.style.color = 'black';
@@ -124,7 +182,15 @@
             }
         }
 
+        // 3. ENVIAR PARA O SERVIDOR
         async function uploadFile() {
+            const file = document.getElementById('fileInput').files[0];
+            const agentName = document.getElementById('agentSelect').value; // Pega o nome selecionado
+
+            if (!file) return alert("Selecione um arquivo!");
+            if (!agentName) return alert("Selecione um Agente!");
+
+            // UI Setup
             const btn = document.getElementById('uploadBtn');
             const progressBar = document.getElementById('progressBar');
             const progressContainer = document.getElementById('progressContainer');
@@ -133,31 +199,57 @@
             btn.disabled = true;
             btn.innerText = "ENVIANDO...";
             progressContainer.style.display = 'block';
+            statusText.innerText = `Ensinando o agente ${agentName}...`;
+            progressBar.style.width = '30%';
 
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 5;
-                progressBar.style.width = `${progress}%`;
-                if(progress < 50) statusText.innerText = "Enviando para o servidor...";
-                else if(progress < 90) statusText.innerText = "Vetorizando conteúdo...";
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
                 
-                if (progress >= 100) {
-                    clearInterval(interval);
+                // MÁGICA AQUI: Enviamos o Nome do Agente como 'profession'
+                // O KnowledgeService salva isso na tag do Pinecone
+                formData.append('profession', agentName);
+
+                const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : ''; 
+                const res = await fetch(`${baseUrl}/api/knowledge/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+
+                if (res.ok) {
+                    progressBar.style.width = '100%';
                     statusText.innerText = "Concluído!";
-                    alert("Treinamento finalizado com sucesso!");
+                    Swal.fire({
+                        title: 'Sucesso!',
+                        text: `O Agente ${agentName} aprendeu o conteúdo novo.`,
+                        icon: 'success',
+                        background: '#1a1a2e', color: '#fff', confirmButtonColor: '#00F3FF'
+                    });
                     resetForm();
+                } else {
+                    const txt = await res.text();
+                    throw new Error(txt || "Falha no envio.");
                 }
-            }, 100);
+            } catch (e) {
+                progressBar.style.width = '0%';
+                progressBar.style.background = 'red';
+                statusText.innerText = "Erro: " + e.message;
+                console.error(e);
+                Swal.fire('Erro', 'Falha ao processar.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "INICIAR TREINAMENTO";
+            }
         }
 
         function resetForm() {
             document.getElementById('fileInput').value = "";
             document.getElementById('fileName').innerText = "";
-            document.getElementById('textContent').value = "";
+            document.getElementById('agentSelect').value = ""; // Reseta o select
             document.getElementById('progressContainer').style.display = 'none';
             document.getElementById('fileInfo').style.display = 'none';
             checkButtonState();
-            document.getElementById('uploadBtn').innerText = 'INICIAR PROCESSAMENTO';
         }
 
         function toggleSidebar() {
@@ -169,12 +261,6 @@
             localStorage.removeItem('token');
             localStorage.removeItem('userData');
             window.location.href = 'index.html';
-        }
-
-        if(typeof particlesJS !== 'undefined') {
-            particlesJS("particles-js", {
-                "particles": { "number": { "value": 20 }, "color": { "value": "#00F3FF" }, "opacity": { "value": 0.1 }, "size": { "value": 2 }, "move": { "enable": true, "speed": 0.5 } }
-            });
         }
     </script>
 </body>

@@ -22,61 +22,111 @@ namespace PROJFACILITY.IA.Controllers
             _context = context;
         }
 
+        // 1. LISTAR SESSÕES (Histórico Lateral)
+        [HttpGet("sessions")]
+        public async Task<IActionResult> GetSessions()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
+
+            // Agrupa por SessionId para pegar a última conversa de cada sessão
+            var sessions = await _context.ChatMessages
+                .Where(m => m.UserId == userId && !string.IsNullOrEmpty(m.SessionId))
+                .GroupBy(m => m.SessionId)
+                .Select(g => new
+                {
+                    Id = g.Key,
+                    // Pega a primeira mensagem do usuário como Título
+                    Title = g.Where(m => m.Sender == "user")
+                             .OrderBy(m => m.Timestamp)
+                             .Select(m => m.Text)
+                             .FirstOrDefault() ?? "Nova Conversa",
+                    AgentId = g.FirstOrDefault().AgentId,
+                    Timestamp = g.Max(m => m.Timestamp)
+                })
+                .OrderByDescending(x => x.Timestamp)
+                .Take(50) // Limite de 50 conversas no histórico
+                .ToListAsync();
+
+            return Ok(sessions);
+        }
+
+        // 2. CARREGAR MENSAGENS DE UMA SESSÃO
+        [HttpGet("history/{sessionId}")]
+        public async Task<IActionResult> GetSessionMessages(string sessionId)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
+
+            var messages = await _context.ChatMessages
+                .Where(m => m.UserId == userId && m.SessionId == sessionId)
+                .OrderBy(m => m.Timestamp)
+                .Select(m => new { m.Sender, m.Text, m.AgentId, m.Timestamp }) // Projeção simples
+                .ToListAsync();
+
+            return Ok(messages);
+        }
+
         [HttpPost("enviar")]
-        public async Task<IActionResult> EnviarMensagem([FromForm] string message, [FromForm] string agentId)
+        public async Task<IActionResult> EnviarMensagem(
+            [FromForm] string message, 
+            [FromForm] string agentId, 
+            [FromForm] string sessionId,
+            CancellationToken ct) // <--- O ASP.NET injeta isso automaticamente quando o usuário cancela
         {
             try 
             {
-                // 1. Identificar Usuário Logado
                 var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
                 if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) 
                     return Unauthorized(new { message = "Usuário não identificado." });
 
-                // 2. Buscar Histórico (Últimas 10 mensagens deste agente para este usuário)
-                // Ajuste 'AgentId' e 'UserId' conforme o nome exato na sua Model ChatMessage
+                // Busca Histórico
                 var history = await _context.ChatMessages
-                    .Where(m => m.UserId == userId && m.AgentId == agentId) 
-                    .OrderByDescending(m => m.Timestamp) // Pega as mais recentes
+                    .Where(m => m.UserId == userId && m.SessionId == sessionId) 
+                    .OrderByDescending(m => m.Timestamp)
                     .Take(10)
-                    .OrderBy(m => m.Timestamp) // Reordena para cronologia correta
-                    .ToListAsync();
+                    .OrderBy(m => m.Timestamp)
+                    .ToListAsync(ct); // Passa ct
 
-                // 3. Salvar Mensagem do Usuário no Banco
+                // Salvar Msg Usuário
                 var userMsg = new ChatMessage 
                 { 
                     UserId = userId, 
                     AgentId = agentId, 
+                    SessionId = sessionId,
                     Text = message, 
                     Sender = "user", 
                     Timestamp = DateTime.UtcNow 
                 };
                 _context.ChatMessages.Add(userMsg);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
                 
-                // 4. Chamar Serviço de IA (Passando o userId novo!)
-                var (responseAI, tokens) = await _chatService.GetAIResponse(message, agentId, history, userId);
+                // CHAMA O SERVIÇO PASSANDO O TOKEN
+                var (responseAI, tokens) = await _chatService.GetAIResponse(message, agentId, history, userId, ct);
 
-                // 5. Salvar Resposta da IA no Banco
+                // Salvar Resposta da IA
                 var aiMsg = new ChatMessage 
                 { 
                     UserId = userId, 
                     AgentId = agentId, 
+                    SessionId = sessionId,
                     Text = responseAI, 
                     Sender = "assistant", 
                     Timestamp = DateTime.UtcNow 
                 };
                 _context.ChatMessages.Add(aiMsg);
-                
-                // Opcional: Atualizar tokens gastos no banco (se o ChatService já não fizer isso)
-                // O ChatService da etapa anterior já fazia, então só salvamos a mensagem.
-                
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
 
                 return Ok(new { reply = responseAI, tokens = tokens });
             }
+            catch (OperationCanceledException)
+            {
+                // O usuário clicou em Parar. Não é erro, é intencional.
+                return StatusCode(499, new { message = "Geração cancelada pelo usuário." }); // 499 é um código comum para Client Closed Request
+            }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro no processamento: " + ex.Message });
+                return StatusCode(500, new { message = "Erro: " + ex.Message });
             }
         }
     }

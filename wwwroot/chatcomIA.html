@@ -308,6 +308,7 @@
     let currentFile = null; 
     let currentSessionId = null;
     let isGenerating = false;
+    let currentAbortController = null;
     let recognition = null; // Speech API
 
     // Elementos DOM
@@ -348,7 +349,7 @@
         const agentArea = params.get('area') || 'geral';
 
         setupChat(agentName, agentIcon, agentArea);
-        renderHistoryFromStorage(); 
+        // NOTA: O setupChat agora chama o carregamento do histórico da API
         
         if(window.innerWidth <= 768) {
             const mobileMenu = document.querySelector('.mobile-only');
@@ -356,11 +357,14 @@
         }
     });
 
-    // --- SETUP DO CHAT ---
+    // --- SETUP DO CHAT (ATUALIZADO PARA SUPORTAR SESSIONID) ---
     function setupChat(name, icon, area) {
         if(name.includes('-')) name = name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
-        currentSessionId = Date.now().toString(); 
+        const params = new URLSearchParams(window.location.search);
+        // Tenta pegar o ID da URL se existir, senão cria novo ID baseado no tempo
+        currentSessionId = params.get('sessionId') || Date.now().toString(); 
+        
         currentAgentName = name;
         currentAgentIcon = icon.replace('fa-', ''); 
         currentAgentArea = area;
@@ -372,7 +376,17 @@
         updateActiveBadges();
         messagesArea.innerHTML = "";
         loadSwitches(area);
-        addMessage('ai', `Olá! Sou seu ${name}. Como posso ajudar hoje?`, currentAgentIcon, false);
+
+        // SE TIVER SESSION ID NA URL, CARREGA MENSAGENS ANTIGAS DO BANCO
+        if (params.get('sessionId')) {
+            loadSessionMessages(currentSessionId);
+        } else {
+            // Se é nova, mostra saudação padrão
+            addMessage('ai', `Olá! Sou seu ${name}. Como posso ajudar hoje?`, currentAgentIcon, false);
+        }
+
+        // CARREGA A LISTA LATERAL DA API (Substitui o localStorage)
+        loadHistoryFromAPI();
     }
 
     // --- INTERAÇÃO UX ---
@@ -402,22 +416,32 @@
         userInput.focus();
     }
 
-    // --- ENVIO DE MENSAGEM ---
+    // --- ENVIO DE MENSAGEM COM STOP REAL ---
     async function handleSendMessage() {
-        // Lógica de PARAR (Stop)
+        // 1. Lógica de PARAR (Stop Real)
         if (isGenerating) {
+            if (currentAbortController) {
+                currentAbortController.abort(); // <--- CORTA A CONEXÃO COM O SERVIDOR
+                currentAbortController = null;
+            }
             isGenerating = false;
+            
+            // Avisa visualmente que parou
+            const loadingMsg = messagesArea.querySelector('.ai-message:last-child .message-bubble');
+            if(loadingMsg) loadingMsg.innerHTML += " <br><i>[Interrompido pelo usuário]</i>";
+            
             setSendButtonState('send');
             return;
         }
 
+        // 2. Validações Iniciais
         const text = userInput.value.trim();
         if (!text && !currentFile) return;
 
         slashMenu.style.display = 'none';
         if(text) addMessage("user", text);
         
-        // Exibição Rica do Arquivo no Chat
+        // Exibição Rica do Arquivo
         if(currentFile) {
             const fileHTML = `<div class="rich-preview" style="background: rgba(255,255,255,0.1); display:inline-flex;">
                 <i class="fas fa-file" style="font-size:1.5rem; color:var(--primary)"></i>
@@ -429,91 +453,105 @@
             addMessage("user", fileHTML, null, false, true); 
         }
 
+        // Cria bolha da IA
         const aiDiv = addMessage("ai", "", currentAgentIcon, true); 
         
+        // Reseta inputs
         userInput.value = ""; 
         const fileToSend = currentFile;
         clearAttachments();
 
+        // 3. Prepara Estado de Envio
         isGenerating = true;
         setSendButtonState('stop');
+        
+        // CRIA O CONTROLADOR DE CANCELAMENTO
+        currentAbortController = new AbortController();
+        const signal = currentAbortController.signal;
 
         try {
             const token = localStorage.getItem('token'); 
             let contextPrompt = activeContexts.size > 0 ? "Contextos: " + Array.from(activeContexts).map(c => c.l).join(", ") + ". " : "";
             let responseText = "";
             
-            // Simulação de delay de rede
-            await new Promise(r => setTimeout(r, 800));
+            // Delay visual mínimo
+            await new Promise(r => setTimeout(r, 500));
 
-            // INTEGRAÇÃO API (Simulada ou Real)
             if (typeof CONFIG !== 'undefined' && CONFIG.API_URL) {
                 try {
                     const formData = new FormData();
                     formData.append('message', contextPrompt + text);
                     formData.append('agentId', currentAgentName); 
+                    formData.append('sessionId', currentSessionId); 
                     if(fileToSend) formData.append('file', fileToSend);
 
+                    // FETCH COM SINAL DE ABORTO
                     const res = await fetch(`${CONFIG.API_URL}/api/chat/enviar`, { 
                         method: 'POST', 
                         headers: { 'Authorization': `Bearer ${token}` },
-                        body: formData 
+                        body: formData,
+                        signal: signal // <--- LIGA O BOTÃO AO SERVIDOR
                     });
 
                     if (res.ok) {
                         const data = await res.json();
                         responseText = data.reply;
-                    } else throw new Error("API Error");
+                    } else {
+                         // Se foi cancelado pelo usuário (499) ou erro
+                         if(res.status === 499) throw new Error("AbortError"); 
+                         throw new Error("Erro na API");
+                    }
+
                 } catch(e) { 
-                    console.log("API offline, usando simulação.", e); 
+                    if (e.name === 'AbortError' || e.message === 'AbortError') {
+                        throw new Error("Geração cancelada."); // Joga para o catch principal tratar o stop
+                    }
+                    console.log("API offline ou erro, usando simulação.", e); 
+                    responseText = simulateAIResponse(text, currentAgentName);
                 }
+            } else {
+                 responseText = simulateAIResponse(text, currentAgentName);
             }
 
-            // Fallback (IA Treinada Genérica)
-            if (!responseText) {
-                responseText = simulateAIResponse(text, currentAgentName);
-            }
-
-            // --- RENDERIZAÇÃO PROGRESSIVA (CORREÇÃO APLICADA) ---
+            // --- RENDERIZAÇÃO PROGRESSIVA ---
             const bubble = aiDiv.querySelector('.message-bubble');
             bubble.classList.remove('typing-cursor');
             bubble.innerHTML = ""; 
 
             let i = 0; 
             const speed = 10; 
-            let currentMarkdown = ""; // Acumulador de texto
+            let currentMarkdown = "";
 
             const typeLoop = () => { 
-                if(!isGenerating) { // Usuário clicou em parar
-                    finalizeMessage(aiDiv, currentMarkdown + " [Interrompido]");
-                    return;
-                }
+                if(!isGenerating) return; // Se parou no meio da animação
 
                 if(i < responseText.length) { 
-                    const char = responseText.charAt(i);
-                    
-                    // Adiciona ao acumulador
-                    currentMarkdown += char;
-                    
-                    // AQUI ESTÁ A CORREÇÃO: Renderiza o HTML em tempo real
-                    // Isso faz os tópicos, negrito e listas aparecerem enquanto digita
+                    currentMarkdown += responseText.charAt(i);
                     bubble.innerHTML = marked.parse(currentMarkdown); 
-
                     i++; 
                     smartScroll();
                     setTimeout(typeLoop, speed); 
                 } else {
-                    // Finalizou
                     finalizeMessage(aiDiv, currentMarkdown);
                 }
             };
             typeLoop();
 
         } catch (e) {
+            // Se foi cancelamento, não mostra erro vermelho, apenas para.
+            if (e.message === "Geração cancelada." || e.name === 'AbortError') {
+                isGenerating = false;
+                setSendButtonState('send');
+                return;
+            }
+
             const bubble = aiDiv.querySelector('.message-bubble');
             bubble.innerText = "Erro: " + e.message;
+            bubble.style.color = "#ff6b6b";
             isGenerating = false;
             setSendButtonState('send');
+        } finally {
+            currentAbortController = null;
         }
     }
 
@@ -539,8 +577,7 @@
             }
         });
 
-        // 3. Salva e Reseta
-        saveMessageToHistory("ai", text);
+        // 3. Reseta Estado (Removido salvamento local)
         isGenerating = false;
         setSendButtonState('send');
         smartScroll();
@@ -608,7 +645,7 @@
 
         messagesArea.appendChild(d);
         smartScroll();
-        if (!typing && sender === 'user') saveMessageToHistory(sender, text);
+        // NOTA: Removemos o salvamento local aqui, o backend cuida disso
         return d;
     }
 
@@ -634,32 +671,44 @@
     
     function clearAttachments() { currentFile = null; document.getElementById('realFileInput').value=""; document.getElementById('attachmentsPreview').innerHTML=""; }
 
-    // --- HISTÓRICO POR DATA ---
-    function getHistory() { return JSON.parse(localStorage.getItem('chatHistory') || '[]'); }
+    // --- HISTÓRICO VIA API (NOVA IMPLEMENTAÇÃO) ---
     
-    function saveMessageToHistory(sender, text) {
-        let history = getHistory();
-        let session = history.find(h => h.id === currentSessionId);
-        if (!session) {
-            session = { id: currentSessionId, timestamp: Date.now(), title: text.substring(0, 25) + "...", agentName: currentAgentName, icon: 'robot', messages: [] };
-            history.push(session);
+    async function loadHistoryFromAPI() {
+        const list = document.getElementById('historyList');
+        // Mostra loading discreto
+        list.innerHTML = '<div style="padding:10px; color:#666; font-size:0.8rem;">Carregando...</div>';
+
+        try {
+            const token = localStorage.getItem('token');
+            // Chama o endpoint que criamos no Controller
+            const res = await fetch(`${CONFIG.API_URL}/api/chat/sessions`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (!res.ok) throw new Error("Falha ao carregar histórico");
+            
+            const history = await res.json();
+            renderHistoryList(history);
+        } catch (e) {
+            console.error(e);
+            list.innerHTML = '<div style="padding:10px; color:#666;">Histórico vazio.</div>';
         }
-        session.messages.push({ sender, text, timestamp: Date.now() });
-        localStorage.setItem('chatHistory', JSON.stringify(history));
-        renderHistoryFromStorage();
     }
 
-    function renderHistoryFromStorage() {
+    function renderHistoryList(history) {
         const list = document.getElementById('historyList');
-        const history = getHistory();
         list.innerHTML = "";
         
         const groups = { 'Hoje': [], 'Ontem': [], 'Antigos': [] };
         const now = new Date();
         const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
 
-        history.sort((a,b) => b.timestamp - a.timestamp).forEach(h => {
-            const date = new Date(h.timestamp);
+        history.forEach(h => {
+            // Ajuste para ler propriedades do backend (Title, Timestamp) - Caso venha Maiusculo ou Minusculo
+            const dateStr = h.timestamp || h.Timestamp;
+            const date = new Date(dateStr);
+            if(isNaN(date.getTime())) return;
+
             if(date.toDateString() === now.toDateString()) groups['Hoje'].push(h);
             else if(date.toDateString() === yesterday.toDateString()) groups['Ontem'].push(h);
             else groups['Antigos'].push(h);
@@ -669,29 +718,66 @@
             if(items.length > 0) {
                 list.innerHTML += `<div class="history-date-header">${label}</div>`;
                 items.forEach(h => {
+                    const sessId = h.id || h.Id; // ID da Sessão vindo do banco
+                    const title = (h.title || h.Title || "Conversa sem título").substring(0, 30);
+                    const agent = h.agentId || h.AgentId || currentAgentName;
+                    
+                    // Ao clicar, recarrega a página com o ID da sessão na URL
                     list.innerHTML += `
-                        <div class="history-item" onclick="loadSession('${h.id}')">
+                        <div class="history-item" onclick="window.location.href='chatcomIA.html?name=${agent}&sessionId=${sessId}'">
                             <i class="fas fa-comment"></i>
-                            <div style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">${h.title}</div>
+                            <div style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">${title}</div>
                         </div>`;
                 });
             }
         }
     }
-    
-    function loadSession(id) { alert('Carregar sessão ' + id); }
 
-    // --- EXPORTAR ---
+    async function loadSessionMessages(sessionId) {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${CONFIG.API_URL}/api/chat/history/${sessionId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const msgs = await res.json();
+            
+            messagesArea.innerHTML = ""; // Limpa a tela
+            
+            msgs.forEach(m => {
+                // Backend retorna 'assistant' ou 'user' -> Frontend usa 'ai' ou 'user'
+                const senderBackend = m.sender || m.Sender; 
+                const sender = (senderBackend && senderBackend.toLowerCase() === 'user') ? 'user' : 'ai';
+                const text = m.text || m.Text;
+                
+                // Renderiza mensagem antiga (false = não digitar, apenas mostrar)
+                addMessage(sender, text, currentAgentIcon, false, false); 
+            });
+            
+            smartScroll();
+        } catch (e) {
+            console.error("Erro ao carregar mensagens antigas", e);
+            addMessage('ai', 'Erro ao carregar o histórico desta conversa.', 'exclamation-triangle', false);
+        }
+    }
+
+    // --- EXPORTAR (ADAPTADO PARA LER DO DOM) ---
     function exportChat(format) {
-        const element = document.getElementById('messagesArea');
         if(format === 'pdf') {
+            const element = document.getElementById('messagesArea');
             const opt = { margin: 1, filename: `chat-${currentAgentName}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
             html2pdf().set(opt).from(element).save();
         } else {
+            // Nova lógica para TXT: Lê diretamente da tela, já que não temos localStorage
             let text = "";
-            getHistory().find(h => h.id === currentSessionId)?.messages.forEach(m => {
-                text += `[${m.sender.toUpperCase()}]: ${m.text}\n----------------\n`;
+            const messages = document.querySelectorAll('.message-row');
+            messages.forEach(row => {
+                const isUser = row.classList.contains('user-message');
+                const sender = isUser ? "USUÁRIO" : currentAgentName.toUpperCase();
+                // Tenta pegar texto puro, ignorando botões de copiar
+                const content = row.querySelector('.message-bubble').innerText; 
+                text += `[${sender}]: ${content}\n----------------\n`;
             });
+
             const blob = new Blob([text], { type: "text/plain" });
             const a = document.createElement("a");
             a.href = URL.createObjectURL(blob);
