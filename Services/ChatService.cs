@@ -1,3 +1,4 @@
+using System.Linq; // <--- ADICIONADO (Essencial para .Any(), .Where(), .Select())
 using OpenAI.Chat;
 using OpenAI.Embeddings;
 using Pinecone;
@@ -136,16 +137,13 @@ namespace PROJFACILITY.IA.Services
 
                 var index = _pinecone.Index(_indexName);
                 
-                // CORREÇÃO CRÍTICA AQUI:
-                // Criamos o filtro explicitamente usando o operador "$in" (contido em)
-                // Isso resolve o erro gRPC status 3
-                
+                // CORREÇÃO: Filtro $in explícito
                 var filtroUserId = new Metadata();
                 filtroUserId.Add("$in", new List<string> { userId.ToString(), "system" });
 
                 var filtroPrincipal = new Metadata();
                 filtroPrincipal.Add("tag", profissao);
-                filtroPrincipal.Add("userId", filtroUserId); // Aninha o filtro $in dentro do campo userId
+                filtroPrincipal.Add("userId", filtroUserId); 
 
                 var searchRequest = new QueryRequest
                 {
@@ -159,10 +157,11 @@ namespace PROJFACILITY.IA.Services
 
                 if (searchResponse.Matches != null && searchResponse.Matches.Any())
                 {
-                    // Filtra apenas matches com relevância decente (> 0.70)
+                    // Filtra apenas matches com relevância > 0.70
+                    // O erro CS1503 geralmente ocorre aqui se faltar os parênteses no ToString()
                     var trechos = searchResponse.Matches
                         .Where(m => m.Score > 0.70 && m.Metadata != null && m.Metadata.ContainsKey("text"))
-                        .Select(m => m.Metadata?["text"]?.ToString() ?? "")
+                        .Select(m => m.Metadata?["text"]?.ToString() ?? "") // Garante ToString()
                         .Where(t => !string.IsNullOrEmpty(t));
 
                     return string.Join("\n---\n", trechos);

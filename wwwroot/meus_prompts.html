@@ -145,63 +145,76 @@
         }
         .icon-btn:hover { color: white; }
         .icon-btn.delete:hover { color: #ff5555; }
+        .icon-btn.train:hover { color: #00ff88; } 
 
         /* Controle de Views */
         .view-section { display: none; opacity: 0; transition: opacity 0.3s; }
         .view-section.active { display: block; opacity: 1; }
 
+        /* --- ESTILOS DO MODAL --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: #161b22;
+            padding: 30px; border-radius: 20px; width: 90%; max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        .upload-area {
+            border: 2px dashed rgba(255,255,255,0.2);
+            padding: 20px; border-radius: 15px;
+            margin: 20px 0; cursor: pointer;
+            transition: 0.2s;
+            background: rgba(255,255,255,0.02);
+        }
+        .upload-area:hover { background: rgba(255,255,255,0.05); border-color: var(--primary); }
+
+        .tutorial-step {
+            text-align: left;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .step-icon {
+            width: 40px; height: 40px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; color: white;
+            flex-shrink: 0;
+        }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        /* --- INTERATIVIDADE MOBILE (App Feel) --- */
+        
+        /* --- INTERATIVIDADE MOBILE --- */
         @media (max-width: 768px) {
-            
-            /* 1. Botão "Novo" vira um FAB (Floating Action Button) */
             .action-fab {
                 position: fixed;
-                bottom: 25px;
-                right: 25px;
-                z-index: 100;
-                width: 56px;
-                height: 56px;
+                bottom: 25px; right: 25px; z-index: 100;
+                width: 56px; height: 56px;
                 border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
+                display: flex; align-items: center; justify-content: center;
                 padding: 0 !important;
                 box-shadow: 0 4px 15px rgba(124, 58, 237, 0.5);
-                font-size: 0; /* Esconde o texto "Novo" */
+                font-size: 0; 
             }
-            
-            .action-fab i {
-                font-size: 24px; /* Aumenta o ícone */
-                margin: 0 !important;
-            }
-
-            /* 2. Ajuste das Abas para Caber na Tela */
-            .studio-tabs {
-                width: 100%;
-                justify-content: center;
-                margin-bottom: 20px;
-            }
-            .tab-btn {
-                padding: 10px 20px;
-                font-size: 0.9rem;
-            }
-
-            /* 3. Cards Otimizados para Toque */
-            .item-card {
-                margin-bottom: 15px;
-                background: rgba(255, 255, 255, 0.05); /* Um pouco mais claro no mobile */
-            }
-            
-            /* Aumenta a área de toque dos botões de ação */
-            .card-actions {
-                top: 10px;
-                right: 10px;
-            }
-            .icon-btn {
-                padding: 12px; /* Área de toque maior */
-                font-size: 1.2rem;
-            }
+            .action-fab i { font-size: 24px; margin: 0 !important; }
+            .studio-tabs { width: 100%; justify-content: center; margin-bottom: 20px; }
+            .tab-btn { padding: 10px 20px; font-size: 0.9rem; }
+            .item-card { margin-bottom: 15px; background: rgba(255, 255, 255, 0.05); }
+            .card-actions { top: 10px; right: 10px; }
+            .icon-btn { padding: 12px; font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -248,11 +261,10 @@
                 <div class="studio-content">
                     
                     <div id="view-agents" class="view-section active">
-                        
                         <div id="agents-list-view">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                                 <h3 style="margin:0;">Agentes Criados</h3>
-                                <button onclick="showAgentForm()" class="action-fab" style="padding: 8px 20px; font-size: 0.9rem;">
+                                <button onclick="abrirTutorial()" class="action-fab" style="padding: 8px 20px; font-size: 0.9rem;">
                                     <i class="fas fa-plus"></i> Novo
                                 </button>
                             </div>
@@ -271,18 +283,32 @@
                             </div>
 
                             <input type="hidden" id="agentId">
-                            <input type="text" id="agentName" class="minimal-input" placeholder="Nome do Agente (Ex: Revisor de Texto)">
+                            <input type="text" id="agentName" class="minimal-input" placeholder="Nome do Agente (Ex: Revisor de Contratos, Meu Nutricionista)">
                             
-                            <label style="display:block; color:#666; margin-bottom:10px; font-size:0.9rem;">DIRETRIZES DO SISTEMA</label>
-                            <textarea id="agentPrompt" class="minimal-textarea" placeholder="Como ele deve se comportar? O que ele sabe?"></textarea>
+                            <label style="display:block; color:#666; margin-bottom:10px; font-size:0.9rem;">O QUE ELE DEVE FAZER?</label>
+                            <textarea id="agentPrompt" class="minimal-textarea" style="min-height: 150px;" placeholder="Explique como ele deve agir. Ex: 'Você é um especialista em contratos de aluguel. Responda de forma simples e sempre cite a lei do inquilinato.'"></textarea>
+
+                            <div style="margin-top: 20px;">
+                                <label style="display:block; color:#666; margin-bottom:10px; font-size:0.9rem;">BASE DE CONHECIMENTO (OPCIONAL)</label>
+                                <div class="upload-area" onclick="document.getElementById('fileInputForm').click()">
+                                    <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
+                                        <i class="fas fa-cloud-upload-alt fa-2x" style="color:#666;"></i>
+                                        <div style="text-align:left;">
+                                            <p style="margin:0; color:#fff; font-weight:bold;">Adicionar Arquivo</p>
+                                            <p style="margin:0; color:#666; font-size:0.8rem;">PDF, DOCX, TXT ou Excel para ele estudar</p>
+                                        </div>
+                                    </div>
+                                    <input type="file" id="fileInputForm" hidden onchange="mostrarNomeArquivoForm(this)">
+                                </div>
+                                <p id="fileNameDisplayForm" style="color:#00ff88; font-size:0.9rem; font-weight:bold; min-height:20px; text-align: center;"></p>
+                            </div>
 
                             <div style="margin-top:30px; text-align:right;">
                                 <button onclick="salvarAgente()" id="btnSalvarAgent" class="action-fab">
-                                    <i class="fas fa-check"></i> Salvar Agente
+                                    <i class="fas fa-check"></i> Salvar & Criar
                                 </button>
                             </div>
                         </div>
-
                     </div>
 
                     <div id="view-prompts" class="view-section">
@@ -293,8 +319,7 @@
                             </button>
                         </div>
                         
-                        <div id="promptsGrid" class="items-grid">
-                            </div>
+                        <div id="promptsGrid" class="items-grid"></div>
                     </div>
 
                 </div>
@@ -302,13 +327,77 @@
         </main>
     </div>
 
+    <div id="modalTutorialAgente" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px; text-align: left;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <i class="fas fa-magic fa-3x" style="color: var(--primary);"></i>
+                <h3 style="margin-top: 15px;">Como criar seu Agente IA?</h3>
+                <p style="color: #888;">É como contratar um funcionário digital especialista.</p>
+            </div>
+
+            <div class="tutorial-step">
+                <div class="step-icon">1</div>
+                <div>
+                    <h5 style="margin:0; color:white;">Dê um Nome e uma Função</h5>
+                    <p style="margin:0; font-size:0.9rem; color:#aaa;">Ex: "Revisor Jurídico". Diga para ele agir como um advogado sênior.</p>
+                </div>
+            </div>
+
+            <div class="tutorial-step">
+                <div class="step-icon">2</div>
+                <div>
+                    <h5 style="margin:0; color:white;">Entregue o Material</h5>
+                    <p style="margin:0; font-size:0.9rem; color:#aaa;">Suba PDFs, manuais ou planilhas. Ele vai ler tudo em segundos.</p>
+                </div>
+            </div>
+
+            <div class="tutorial-step">
+                <div class="step-icon">3</div>
+                <div>
+                    <h5 style="margin:0; color:white;">Pronto para Trabalhar</h5>
+                    <p style="margin:0; font-size:0.9rem; color:#aaa;">Salve e vá para o chat. Ele usará o que aprendeu para te ajudar.</p>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="action-fab" onclick="fecharTutorialEabrirForm()">
+                    Entendi, vamos criar! <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalTreinarAgente" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="margin-top:0;">Treinar Agente</h3>
+            <h5 id="lblNomeAgenteTreino" style="color:var(--primary); margin-bottom:20px;"></h5>
+            <p style="color:#888; font-size:0.9rem; margin-bottom:20px;">
+                Envie arquivos para aumentar o conhecimento deste agente.
+            </p>
+            <input type="hidden" id="hdnAgentNameUpload">
+            <div class="upload-area" onclick="document.getElementById('fileInputProprio').click()">
+                <i class="fas fa-cloud-upload-alt fa-3x" style="color:#666; margin-bottom:10px;"></i>
+                <p style="margin:0; color:#fff;">Clique para selecionar</p>
+                <input type="file" id="fileInputProprio" hidden onchange="mostrarNomeArquivo(this)">
+            </div>
+            <p id="fileNameDisplay" style="color:#00ff88; font-size:0.9rem; font-weight:bold; min-height:20px;"></p>
+            <div style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
+                <button class="btn-outline" onclick="fecharModalTreino()">Cancelar</button>
+                <button class="action-fab" onclick="enviarArquivoTreinamento()" id="btnEnviarTreino">
+                    <i class="fas fa-brain"></i> Treinar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="script.js"></script>
 
     <script>
-        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : ''; 
-
+        // --- CONFIGURAÇÃO DA API ---
+        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:5217'; 
+        
         // --- NAVEGAÇÃO ---
         function switchMainTab(tab, btn) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -332,6 +421,8 @@
         
         async function carregarAgentes() {
             const grid = document.getElementById('agentsGrid');
+            grid.innerHTML = '<div style="color:#666; grid-column:1/-1; text-align:center; padding:30px;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>';
+
             try {
                 const response = await fetch(`${baseUrl}/api/agents`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -352,6 +443,7 @@
                         div.className = 'item-card';
                         div.innerHTML = `
                             <div class="card-actions">
+                                <button class="icon-btn train" onclick="abrirModalTreino('${a.name}')" title="Adicionar mais arquivos"><i class="fas fa-cloud-upload-alt"></i></button>
                                 <button class="icon-btn" onclick="editarAgente(${a.id}, '${a.name}', \`${a.systemInstruction}\`)" title="Editar"><i class="fas fa-pen"></i></button>
                                 <button class="icon-btn delete" onclick="excluirAgente(${a.id})" title="Excluir"><i class="fas fa-trash"></i></button>
                             </div>
@@ -364,19 +456,36 @@
                         `;
                         grid.appendChild(div);
                     });
+                } else {
+                    grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#ff5555; padding:20px;">Erro ao carregar agentes.</div>`;
                 }
-            } catch(e) { grid.innerHTML = 'Erro ao carregar.'; }
+            } catch(e) { 
+                grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#ff5555; padding:20px;">Erro de conexão.</div>`; 
+            }
+        }
+
+        // --- NOVO: TUTORIAL E FLUXO DE CRIAÇÃO ---
+
+        function abrirTutorial() {
+            document.getElementById('modalTutorialAgente').style.display = 'flex';
+        }
+
+        function fecharTutorialEabrirForm() {
+            document.getElementById('modalTutorialAgente').style.display = 'none';
+            showAgentForm(); // Vai para o form limpo
         }
 
         function showAgentForm() {
             document.getElementById('agents-list-view').style.display = 'none';
             document.getElementById('agents-form-view').style.display = 'block';
-            document.getElementById('agents-form-view').classList.add('active'); // fade in
+            document.getElementById('agents-form-view').classList.add('active');
             
             // Limpa form para Novo
             document.getElementById('agentId').value = '';
             document.getElementById('agentName').value = '';
             document.getElementById('agentPrompt').value = '';
+            document.getElementById('fileInputForm').value = ''; // Limpa arquivo
+            document.getElementById('fileNameDisplayForm').innerText = '';
             document.getElementById('formTitle').innerText = 'Novo Agente';
         }
 
@@ -386,6 +495,7 @@
         }
 
         function editarAgente(id, name, prompt) {
+            // Edição pula o tutorial e vai direto pro form
             showAgentForm();
             document.getElementById('formTitle').innerText = 'Editar Agente';
             document.getElementById('agentId').value = id;
@@ -393,13 +503,22 @@
             document.getElementById('agentPrompt').value = prompt;
         }
 
+        function mostrarNomeArquivoForm(input) {
+            if (input.files && input.files[0]) {
+                document.getElementById('fileNameDisplayForm').innerText = "Arquivo selecionado: " + input.files[0].name;
+            }
+        }
+
         async function salvarAgente() {
             const id = document.getElementById('agentId').value;
             const name = document.getElementById('agentName').value;
             const prompt = document.getElementById('agentPrompt').value;
+            const fileInput = document.getElementById('fileInputForm');
+            
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            const creatorId = userData.id || 0;
 
-            if(!name || !prompt) return showToast('Preencha todos os campos', 'warning');
+            if(!name || !prompt) return showToast('Preencha Nome e Instruções', 'warning');
 
             const btn = document.getElementById('btnSalvarAgent');
             const originalText = btn.innerHTML;
@@ -410,155 +529,134 @@
             const url = id ? `${baseUrl}/api/agents/${id}` : `${baseUrl}/api/agents`;
 
             try {
+                // 1. SALVA O AGENTE
                 const response = await fetch(url, {
                     method: method,
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ name, prompt, creatorId: userData.id || 0 })
+                    body: JSON.stringify({ name, prompt, creatorId: creatorId })
                 });
 
                 if(response.ok) {
-                    showToast('Agente salvo!', 'success');
+                    // 2. SE TIVER ARQUIVO, FAZ UPLOAD AGORA
+                    if (fileInput.files.length > 0) {
+                        btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Enviando arquivo...';
+                        
+                        const formData = new FormData();
+                        formData.append('file', fileInput.files[0]);
+                        formData.append('profession', name); // Usa o nome do agente recém criado/editado
+                        formData.append('userId', creatorId);
+
+                        const uploadResponse = await fetch(`${baseUrl}/api/knowledge/upload`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}` },
+                            body: formData
+                        });
+
+                        if (!uploadResponse.ok) {
+                            showToast('Agente salvo, mas erro no arquivo.', 'warning');
+                        } else {
+                            showToast('Agente criado e treinado!', 'success');
+                        }
+                    } else {
+                        showToast('Agente salvo!', 'success');
+                    }
+
                     hideAgentForm();
                     carregarAgentes();
                 } else {
-                    showToast('Erro ao salvar.', 'error');
+                    const err = await response.json();
+                    showToast('Erro: ' + (err.title || 'Falha ao salvar'), 'error');
                 }
-            } catch(e) { showToast('Erro de conexão.', 'error'); }
+            } catch(e) { 
+                console.error(e);
+                showToast('Erro de conexão.', 'error'); 
+            }
             finally { btn.innerHTML = originalText; btn.disabled = false; }
         }
 
         async function excluirAgente(id) {
-            if(!confirm('Tem certeza que deseja excluir este agente?')) return;
-            
+            if(!confirm('Tem certeza? Isso apaga o agente e todo o conhecimento dele.')) return;
             try {
-                const response = await fetch(`${baseUrl}/api/agents/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if(response.ok) {
-                    showToast('Agente excluído.', 'success');
-                    carregarAgentes();
-                }
+                await fetch(`${baseUrl}/api/agents/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                showToast('Agente excluído.', 'success');
+                carregarAgentes();
             } catch(e) { showToast('Erro ao excluir.', 'error'); }
         }
 
-
         // ==========================================
-        // LÓGICA DE PROMPTS
+        // MODAL DE UPLOAD (LISTA)
         // ==========================================
-
-        async function carregarPrompts() {
-            const grid = document.getElementById('promptsGrid');
-            try {
-                const response = await fetch(`${baseUrl}/api/prompts`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (response.ok) {
-                    const prompts = await response.json();
-                    grid.innerHTML = '';
-                    
-                    if (prompts.length === 0) {
-                        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#666; padding:40px;">Biblioteca vazia.</div>`;
-                        return;
-                    }
-
-                    prompts.forEach(p => {
-                        const div = document.createElement('div');
-                        div.className = 'item-card';
-                        div.innerHTML = `
-                            <div class="card-actions">
-                                <button class="icon-btn" onclick="copiar('${p.content.replace(/'/g, "\\'")}')" title="Copiar"><i class="fas fa-copy"></i></button>
-                                <button class="icon-btn delete" onclick="excluirPrompt(${p.id})" title="Excluir"><i class="fas fa-trash"></i></button>
-                            </div>
-                            <div style="font-weight:bold; color:white; margin-bottom:5px;">${p.title}</div>
-                            <div style="color:#888; font-size:0.9rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.content}</div>
-                        `;
-                        grid.appendChild(div);
-                    });
-                }
-            } catch(e) {}
+        function abrirModalTreino(nomeAgente) {
+            document.getElementById('lblNomeAgenteTreino').innerText = nomeAgente;
+            document.getElementById('hdnAgentNameUpload').value = nomeAgente;
+            document.getElementById('fileInputProprio').value = '';
+            document.getElementById('fileNameDisplay').innerText = '';
+            document.getElementById('modalTreinarAgente').style.display = 'flex';
         }
 
-        async function novoPromptModal() {
-            const { value: formValues } = await Swal.fire({
-                title: 'Novo Prompt',
-                background: '#1a1a2e', color: '#fff',
-                html:
-                    '<input id="swal-title" class="swal2-input" placeholder="Título" style="background:#0f0f1a; color:white; border:1px solid #333;">' +
-                    '<textarea id="swal-content" class="swal2-textarea" placeholder="Conteúdo" style="background:#0f0f1a; color:white; border:1px solid #333;"></textarea>',
-                focusConfirm: false,
-                showCancelButton: true,
-                confirmButtonText: 'Salvar',
-                preConfirm: () => [document.getElementById('swal-title').value, document.getElementById('swal-content').value]
-            });
+        function fecharModalTreino() {
+            document.getElementById('modalTreinarAgente').style.display = 'none';
+        }
 
-            if (formValues) {
-                const [title, content] = formValues;
-                if(!title || !content) return;
-                try {
-                    await fetch(`${baseUrl}/api/prompts`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`},
-                        body: JSON.stringify({title, content})
-                    });
-                    showToast('Prompt salvo!', 'success');
-                    carregarPrompts();
-                } catch(e) {}
+        function mostrarNomeArquivo(input) {
+            if (input.files && input.files[0]) {
+                document.getElementById('fileNameDisplay').innerText = input.files[0].name;
             }
         }
 
-        async function excluirPrompt(id) {
-            if(!confirm('Apagar prompt?')) return;
+        async function enviarArquivoTreinamento() {
+            const fileInput = document.getElementById('fileInputProprio');
+            const nomeAgente = document.getElementById('hdnAgentNameUpload').value;
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            const userId = userData.id || 0;
+
+            if (!fileInput.files.length) return showToast("Selecione um arquivo!", 'warning');
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('profession', nomeAgente);
+            formData.append('userId', userId);
+
+            const btn = document.getElementById('btnEnviarTreino');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Enviando...';
+            btn.disabled = true;
+
             try {
-                await fetch(`${baseUrl}/api/prompts/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-                carregarPrompts();
-            } catch(e) {}
+                const response = await fetch(`${baseUrl}/api/knowledge/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                if (response.ok) {
+                    showToast(`Sucesso! Arquivo enviado.`, 'success');
+                    fecharModalTreino();
+                } else {
+                    showToast('Erro no upload.', 'error');
+                }
+            } catch (error) {
+                showToast('Erro de conexão.', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
 
-        function copiar(text) {
-            navigator.clipboard.writeText(text);
-            showToast('Copiado!', 'success');
-        }
-
-        // Init
+        // --- INICIALIZAÇÃO ---
         document.addEventListener('DOMContentLoaded', () => carregarAgentes());
-        /* --- GESTOS MOBILE (SWIPE) --- */
+        
+        // Gestos Mobile
         document.addEventListener('DOMContentLoaded', () => {
-            // Inicializa detecção de gestos na área de conteúdo
             const touchArea = document.querySelector('.studio-content');
             if (!touchArea) return;
-
-            let touchStartX = 0;
-            let touchEndX = 0;
-
-            touchArea.addEventListener('touchstart', e => {
-                touchStartX = e.changedTouches[0].screenX;
-            }, {passive: true});
-
+            let touchStartX = 0; let touchEndX = 0;
+            touchArea.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, {passive: true});
             touchArea.addEventListener('touchend', e => {
                 touchEndX = e.changedTouches[0].screenX;
-                handleSwipe();
+                if (touchEndX - touchStartX < -60) switchMainTab('prompts', document.querySelectorAll('.tab-btn')[1]);
+                if (touchEndX - touchStartX > 60) switchMainTab('agents', document.querySelectorAll('.tab-btn')[0]);
             }, {passive: true});
-
-            function handleSwipe() {
-                const swipeDistance = touchEndX - touchStartX;
-                const threshold = 60; // Mínimo de pixels para considerar swipe
-
-                // Deslizar para a ESQUERDA (<<) -> Vai para Prompts
-                if (swipeDistance < -threshold) {
-                    const btnPrompts = document.querySelectorAll('.tab-btn')[1];
-                    if (btnPrompts) switchMainTab('prompts', btnPrompts);
-                }
-                
-                // Deslizar para a DIREITA (>>) -> Vai para Agentes
-                if (swipeDistance > threshold) {
-                    const btnAgentes = document.querySelectorAll('.tab-btn')[0];
-                    if (btnAgentes) switchMainTab('agents', btnAgentes);
-                }
-            }
         });
-
     </script>
 </body>
 </html>
