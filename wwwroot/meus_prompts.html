@@ -14,6 +14,13 @@
     <link rel="stylesheet" href="style-master.css">
     
     <style>
+        /* --- AJUSTE DE CORES (Suavizando o Verde) --- */
+        :root {
+            --primary: #10b981 !important; 
+            --primary-dim: rgba(16, 185, 129, 0.1) !important;
+            --card-bg-hover: rgba(255, 255, 255, 0.08);
+        }
+
         /* ESTILO MINIMALISTA (GLASSMORPHISM) */
         
         .studio-wrapper {
@@ -52,7 +59,7 @@
         .tab-btn.active {
             background: var(--primary);
             color: white;
-            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
         /* Container de Conteúdo */
@@ -93,7 +100,7 @@
 
         /* Botões */
         .action-fab {
-            background: linear-gradient(135deg, var(--primary) 0%, #9f5afd 100%);
+            background: var(--primary);
             color: white;
             border: none;
             padding: 12px 30px;
@@ -102,8 +109,9 @@
             cursor: pointer;
             transition: 0.2s;
             display: inline-flex; align-items: center; gap: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-        .action-fab:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(124, 58, 237, 0.4); }
+        .action-fab:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
 
         .btn-outline {
             background: transparent;
@@ -115,38 +123,138 @@
         }
         .btn-outline:hover { border-color: white; color: white; }
 
-        /* Cards de Agentes e Prompts */
+        /* --- CARDS COM MENU DROPDOWN (Novo Design) --- */
         .items-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
 
         .item-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
+            background: rgba(30, 35, 45, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
             padding: 20px;
-            transition: 0.3s;
+            transition: all 0.3s ease;
             position: relative;
-        }
-        .item-card:hover {
-            background: rgba(255, 255, 255, 0.06);
-            transform: translateY(-5px);
-            border-color: rgba(124, 58, 237, 0.3);
-        }
-
-        .card-actions {
-            position: absolute; top: 15px; right: 15px;
-            display: flex; gap: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow: visible; /* Necessário para o menu dropdown sair da caixa se precisar */
         }
         
-        .icon-btn {
-            background: none; border: none; cursor: pointer; color: #666; transition: 0.2s;
+        .item-card:hover {
+            background: var(--card-bg-hover);
+            transform: translateY(-5px);
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-        .icon-btn:hover { color: white; }
-        .icon-btn.delete:hover { color: #ff5555; }
-        .icon-btn.train:hover { color: #00ff88; } 
+
+        /* Header do Card */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .agent-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .agent-icon-box {
+            width: 42px; height: 42px;
+            background: rgba(16, 185, 129, 0.15);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .agent-name {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: white;
+            line-height: 1.3;
+            word-wrap: break-word; 
+        }
+
+        /* MENU DE TRÊS PONTINHOS */
+        .card-menu-container {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .menu-trigger {
+            background: transparent;
+            border: none;
+            color: #888;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: 0.2s;
+            width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .menu-trigger:hover { background: rgba(255,255,255,0.1); color: white; }
+
+        .card-menu-dropdown {
+            display: none; /* Escondido por padrão */
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: #1e232d;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 5px;
+            z-index: 100;
+            min-width: 160px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+            flex-direction: column;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .card-menu-dropdown.show { display: flex; }
+
+        .menu-item {
+            background: transparent;
+            border: none;
+            color: #ccc;
+            padding: 12px 15px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            width: 100%;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+        .menu-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .menu-item i { width: 20px; text-align: center; }
+        
+        .menu-item.delete { color: #ff7777; }
+        .menu-item.delete:hover { background: rgba(255, 85, 85, 0.1); color: #ff5555; }
+
+        .card-desc {
+            color: #9ca3af;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.03);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
 
         /* Controle de Views */
         .view-section { display: none; opacity: 0; transition: opacity 0.3s; }
@@ -196,26 +304,74 @@
             flex-shrink: 0;
         }
 
+        /* HEADER MOBILE CENTRALIZADO */
+        .mobile-header {
+            display: none; /* Desktop */
+        }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
         /* --- INTERATIVIDADE MOBILE --- */
         @media (max-width: 768px) {
+            
+            .mobile-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 15px;
+                height: 60px;
+                background: #0d1117;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+                position: fixed; top: 0; width: 100%; z-index: 999;
+            }
+            .mobile-header .menu-trigger-mobile { width: 40px; font-size: 1.2rem; color:white; cursor:pointer;}
+            .mobile-header .mobile-title { flex: 1; text-align: center; font-weight: bold; letter-spacing: 1px; }
+            .mobile-header .header-spacer { width: 40px; } 
+
+            .studio-content {
+                padding: 20px 15px 90px 15px; 
+            }
+            .items-grid {
+                grid-template-columns: 1fr; 
+            }
+            .item-card {
+                width: 100%;
+                margin-bottom: 10px;
+                background: rgba(255, 255, 255, 0.05);
+            }
+
             .action-fab {
                 position: fixed;
-                bottom: 25px; right: 25px; z-index: 100;
-                width: 56px; height: 56px;
+                bottom: 25px; right: 25px; z-index: 90; /* Z-index menor que o menu */
+                width: 60px; height: 60px;
                 border-radius: 50%;
-                display: flex; align-items: center; justify-content: center;
-                padding: 0 !important;
-                box-shadow: 0 4px 15px rgba(124, 58, 237, 0.5);
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 0;
+                background: var(--primary);
+                box-shadow: 0 5px 20px rgba(0,0,0,0.4);
                 font-size: 0; 
             }
-            .action-fab i { font-size: 24px; margin: 0 !important; }
+            
+            .action-fab i { 
+                font-size: 1.4rem; 
+                margin: 0 !important; 
+                margin-bottom: 2px !important;
+            }
+            
+            .action-fab::after {
+                content: "Novo";
+                font-size: 0.6rem;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
             .studio-tabs { width: 100%; justify-content: center; margin-bottom: 20px; }
             .tab-btn { padding: 10px 20px; font-size: 0.9rem; }
-            .item-card { margin-bottom: 15px; background: rgba(255, 255, 255, 0.05); }
-            .card-actions { top: 10px; right: 10px; }
-            .icon-btn { padding: 12px; font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -223,9 +379,9 @@
     <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
 
     <div class="mobile-header">
-        <i class="fas fa-bars menu-trigger" onclick="toggleSidebar()"></i>
+        <i class="fas fa-bars menu-trigger-mobile" onclick="toggleSidebar()"></i>
         <div class="mobile-title">ESTÚDIO</div>
-        <div style="width: 32px;"></div>
+        <div class="header-spacer"></div>
     </div>
     <div class="overlay" onclick="toggleSidebar()"></div>
 
@@ -265,7 +421,7 @@
                         <div id="agents-list-view">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                                 <h3 style="margin:0;">Agentes Criados</h3>
-                                <button onclick="abrirTutorial()" class="action-fab" style="padding: 8px 20px; font-size: 0.9rem;">
+                                <button onclick="abrirTutorial()" class="action-fab">
                                     <i class="fas fa-plus"></i> Novo
                                 </button>
                             </div>
@@ -301,7 +457,7 @@
                                     </div>
                                     <input type="file" id="fileInputForm" hidden onchange="mostrarNomeArquivoForm(this)">
                                 </div>
-                                <p id="fileNameDisplayForm" style="color:#00ff88; font-size:0.9rem; font-weight:bold; min-height:20px; text-align: center;"></p>
+                                <p id="fileNameDisplayForm" style="color:var(--primary); font-size:0.9rem; font-weight:bold; min-height:20px; text-align: center;"></p>
                             </div>
 
                             <div style="margin-top:30px; text-align:right;">
@@ -315,7 +471,7 @@
                     <div id="view-prompts" class="view-section">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                             <h3 style="margin:0;">Biblioteca de Prompts</h3>
-                            <button onclick="novoPromptModal()" class="action-fab" style="padding: 8px 20px; font-size: 0.9rem;">
+                            <button onclick="novoPromptModal()" class="action-fab">
                                 <i class="fas fa-plus"></i> Novo
                             </button>
                         </div>
@@ -381,7 +537,7 @@
                 <p style="margin:0; color:#fff;">Clique para selecionar</p>
                 <input type="file" id="fileInputProprio" hidden onchange="mostrarNomeArquivo(this)">
             </div>
-            <p id="fileNameDisplay" style="color:#00ff88; font-size:0.9rem; font-weight:bold; min-height:20px;"></p>
+            <p id="fileNameDisplay" style="color:var(--primary); font-size:0.9rem; font-weight:bold; min-height:20px;"></p>
             <div style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
                 <button class="btn-outline" onclick="fecharModalTreino()">Cancelar</button>
                 <button class="action-fab" onclick="enviarArquivoTreinamento()" id="btnEnviarTreino">
@@ -442,17 +598,35 @@
                     meus.forEach(a => {
                         const div = document.createElement('div');
                         div.className = 'item-card';
+                        
+                        // ESTRUTURA COM MENU DE 3 PONTINHOS
                         div.innerHTML = `
-                            <div class="card-actions">
-                                <button class="icon-btn train" onclick="abrirModalTreino('${a.name}')" title="Adicionar mais arquivos"><i class="fas fa-cloud-upload-alt"></i></button>
-                                <button class="icon-btn" onclick="editarAgente(${a.id}, '${a.name}', \`${a.systemInstruction}\`)" title="Editar"><i class="fas fa-pen"></i></button>
-                                <button class="icon-btn delete" onclick="excluirAgente(${a.id})" title="Excluir"><i class="fas fa-trash"></i></button>
+                            <div class="card-header">
+                                <div class="agent-info">
+                                    <div class="agent-icon-box">
+                                        <i class="fas fa-robot"></i>
+                                    </div>
+                                    <div class="agent-name">${a.name}</div>
+                                </div>
+                                <div class="card-menu-container">
+                                    <button class="menu-trigger" onclick="toggleMenu(event, 'menu-${a.id}')">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div id="menu-${a.id}" class="card-menu-dropdown">
+                                        <button class="menu-item" onclick="abrirModalTreino('${a.name}')">
+                                            <i class="fas fa-cloud-upload-alt"></i> Subir Arquivo
+                                        </button>
+                                        <button class="menu-item" onclick="editarAgente(${a.id}, '${a.name}', \`${a.systemInstruction || ''}\`)">
+                                            <i class="fas fa-pen"></i> Editar
+                                        </button>
+                                        <button class="menu-item delete" onclick="excluirAgente(${a.id})">
+                                            <i class="fas fa-trash"></i> Lixeira
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <div style="font-weight:bold; font-size:1.1rem; color:white; margin-bottom:5px;">
-                                <i class="fas fa-robot" style="color:var(--primary); margin-right:5px;"></i> ${a.name}
-                            </div>
-                            <div style="color:#888; font-size:0.9rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                                ${a.systemInstruction || 'Sem descrição'}
+                            <div class="card-desc">
+                                ${a.systemInstruction || 'Sem descrição definida para este agente.'}
                             </div>
                         `;
                         grid.appendChild(div);
@@ -465,7 +639,30 @@
             }
         }
 
-        // --- NOVO: TUTORIAL E FLUXO DE CRIAÇÃO ---
+        // --- LÓGICA DO MENU DROPDOWN ---
+        function toggleMenu(event, menuId) {
+            event.stopPropagation(); // Impede que o clique feche imediatamente
+            
+            // Fecha outros abertos
+            document.querySelectorAll('.card-menu-dropdown').forEach(m => {
+                if(m.id !== menuId) m.classList.remove('show');
+            });
+
+            // Alterna o atual
+            const menu = document.getElementById(menuId);
+            if(menu) menu.classList.toggle('show');
+        }
+
+        // Fecha menus ao clicar fora
+        window.onclick = function(event) {
+            if (!event.target.matches('.menu-trigger') && !event.target.closest('.menu-trigger')) {
+                document.querySelectorAll('.card-menu-dropdown').forEach(m => {
+                    m.classList.remove('show');
+                });
+            }
+        }
+
+        // --- FUNÇÕES DE FORMULÁRIO E UPLOAD (Mantidas) ---
 
         function abrirTutorial() {
             document.getElementById('modalTutorialAgente').style.display = 'flex';
@@ -473,7 +670,7 @@
 
         function fecharTutorialEabrirForm() {
             document.getElementById('modalTutorialAgente').style.display = 'none';
-            showAgentForm(); // Vai para o form limpo
+            showAgentForm(); 
         }
 
         function showAgentForm() {
@@ -481,11 +678,10 @@
             document.getElementById('agents-form-view').style.display = 'block';
             document.getElementById('agents-form-view').classList.add('active');
             
-            // Limpa form para Novo
             document.getElementById('agentId').value = '';
             document.getElementById('agentName').value = '';
             document.getElementById('agentPrompt').value = '';
-            document.getElementById('fileInputForm').value = ''; // Limpa arquivo
+            document.getElementById('fileInputForm').value = ''; 
             document.getElementById('fileNameDisplayForm').innerText = '';
             document.getElementById('formTitle').innerText = 'Novo Agente';
         }
@@ -496,7 +692,6 @@
         }
 
         function editarAgente(id, name, prompt) {
-            // Edição pula o tutorial e vai direto pro form
             showAgentForm();
             document.getElementById('formTitle').innerText = 'Editar Agente';
             document.getElementById('agentId').value = id;
@@ -530,7 +725,6 @@
             const url = id ? `${baseUrl}/api/agents/${id}` : `${baseUrl}/api/agents`;
 
             try {
-                // 1. SALVA O AGENTE
                 const response = await fetch(url, {
                     method: method,
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -538,13 +732,12 @@
                 });
 
                 if(response.ok) {
-                    // 2. SE TIVER ARQUIVO, FAZ UPLOAD AGORA
                     if (fileInput.files.length > 0) {
                         btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Enviando arquivo...';
                         
                         const formData = new FormData();
                         formData.append('file', fileInput.files[0]);
-                        formData.append('profession', name); // Usa o nome do agente recém criado/editado
+                        formData.append('profession', name); 
                         formData.append('userId', creatorId);
 
                         const uploadResponse = await fetch(`${baseUrl}/api/knowledge/upload`, {
