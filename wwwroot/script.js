@@ -188,3 +188,21 @@ window.showToast = function(msg, type = 'success') {
         alert(msg); 
     }
 }
+function getCategoryColor(area) {
+    // Normaliza para garantir (remove espaços e poe minusculo)
+    const key = (area || 'outros').toLowerCase().trim();
+
+    const colors = {
+        'tecnologia': '#00F3FF', // Ciano Neon
+        'juridico': '#FFD700',   // Dourado
+        'saude': '#00FF88',      // Verde Neon
+        'engenharia': '#FF9900', // Laranja
+        'criativos': '#FF3366',  // Rosa Neon
+        'negocios': '#0099FF',   // Azul
+        'educacao': '#9933FF',   // Roxo
+        'operacional': '#888888',// Cinza
+        'outros': '#FFFFFF'      // Branco
+    };
+
+    return colors[key] || colors['outros'];
+}

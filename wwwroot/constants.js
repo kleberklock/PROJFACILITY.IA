@@ -120,3 +120,16 @@ const AGENTES_DB = [
     { name: "Bombeiro Civil", icon: "fa-fire-extinguisher", area: "operacional" }, 
     { name: "Síndico Profissional", icon: "fa-building-user", area: "operacional" }
 ];
+function getCategoryColor(specialty) {
+    const map = {
+        'Tecnologia': '#00F3FF', // Ciano
+        'Saúde': '#00ff88',      // Verde
+        'Jurídico': '#ffcc00',   // Amarelo/Dourado
+        'Marketing': '#ff3366',  // Rosa/Vermelho
+        'Finanças': '#0099ff',   // Azul
+        'Engenharia': '#ff9900', // Laranja
+        'Geral': '#888888',
+        'Personalizado': '#aa00ff' // Roxo
+    };
+    return map[specialty] || '#ffffff';
+}
