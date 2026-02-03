@@ -3,15 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/jpeg" href="/favicon.png">
     <title>Criar Novo Agente | Facility.IA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style-master.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="config.js"></script>
+    
     <script>
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
     </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style-master.css">
+
+    <style>
+        .upload-area {
+            border: 2px dashed #444; padding: 20px; text-align: center; border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05); cursor: pointer; transition: 0.3s;
+        }
+        .upload-area:hover { border-color: #00F3FF; background: rgba(0, 243, 255, 0.05); }
+        
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .icon-option {
+            width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center;
+            background: #2a2a40; border-radius: 8px;
+            cursor: pointer; color: #888;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .icon-option:hover { background: #3a3a50; color: white; }
+        
+        .icon-option.selected {
+            background: rgba(0, 243, 255, 0.2);
+            border-color: #00F3FF;
+            color: #00F3FF;
+            transform: scale(1.1);
+        }
+
+        .icon-option i { font-size: 1.2rem; }
+        .icon-grid::-webkit-scrollbar { width: 5px; }
+        .icon-grid::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+    </style>
 </head>
 <body>
     <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
@@ -23,84 +67,138 @@
         </nav>
 
         <main class="content" style="display: flex; justify-content: center; align-items: center; min-height: 90vh;">
-            <div class="auth-card" style="width: 100%; max-width: 600px;">
-                <h2 style="color: white; margin-bottom: 20px; text-align: center;"><i class="fas fa-robot"></i> Novo Agente</h2>
-                <p style="color: #888; text-align: center; margin-bottom: 30px;">Crie um assistente personalizado para suas necessidades específicas.</p>
+            <div class="auth-card" style="width: 100%; max-width: 700px;">
+                <h2 style="color: white; margin-bottom: 20px; text-align: center;">
+                    <i id="previewIcon" class="fas fa-robot" style="color: #00F3FF;"></i> Novo Agente
+                </h2>
+
+                <label style="color: #ccc; display: block; margin-bottom: 8px;">Escolha um Ícone</label>
+                <div class="icon-grid" id="iconContainer"></div>
+                <input type="hidden" id="selectedIcon" value="fa-robot">
 
                 <div class="form-group" style="margin-bottom: 20px;">
                     <label style="color: #ccc; display: block; margin-bottom: 8px;">Nome do Agente</label>
-                    <input type="text" id="agentName" class="auth-input" placeholder="Ex: Especialista em Python, Corretor de Texto..." style="width: 100%;">
+                    <input type="text" id="agentName" class="auth-input" placeholder="Ex: Advogado Senior" style="width: 100%;">
                 </div>
 
                 <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="color: #ccc; display: block; margin-bottom: 8px;">Instrução do Sistema (Prompt)</label>
-                    <textarea id="agentPrompt" class="auth-input" rows="6" placeholder="Ex: Você é um especialista em Python sênior. Responda sempre com exemplos de código limpo..." style="width: 100%; height: auto; padding: 15px;"></textarea>
-                    <small style="color: #666; font-size: 0.8rem;">Dica: Quanto mais detalhada a instrução, melhor o agente se comportará.</small>
+                    <label style="color: #ccc; display: block; margin-bottom: 8px;">Instrução do Sistema</label>
+                    <textarea id="agentPrompt" class="auth-input" rows="4" placeholder="Como o agente deve se comportar..." style="width: 100%; padding: 15px;"></textarea>
                 </div>
 
-                <button onclick="criarAgente()" id="btnCriar" class="btn-primary" style="width: 100%; margin-top: 10px;">
+                <div class="form-group" style="margin-bottom: 30px;">
+                    <label style="color: #ccc; display: block; margin-bottom: 8px;">Base de Conhecimento (Opcional)</label>
+                    <div class="upload-area" onclick="document.getElementById('agentFile').click()">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: #4CAF50;"></i>
+                        <span style="color: #bbb; margin-left:10px">Selecionar PDF, DOCX ou TXT</span>
+                        <input type="file" id="agentFile" accept=".pdf,.docx,.txt" style="display: none;" onchange="mostrarNomeArquivo()">
+                        <div id="fileNameDisplay" style="color: #00F3FF; font-size: 0.8rem; margin-top: 5px;"></div>
+                    </div>
+                </div>
+
+                <button onclick="criarEtreinarAgente()" id="btnCriar" class="btn-primary" style="width: 100%;">
                     <i class="fas fa-plus-circle"></i> Criar Agente
                 </button>
             </div>
         </main>
     </div>
 
-    <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="script.js"></script>
     
     <script>
-        async function criarAgente() {
+        // Ícones disponíveis
+        const icons = [
+            "fa-robot", "fa-user-tie", "fa-briefcase", "fa-laptop-code", "fa-gavel", 
+            "fa-stethoscope", "fa-calculator", "fa-bullhorn", "fa-chart-line", "fa-lightbulb",
+            "fa-pen-nib", "fa-tools", "fa-hard-hat", "fa-truck", "fa-ship", 
+            "fa-plane", "fa-camera", "fa-music", "fa-gamepad", "fa-dumbbell",
+            "fa-utensils", "fa-book", "fa-graduation-cap", "fa-microscope", "fa-flask",
+            "fa-seedling", "fa-paw", "fa-balance-scale", "fa-building", "fa-home"
+        ];
+
+        // Gerar Grade
+        const container = document.getElementById('iconContainer');
+        icons.forEach(icon => {
+            const div = document.createElement('div');
+            div.className = `icon-option ${icon === 'fa-robot' ? 'selected' : ''}`;
+            div.innerHTML = `<i class="fas ${icon}"></i>`;
+            div.onclick = () => selecionarIcone(div, icon);
+            container.appendChild(div);
+        });
+
+        function selecionarIcone(element, iconClass) {
+            document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('selectedIcon').value = iconClass;
+            document.getElementById('previewIcon').className = `fas ${iconClass}`;
+        }
+
+        function mostrarNomeArquivo() {
+            const input = document.getElementById('agentFile');
+            if(input.files[0]) document.getElementById('fileNameDisplay').innerText = input.files[0].name;
+        }
+
+        // --- LÓGICA DE CRIAÇÃO CORRIGIDA ---
+        async function criarEtreinarAgente() {
             const name = document.getElementById('agentName').value;
             const prompt = document.getElementById('agentPrompt').value;
+            const icon = document.getElementById('selectedIcon').value;
+            const file = document.getElementById('agentFile').files[0];
             const btn = document.getElementById('btnCriar');
 
+            // Define a URL correta usando a variável do config.js
+            // Tenta usar BASE_URL, se não existir, tenta CONFIG.API_URL
+            const apiUrl = (typeof BASE_URL !== 'undefined') ? BASE_URL : 
+                           (typeof CONFIG !== 'undefined' ? CONFIG.API_URL : 'http://localhost:5217');
+
             if (!name || !prompt) {
-                showToast('Preencha todos os campos.', 'warning');
+                Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Preencha Nome e Instrução.' });
                 return;
             }
 
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Criando...';
 
             try {
-                // Recupera ID do usuário (embora o backend pegue do token, a model pode exigir int)
-                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-                const creatorId = userData.id || 0; 
-
-                // Usa URL do config.js
-                const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : ''; 
-
-                const response = await fetch(`${baseUrl}/api/agents`, {
+                // 1. Criar Agente
+                const res = await fetch(`${apiUrl}/api/agents`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        name: name,
-                        prompt: prompt,
-                        creatorId: creatorId // Enviamos para compatibilidade com o modelo
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ 
+                        name: name, 
+                        prompt: prompt, 
+                        creatorId: userData.id,
+                        icon: icon
                     })
                 });
 
-                if (response.ok) {
-                    Swal.fire({
-                        title: 'Sucesso!',
-                        text: 'Agente criado com sucesso.',
-                        icon: 'success',
-                        background: '#1a1a2e',
-                        color: '#fff'
-                    }).then(() => {
-                        window.location.href = 'chatcomIA.html'; // Redireciona para o chat
+                if (!res.ok) throw new Error(await res.text());
+
+                // 2. Upload Arquivo (se houver)
+                if (file) {
+                    btn.innerHTML = '<i class="fas fa-cog fa-spin"></i> Treinando...';
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('profession', name);
+                    formData.append('userId', userData.id);
+
+                    const resUpload = await fetch(`${apiUrl}/api/knowledge/upload`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        body: formData
                     });
-                } else {
-                    const err = await response.text();
-                    showToast(err || 'Erro ao criar agente.', 'error');
+                    
+                    if(!resUpload.ok) throw new Error("Erro no upload do arquivo.");
                 }
+
+                Swal.fire({ icon: 'success', title: 'Sucesso!', text: 'Agente criado!' })
+                    .then(() => window.location.href = 'chatcomIA.html');
+
             } catch (error) {
-                console.error(error);
-                showToast('Erro de conexão.', 'error');
+                Swal.fire({ icon: 'error', title: 'Erro', text: error.message });
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-plus-circle"></i> Criar Agente';

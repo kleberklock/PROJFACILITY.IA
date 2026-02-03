@@ -19,7 +19,6 @@ namespace PROJFACILITY.IA.Controllers
             _context = context;
         }
 
-        // Método auxiliar seguro para pegar o ID do Usuário
         private int GetUserId()
         {
             var idClaim = User.FindFirst(ClaimTypes.NameIdentifier) ?? User.FindFirst("id") ?? User.FindFirst(ClaimTypes.Name);
@@ -36,15 +35,15 @@ namespace PROJFACILITY.IA.Controllers
         {
             int currentUserId = GetUserId();
 
-            // Se não veio userId na query, usa o do token
             if (userId == null || userId == 0)
             {
                 userId = currentUserId;
             }
 
-            // Retorna agentes PÚBLICOS (Null) + Agentes do Usuário
+            // ALTERAÇÃO: Agora retorna também se IsPublic for true
+            // Isso faz com que agentes criados pelo Admin apareçam para todos
             return await _context.Agents
-                .Where(a => a.UserId == null || (userId.HasValue && a.UserId == userId))
+                .Where(a => a.IsPublic || a.UserId == null || (userId.HasValue && a.UserId == userId))
                 .OrderByDescending(a => a.Id) 
                 .ToListAsync();
         }
@@ -55,11 +54,15 @@ namespace PROJFACILITY.IA.Controllers
         {
             int userId = GetUserId();
             
-            // Fallback: se o token falhar, tenta usar o enviado pelo front (menos seguro, mas funcional)
             if (userId == 0 && request.CreatorId > 0) 
                 userId = request.CreatorId;
 
             if (userId == 0) return Unauthorized("Usuário inválido.");
+
+            // VERIFICAÇÃO DE ADMIN
+            // Se o usuário tiver a role 'admin', o agente se torna Público automaticamente
+            var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
+            bool isAdmin = roleClaim != null && roleClaim.Value == "admin";
 
             var agent = new Agent
             {
@@ -67,13 +70,16 @@ namespace PROJFACILITY.IA.Controllers
                 Specialty = "Personalizado",
                 SystemInstruction = request.Prompt,
                 UserId = userId,
-                IsPublic = false,
-                Icon = "fa-robot"
+                // Se for Admin, é Público (visível para todos). Se não, é Privado.
+                IsPublic = isAdmin, 
+                // Usa o ícone enviado pelo front, ou o padrão
+                Icon = !string.IsNullOrEmpty(request.Icon) ? request.Icon : "fa-robot"
             };
 
             _context.Agents.Add(agent);
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Criado com sucesso!", id = agent.Id });
+            
+            return Ok(new { message = "Criado com sucesso!", id = agent.Id, isPublic = agent.IsPublic });
         }
 
         // EDITAR
@@ -85,10 +91,16 @@ namespace PROJFACILITY.IA.Controllers
 
             var agent = await _context.Agents.FindAsync(id);
             if (agent == null) return NotFound();
-            if (agent.UserId != userId) return Forbid(); // Só o dono edita
+            
+            // Permite edição se for o dono OU se for admin
+            var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
+            bool isAdmin = roleClaim != null && roleClaim.Value == "admin";
+
+            if (agent.UserId != userId && !isAdmin) return Forbid();
 
             agent.Name = request.Name;
             agent.SystemInstruction = request.Prompt;
+            if(!string.IsNullOrEmpty(request.Icon)) agent.Icon = request.Icon;
             
             await _context.SaveChangesAsync();
             return Ok(new { message = "Atualizado!" });
@@ -103,7 +115,11 @@ namespace PROJFACILITY.IA.Controllers
 
             var agent = await _context.Agents.FindAsync(id);
             if (agent == null) return NotFound();
-            if (agent.UserId != userId) return Forbid();
+
+            var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
+            bool isAdmin = roleClaim != null && roleClaim.Value == "admin";
+
+            if (agent.UserId != userId && !isAdmin) return Forbid();
 
             _context.Agents.Remove(agent);
             await _context.SaveChangesAsync();
@@ -115,6 +131,7 @@ namespace PROJFACILITY.IA.Controllers
             public string Name { get; set; } = string.Empty;
             public string Prompt { get; set; } = string.Empty;
             public int CreatorId { get; set; }
+            public string Icon { get; set; } = "fa-robot"; // Adicionado suporte a ícone
         }
     }
 }
