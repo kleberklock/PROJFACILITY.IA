@@ -32,53 +32,53 @@ namespace PROJFACILITY.IA.Controllers
 
         // --- FUNÇÃO INTELIGENTE DE CATEGORIZAÇÃO ---
         private string InferirEspecialidade(string nome, string prompt)
-            {
-                var texto = (nome + " " + prompt).ToLower();
+        {
+            var texto = (nome + " " + prompt).ToLower();
 
-                // TECNOLOGIA
-                if (texto.Contains("dev") || texto.Contains("programad") || texto.Contains("software") || 
-                    texto.Contains("c#") || texto.Contains("python") || texto.Contains("java") || 
-                    texto.Contains("ti ") || texto.Contains("codigo") || texto.Contains("fullstack") || 
-                    texto.Contains("dados") || texto.Contains("react") || texto.Contains("sql"))
-                    return "tecnologia"; // Minúsculo
+            // TECNOLOGIA
+            if (texto.Contains("dev") || texto.Contains("programad") || texto.Contains("software") || 
+                texto.Contains("c#") || texto.Contains("python") || texto.Contains("java") || 
+                texto.Contains("ti ") || texto.Contains("codigo") || texto.Contains("fullstack") || 
+                texto.Contains("dados") || texto.Contains("react") || texto.Contains("sql"))
+                return "tecnologia"; 
 
-                // SAÚDE (Medicina, Psicologia, etc)
-                if (texto.Contains("medic") || texto.Contains("saude") || texto.Contains("enferm") || 
-                    texto.Contains("nutri") || texto.Contains("psico") || texto.Contains("terapia") || 
-                    texto.Contains("fisio") || texto.Contains("clinica"))
-                    return "saude"; // Sem acento
+            // SAÚDE (Medicina, Psicologia, etc)
+            if (texto.Contains("medic") || texto.Contains("saude") || texto.Contains("enferm") || 
+                texto.Contains("nutri") || texto.Contains("psico") || texto.Contains("terapia") || 
+                texto.Contains("fisio") || texto.Contains("clinica"))
+                return "saude"; 
 
-                // JURÍDICO
-                if (texto.Contains("advoga") || texto.Contains("jurid") || texto.Contains("lei") || 
-                    texto.Contains("direito") || texto.Contains("contrato") || texto.Contains("penal") || 
-                    texto.Contains("civil") || texto.Contains("oab"))
-                    return "juridico"; // Sem acento
+            // JURÍDICO
+            if (texto.Contains("advoga") || texto.Contains("jurid") || texto.Contains("lei") || 
+                texto.Contains("direito") || texto.Contains("contrato") || texto.Contains("penal") || 
+                texto.Contains("civil") || texto.Contains("oab"))
+                return "juridico"; 
 
-                // CRIATIVOS (Marketing, Design, Copy)
-                if (texto.Contains("market") || texto.Contains("design") || texto.Contains("copy") || 
-                    texto.Contains("video") || texto.Contains("social") || texto.Contains("insta") || 
-                    texto.Contains("trafego") || texto.Contains("arte"))
-                    return "criativos";
+            // CRIATIVOS (Marketing, Design, Copy)
+            if (texto.Contains("market") || texto.Contains("design") || texto.Contains("copy") || 
+                texto.Contains("video") || texto.Contains("social") || texto.Contains("insta") || 
+                texto.Contains("trafego") || texto.Contains("arte"))
+                return "criativos";
 
-                // ENGENHARIA & OBRAS
-                if (texto.Contains("engenh") || texto.Contains("obra") || texto.Contains("civil") || 
-                    texto.Contains("eletric") || texto.Contains("arquitet") || texto.Contains("projeto"))
-                    return "engenharia";
+            // ENGENHARIA & OBRAS
+            if (texto.Contains("engenh") || texto.Contains("obra") || texto.Contains("civil") || 
+                texto.Contains("eletric") || texto.Contains("arquitet") || texto.Contains("projeto"))
+                return "engenharia";
 
-                // NEGÓCIOS (Finanças, Contabilidade, Gestão)
-                if (texto.Contains("financ") || texto.Contains("contabil") || texto.Contains("invest") || 
-                    texto.Contains("econom") || texto.Contains("impost") || texto.Contains("gestao") ||
-                    texto.Contains("lider") || texto.Contains("adm"))
-                    return "negocios";
+            // NEGÓCIOS (Finanças, Contabilidade, Gestão)
+            if (texto.Contains("financ") || texto.Contains("contabil") || texto.Contains("invest") || 
+                texto.Contains("econom") || texto.Contains("impost") || texto.Contains("gestao") ||
+                texto.Contains("lider") || texto.Contains("adm"))
+                return "negocios";
 
-                // EDUCAÇÃO
-                if (texto.Contains("profess") || texto.Contains("aulas") || texto.Contains("ensino") || 
-                    texto.Contains("aluno") || texto.Contains("pedagog") || texto.Contains("curso"))
-                    return "educacao";
+            // EDUCAÇÃO
+            if (texto.Contains("profess") || texto.Contains("aulas") || texto.Contains("ensino") || 
+                texto.Contains("aluno") || texto.Contains("pedagog") || texto.Contains("curso"))
+                return "educacao";
 
-                // Padrão
-                return "outros"; 
-            }
+            // Padrão
+            return "outros"; 
+        }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Agent>>> GetAgents([FromQuery] int? userId)
@@ -90,7 +90,7 @@ namespace PROJFACILITY.IA.Controllers
                 userId = currentUserId;
             }
 
-            // Retorna agentes públicos OU agentes do usuário atual
+            // Retorna agentes públicos (UserId == null) OU agentes do utilizador atual
             return await _context.Agents
                 .Where(a => a.IsPublic || a.UserId == null || (userId.HasValue && a.UserId == userId))
                 .OrderByDescending(a => a.Id) 
@@ -117,22 +117,23 @@ namespace PROJFACILITY.IA.Controllers
             
             if (isAdmin)
             {
-                // Se for admin, usa a IA interna para definir a categoria correta (Tecnologia, Saúde, etc)
+                // Se for admin, usa a IA interna para definir a categoria correta
                 especialidadeAutomatica = InferirEspecialidade(request.Name, request.Prompt);
             }
             else
             {
-                // Se for usuário comum, continua como Personalizado
+                // Se for utilizador comum, continua como Personalizado
                 especialidadeAutomatica = "Personalizado";
             }
 
             var agent = new Agent
             {
                 Name = request.Name,
-                Specialty = especialidadeAutomatica, // AQUI ESTÁ O FIX
+                Specialty = especialidadeAutomatica,
                 SystemInstruction = request.Prompt,
-                UserId = userId,
-                IsPublic = isAdmin, // Se for admin, já nasce público (para todos verem)
+                // LÓGICA GLOBAL: Se admin, UserId é nulo (global). Se user, usa o ID dele.
+                UserId = isAdmin ? (int?)null : userId, 
+                IsPublic = isAdmin, // Se for admin, já nasce público
                 Icon = !string.IsNullOrEmpty(request.Icon) ? request.Icon : "fa-robot"
             };
 
@@ -154,13 +155,14 @@ namespace PROJFACILITY.IA.Controllers
             var agent = await _context.Agents.FindAsync(id);
             if (agent == null) return NotFound();
 
+            // Permite edição se for o dono OU se for admin
             if (agent.UserId != userId && !isAdmin) return Forbid();
 
             agent.Name = request.Name;
             agent.SystemInstruction = request.Prompt;
             if(!string.IsNullOrEmpty(request.Icon)) agent.Icon = request.Icon;
             
-            // Se admin editar, pode re-inferir a categoria ou manter
+            // Se admin editar, pode re-inferir a categoria
             if (isAdmin) {
                  agent.Specialty = InferirEspecialidade(request.Name, request.Prompt);
             }
