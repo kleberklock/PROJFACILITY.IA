@@ -11,11 +11,20 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
         
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const role = payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || payload["role"];
-            if (role !== 'admin') window.location.href = 'dashboard.html';
-        } catch (e) { window.location.href = 'login.html'; }
+        // No admin.html, dentro da tag <script> de verificação inicial
+try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    // Verifica os dois formatos possíveis de Claim de Role
+    const role = payload["role"] || 
+                 payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+                 
+    if (role !== 'admin') {
+        console.error("Acesso negado: Role de administrador não encontrada.");
+        window.location.href = 'dashboard.html';
+    }
+} catch (e) { 
+    window.location.href = 'login.html'; 
+}
     </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -126,68 +135,37 @@
     <script>
         // Mantenha a configuração da sua porta aqui
         // Se estiver abrindo o arquivo direto, use 'https://localhost:SUA_PORTA'
-        const BASE_URL = ''; 
+        
         const API_URL = `${BASE_URL}/api/admin`;
 
         async function loadData() {
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>';
+    const tbody = document.getElementById('usersTableBody');
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>';
 
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) throw new Error("Token não encontrado.");
-
-                const response = await fetch(`${API_URL}/users`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) throw new Error("Erro ao buscar usuários.");
-
-                const users = await response.json();
-                tbody.innerHTML = "";
-                
-                if (!users || users.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum usuário.</td></tr>';
-                    return;
-                }
-
-                users.forEach(u => {
-                    // Tratamento de segurança para campos
-                    const id = u.id || u.Id;
-                    const name = u.name || u.Name || 'Sem nome';
-                    const email = u.email || u.Email || '---';
-                    const plan = u.plan || u.Plan || 'Free';
-                    const cycle = u.subscriptionCycle || u.SubscriptionCycle || 'Mensal';
-                    const tokens = (u.usedTokensCurrentMonth ?? u.UsedTokensCurrentMonth ?? 0).toLocaleString();
-
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${name}</td>
-                        <td>${email}</td>
-                        <td><span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:4px; font-size:0.8rem;">${plan}</span></td>
-                        <td>${tokens}</td>
-                        <td>
-                            <button onclick="openModal(${id}, '${email}', '${plan}', '${cycle}')" 
-                                    style="background:none; border:none; color:#ffcc00; cursor:pointer; margin-right:10px;" 
-                                    title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            
-                            <button onclick="deleteUser(${id}, '${email}')" 
-                                    style="background:none; border:none; color:#ff5555; cursor:pointer;" 
-                                    title="Excluir Permanentemente">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-
-            } catch (error) {
-                console.error(error);
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ff5555;">Erro: ${error.message}</td></tr>`;
+    try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/users`, {
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
+        });
+
+        if (response.status === 401 || response.status === 403) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#ff5555;">Acesso Negado. Sua sessão expirou ou você não é admin.</td></tr>';
+            setTimeout(() => window.location.href = 'login.html', 3000);
+            return;
         }
+
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+
+        const users = await response.json();
+        // ... (resto da lógica de população da tabela)
+    } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ff5555;">Falha na conexão com o servidor.</td></tr>`;
+    }
+}
 
         // ==========================================
         // NOVA FUNÇÃO: DELETAR USUÁRIO

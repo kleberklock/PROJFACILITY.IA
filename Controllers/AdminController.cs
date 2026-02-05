@@ -12,7 +12,7 @@ namespace PROJFACILITY.IA.Controllers
 {
     [Route("api/admin")]
     [ApiController]
-    // [Authorize(Roles = "admin")] // Descomente em produção para segurança
+    [Authorize(Roles = "admin")] // Descomente em produção para segurança
     public class AdminController : ControllerBase
     {
         private readonly AppDbContext _context;

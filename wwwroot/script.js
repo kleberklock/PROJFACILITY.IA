@@ -114,7 +114,7 @@ async function verificarLogin() {
     // Se tem token, busca dados atualizados (Foto, Nome)
     try {
         // Assume que API_BASE_URL está no config.js ou define padrão
-        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:5000';
+        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:5217';
         
         const response = await fetch(`${baseUrl}/api/user/profile`, {
             headers: { 'Authorization': `Bearer ${token}` }
