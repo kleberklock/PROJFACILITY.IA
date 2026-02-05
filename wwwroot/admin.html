@@ -11,20 +11,24 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
         
-        // No admin.html, dentro da tag <script> de verificação inicial
-try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    // Verifica os dois formatos possíveis de Claim de Role
-    const role = payload["role"] || 
-                 payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-                 
-    if (role !== 'admin') {
-        console.error("Acesso negado: Role de administrador não encontrada.");
-        window.location.href = 'dashboard.html';
-    }
-} catch (e) { 
-    window.location.href = 'login.html'; 
-}
+        // Verificação de segurança (JWT Decode)
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(window.atob(base64));
+            
+            // Verifica os dois formatos possíveis de Claim de Role
+            const role = payload["role"] || 
+                         payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+                         
+            if (role !== 'admin') {
+                console.error("Acesso negado: Role de administrador não encontrada.", role);
+                window.location.href = 'dashboard.html';
+            }
+        } catch (e) { 
+            console.error("Erro ao validar token:", e);
+            window.location.href = 'login.html'; 
+        }
     </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -88,7 +92,7 @@ try {
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
-                            <tr><td colspan="5" style="text-align:center; padding: 30px;">Carregando dados...</td></tr>
+                            <tr><td colspan="5" style="text-align:center; padding: 30px;">Iniciando sistema...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -131,49 +135,97 @@ try {
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="script.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
-        // Mantenha a configuração da sua porta aqui
-        // Se estiver abrindo o arquivo direto, use 'https://localhost:SUA_PORTA'
-        
-        const API_URL = `${BASE_URL}/api/admin`;
+        // --- DEFINIÇÃO SEGURA DA URL DA API ---
+        let API_URL = "http://localhost:5217/api/admin"; // Valor padrão (Fallback)
 
-        async function loadData() {
-    const tbody = document.getElementById('usersTableBody');
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>';
-
-    try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_URL}/users`, {
-            headers: { 
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.status === 401 || response.status === 403) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#ff5555;">Acesso Negado. Sua sessão expirou ou você não é admin.</td></tr>';
-            setTimeout(() => window.location.href = 'login.html', 3000);
-            return;
+        if (typeof BASE_URL !== 'undefined') {
+            API_URL = `${BASE_URL}/api/admin`;
+            console.log("Configuração carregada do config.js:", API_URL);
+        } else {
+            console.warn("AVISO: config.js não carregou ou BASE_URL não definida. Usando fallback localhost.");
         }
 
-        if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+        // --- FUNÇÃO PRINCIPAL DE CARREGAMENTO ---
+        async function loadData() {
+            const tbody = document.getElementById('usersTableBody');
+            if (!tbody) return;
 
-        const users = await response.json();
-        // ... (resto da lógica de população da tabela)
-    } catch (error) {
-        console.error("Erro ao carregar dados:", error);
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ff5555;">Falha na conexão com o servidor.</td></tr>`;
-    }
-}
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Conectando ao servidor...</td></tr>';
 
-        // ==========================================
-        // NOVA FUNÇÃO: DELETAR USUÁRIO
-        // ==========================================
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) throw new Error("Token não encontrado");
+
+                console.log("Buscando usuários em:", `${API_URL}/users`);
+                
+                const response = await fetch(`${API_URL}/users`, {
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.status === 401 || response.status === 403) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#ff5555;">Acesso Negado. (Erro 401/403)</td></tr>';
+                    // Opcional: Redirecionar
+                    // window.location.href = 'login.html'; 
+                    return;
+                }
+
+                if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+
+                const users = await response.json();
+                tbody.innerHTML = "";
+                
+                if (!users || users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum usuário encontrado.</td></tr>';
+                    return;
+                }
+
+                users.forEach(u => {
+                    const id = u.id || u.Id;
+                    const name = u.name || u.Name || 'Sem nome';
+                    const email = u.email || u.Email || '---';
+                    const plan = u.plan || u.Plan || 'Free';
+                    const cycle = u.subscriptionCycle || u.SubscriptionCycle || 'Mensal';
+                    // Tratamento seguro para tokens que podem vir nulos
+                    const tokensVal = (u.usedTokensCurrentMonth !== undefined) ? u.usedTokensCurrentMonth : (u.UsedTokensCurrentMonth || 0);
+                    const tokens = tokensVal.toLocaleString();
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${name}</td>
+                        <td>${email}</td>
+                        <td><span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:4px; font-size:0.8rem;">${plan}</span></td>
+                        <td>${tokens}</td>
+                        <td>
+                            <button onclick="openModal(${id}, '${email}', '${plan}', '${cycle}')" 
+                                    style="background:none; border:none; color:#ffcc00; cursor:pointer; margin-right:10px;" 
+                                    title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteUser(${id}, '${email}')" 
+                                    style="background:none; border:none; color:#ff5555; cursor:pointer;" 
+                                    title="Excluir Permanentemente">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error("Erro fatal ao carregar dados:", error);
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ff5555;">Erro: ${error.message}<br><small>Verifique se o backend está rodando na porta correta.</small></td></tr>`;
+            }
+        }
+
+        // --- FUNÇÕES DE AÇÃO (DELETE / UPDATE) ---
+
         async function deleteUser(id, email) {
-            // Confirmação dupla para evitar acidentes
-            const confirmacao = confirm(`PERIGO: Você tem certeza que deseja EXCLUIR o usuário ${email}?\n\nTodos os dados dele (chats, histórico) serão apagados permanentemente.`);
-            
+            const confirmacao = confirm(`PERIGO: Excluir o usuário ${email}?\n\nEssa ação não pode ser desfeita.`);
             if (!confirmacao) return;
 
             try {
@@ -184,18 +236,17 @@ try {
                 });
 
                 if (response.ok) {
-                    alert('Usuário excluído com sucesso!');
-                    loadData(); // Recarrega a lista
+                    alert('Usuário excluído!');
+                    loadData();
                 } else {
                     const err = await response.json();
-                    alert('Erro ao excluir: ' + (err.message || 'Falha desconhecida.'));
+                    alert('Erro: ' + (err.message || response.statusText));
                 }
             } catch (error) {
                 alert('Erro de conexão: ' + error.message);
             }
         }
 
-        // --- Funções de Modal e Edição (Mantidas iguais) ---
         let currentEditingUserId = null;
         function openModal(id, email, plan, cycle) {
             currentEditingUserId = id;
@@ -208,11 +259,14 @@ try {
             document.getElementById('editModal').style.display = 'none';
             currentEditingUserId = null;
         }
+
         async function saveChanges() {
             const btn = document.getElementById('btnSave');
             if (!currentEditingUserId) return;
+            
             btn.disabled = true;
             btn.innerText = "Salvando...";
+
             try {
                 const token = localStorage.getItem('token');
                 const response = await fetch(`${API_URL}/update-user`, {
@@ -225,21 +279,31 @@ try {
                         resetTokens: document.getElementById('resetTokens').checked
                     })
                 });
+
                 if (response.ok) {
-                    alert('Sucesso!');
+                    alert('Usuário atualizado!');
                     closeModal();
                     loadData();
                 } else {
                     const err = await response.json();
-                    alert('Erro: ' + (err.message || response.statusText));
+                    alert('Erro: ' + (err.message || 'Falha ao atualizar'));
                 }
-            } catch (error) { alert('Erro: ' + error.message); } 
-            finally { btn.disabled = false; btn.innerText = "Salvar"; }
+            } catch (error) { 
+                alert('Erro: ' + error.message); 
+            } finally { 
+                btn.disabled = false; 
+                btn.innerText = "Salvar"; 
+            }
         }
+
         function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-            document.querySelector('.overlay').classList.toggle('active');
+            const sidebar = document.getElementById('sidebar');
+            if(sidebar) sidebar.classList.toggle('active');
+            const overlay = document.querySelector('.overlay');
+            if(overlay) overlay.classList.toggle('active');
         }
+
+        // Inicia o carregamento assim que o DOM estiver pronto
         document.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
