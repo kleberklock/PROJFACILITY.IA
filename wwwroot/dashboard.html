@@ -200,25 +200,33 @@
     <script src="script.js"></script>
     
     <script>
-        // Mapeamento CORRIGIDO: Operacional agora é sua própria categoria
+        // Configuração inicial
+        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : ''; 
+        
+        // 1. MAPEAMENTO DE CATEGORIAS (IGUAL AO ESCOLHER AGENTE)
+        // Converte o que vem do banco ("tecnologia") para o CSS ("tech")
         const categoryMap = {
-            'tech': 'tech', 
-            'juridico': 'juridico', 
+            'tecnologia': 'tech',
+            'tech': 'tech',
+            'juridico': 'juridico',
             'saude': 'saude',
-            'engenharia': 'engenharia', 
+            'engenharia': 'engenharia',
             'negocios': 'negocios',
-            'operacional': 'operacional', // AGORA SEPARADO DE TECH
-            'criativos': 'criativo', 
+            'operacional': 'operacional',
+            'criativos': 'criativo',
+            'criativo': 'criativo',
             'educacao': 'educacao',
             'estudante': 'educacao',
-            'personalizado': 'meus'
+            'personalizado': 'meus',
+            'outros': 'negocios'
         };
 
+        // 2. FUNÇÃO DE ÍCONES INTELIGENTES
         function getCreativeIcon(name, originalIcon, area) {
-            const n = name.toLowerCase();
+            const n = (name || "").toLowerCase();
             if (originalIcon && originalIcon !== 'fa-robot') return originalIcon;
 
-            // Mapeamento Inteligente
+            // Mapeamento por palavra-chave
             if (n.includes('advogad') || n.includes('jurid')) return 'fa-scale-balanced';
             if (n.includes('juiz') || n.includes('promotor')) return 'fa-gavel';
             if (n.includes('medic') || n.includes('doutor') || n.includes('clinic')) return 'fa-user-doctor';
@@ -238,17 +246,18 @@
             if (n.includes('cozinha') || n.includes('chef')) return 'fa-utensils';
             if (n.includes('motorista') || n.includes('piloto')) return 'fa-id-card';
 
-            // Fallback por Área
+            // Fallback por Área Mapeada
             if (area === 'tech') return 'fa-microchip';
             if (area === 'juridico') return 'fa-book-open';
             if (area === 'saude') return 'fa-heart-pulse';
             if (area === 'educacao') return 'fa-graduation-cap';
             if (area === 'criativo') return 'fa-wand-magic-sparkles';
-            if (area === 'operacional') return 'fa-cogs'; // Ícone padrão para operacional
+            if (area === 'operacional') return 'fa-cogs';
             
             return 'fa-robot';
         }
 
+        // 3. CARREGAMENTO DOS AGENTES (COM CORREÇÃO DE COR)
         async function renderCards() {
             const grid = document.getElementById('appsGrid');
             if (!grid) return; 
@@ -257,7 +266,6 @@
 
             try {
                 const token = localStorage.getItem('token');
-                const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : '';
                 
                 const response = await fetch(`${baseUrl}/api/agents`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -279,20 +287,27 @@
                         return myB - myA;
                     });
 
-                    agentes.forEach(agent => {
+                    agentes.forEach((agent, index) => {
                         const isMyAgent = (agent.userId && agent.userId > 0);
+                        
+                        // Normaliza a especialidade vinda do banco (ex: "Tecnologia" -> "tecnologia")
                         let rawArea = agent.specialty ? agent.specialty.toLowerCase() : 'geral';
                         if (rawArea === 'personalizado') rawArea = 'meus';
 
-                        // Lógica de Filtro Corrigida: 'operacional' não cai mais em 'tech'
+                        // Mapeia para a categoria correta (ex: "tecnologia" vira "tech")
+                        // Isso garante que o filtro e a cor funcionem juntos
                         let categoryForFilter = isMyAgent ? 'meus' : (categoryMap[rawArea] || 'negocios');
                         
-                        const iconClassArea = isMyAgent ? 'meus' : rawArea;
+                        // A classe visual usa o nome mapeado ("tech"), não o cru ("tecnologia")
+                        const visualClass = isMyAgent ? 'meus' : categoryForFilter;
+                        
                         const iconName = getCreativeIcon(agent.name, agent.icon, rawArea);
 
                         const card = document.createElement('a');
-                        card.href = `chatcomIA.html?agent=${encodeURIComponent(agent.name)}&area=${isMyAgent ? 'meus' : rawArea}&icon=${iconName}`; 
-                        card.className = 'app-card';
+                        // Passa visualClass na URL também para o chat manter a cor
+                        card.href = `chatcomIA.html?agent=${encodeURIComponent(agent.name)}&area=${visualClass}&icon=${iconName}`; 
+                        card.className = 'app-card fade-in';
+                        card.style.animationDelay = `${index * 0.05}s`;
                         card.setAttribute('data-category', categoryForFilter);
                         
                         if(isMyAgent) card.classList.add('my-agent-card');
@@ -300,13 +315,14 @@
                         let desc = agent.description;
                         if(!desc) {
                             if(isMyAgent) desc = "Agente personalizado.";
-                            else if(rawArea === 'tech') desc = "Tecnologia e Desenvolvimento.";
-                            else if(rawArea === 'operacional') desc = "Logística e Serviços Gerais.";
+                            else if(visualClass === 'tech') desc = "Tecnologia e Desenvolvimento.";
+                            else if(visualClass === 'operacional') desc = "Logística e Serviços Gerais.";
                             else desc = "Assistente especializado.";
                         }
 
+                        // Aplica a classe icon-${visualClass} que corresponde ao CSS correto
                         card.innerHTML = `
-                            <div class="card-icon icon-${iconClassArea}">
+                            <div class="card-icon icon-${visualClass}">
                                 <i class="fas ${iconName}"></i>
                             </div>
                             <div class="card-title">${agent.name}</div>
@@ -325,6 +341,7 @@
             }
         }
 
+        // 4. FUNÇÃO DE FILTRO
         function filterApps(category, btnElement) {
             const buttons = document.querySelectorAll('.cat-tab');
             buttons.forEach(btn => btn.classList.remove('active'));
@@ -361,8 +378,6 @@
                 const token = localStorage.getItem('token');
                 if(!token) return;
 
-                const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : ''; 
-                
                 const response = await fetch(`${baseUrl}/api/user/profile`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -372,7 +387,8 @@
                     updateUI(user.name, user.email, user.plan, user.profilePicture);
                     
                     if (user.role === 'admin') {
-                        document.getElementById('adminArea').style.display = 'flex';
+                        const adminArea = document.getElementById('adminArea');
+                        if(adminArea) adminArea.style.display = 'flex';
                     }
                     localStorage.setItem('userData', JSON.stringify(user));
                 }
@@ -400,7 +416,6 @@
             }
 
             const avatarEls = [document.getElementById('sidebarAvatar'), document.getElementById('mobileAvatar')];
-            const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : ''; 
             avatarEls.forEach(el => {
                 if(el) {
                     el.innerText = "";
@@ -414,6 +429,12 @@
                     }
                 }
             });
+        }
+
+        function fazerLogout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userData');
+            window.location.href = 'login.html';
         }
 
         document.addEventListener('DOMContentLoaded', () => {

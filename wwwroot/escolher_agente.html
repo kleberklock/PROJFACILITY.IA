@@ -278,55 +278,42 @@
         const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : ''; 
         let todosAgentes = [];
 
-        // --- MAPEAMENTO DE CATEGORIAS ---
+        // Mesma lógica de categorias do Dashboard
         const categoryMap = {
-            'tecnologia': 'tech', // CORREÇÃO: Mapeia o retorno do backend 'tecnologia' para a chave visual 'tech'
-            'tech': 'tech', 
-            'juridico': 'juridico', 
+            'tecnologia': 'tech',
+            'tech': 'tech',
+            'juridico': 'juridico',
             'saude': 'saude',
-            'engenharia': 'engenharia', 
+            'engenharia': 'engenharia',
             'negocios': 'negocios',
-            'operacional': 'operacional', 
-            'criativos': 'criativo', 
+            'operacional': 'operacional',
+            'criativos': 'criativo',
             'criativo': 'criativo',
             'educacao': 'educacao',
             'estudante': 'educacao',
-            'personalizado': 'meus'
+            'personalizado': 'meus',
+            'outros': 'negocios'
         };
 
-        // --- FUNÇÃO DE ÍCONES INTELIGENTES ---
+        // Mesma função de ícones do Dashboard
         function getCreativeIcon(name, originalIcon, area) {
             const n = name.toLowerCase();
             if (originalIcon && originalIcon !== 'fa-robot') return originalIcon;
 
-            // Mapeamento por palavra-chave
             if (n.includes('advogad') || n.includes('jurid')) return 'fa-scale-balanced';
-            if (n.includes('juiz') || n.includes('promotor')) return 'fa-gavel';
             if (n.includes('medic') || n.includes('doutor') || n.includes('clinic')) return 'fa-user-doctor';
-            if (n.includes('dentista') || n.includes('odonto')) return 'fa-tooth';
-            if (n.includes('psico')) return 'fa-brain';
             if (n.includes('dev') || n.includes('programador') || n.includes('software')) return 'fa-laptop-code';
-            if (n.includes('dados') || n.includes('data')) return 'fa-database';
             if (n.includes('engenheir')) return 'fa-helmet-safety';
-            if (n.includes('arquitet')) return 'fa-compass-drafting';
             if (n.includes('professor') || n.includes('educa')) return 'fa-chalkboard-user';
-            if (n.includes('estudante') || n.includes('aluno')) return 'fa-user-graduate';
-            if (n.includes('gestor') || n.includes('gerente') || n.includes('ceo')) return 'fa-user-tie';
-            if (n.includes('vendas') || n.includes('comercial')) return 'fa-hand-holding-dollar';
-            if (n.includes('designer') || n.includes('arte')) return 'fa-palette';
+            if (n.includes('gestor') || n.includes('adm')) return 'fa-user-tie';
             if (n.includes('marketing') || n.includes('social')) return 'fa-bullhorn';
-            if (n.includes('fitness') || n.includes('personal')) return 'fa-dumbbell';
-            if (n.includes('cozinha') || n.includes('chef')) return 'fa-utensils';
-            if (n.includes('motorista') || n.includes('piloto')) return 'fa-id-card';
-
-            // Fallback por Área Mapeada (categoryMap)
-            const mappedArea = categoryMap[area] || area;
-            if (mappedArea === 'tech') return 'fa-microchip';
-            if (mappedArea === 'juridico') return 'fa-book-open';
-            if (mappedArea === 'saude') return 'fa-heart-pulse';
-            if (mappedArea === 'educacao') return 'fa-graduation-cap';
-            if (mappedArea === 'criativo') return 'fa-wand-magic-sparkles';
-            if (mappedArea === 'operacional') return 'fa-cogs';
+            
+            // Fallback seguro
+            if (area === 'tech') return 'fa-microchip';
+            if (area === 'juridico') return 'fa-book-open';
+            if (area === 'saude') return 'fa-heart-pulse';
+            if (area === 'educacao') return 'fa-graduation-cap';
+            if (area === 'criativo') return 'fa-wand-magic-sparkles';
             
             return 'fa-robot';
         }
@@ -334,9 +321,16 @@
         async function carregarTudo() {
             todosAgentes = [];
             const grid = document.getElementById('gridAgentes');
-            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;"><i class="fas fa-circle-notch fa-spin fa-2x"></i><p style="margin-top:10px">Sincronizando inteligências...</p></div>';
+            
+            // Spinner
+            grid.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">
+                    <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+                    <p style="margin-top:10px">Sincronizando inteligências...</p>
+                </div>`;
 
             try {
+                // Tenta buscar do Banco de Dados (Igual ao Dashboard)
                 const response = await fetch(`${baseUrl}/api/agents`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -344,25 +338,26 @@
                 if (response.ok) {
                     const apiAgents = await response.json();
                     
-                    // Ordena: Meus Agentes (UserId > 0) sempre primeiro
+                    // Ordena
                     apiAgents.sort((a, b) => {
                         const myA = (a.userId && a.userId > 0) ? 1 : 0;
                         const myB = (b.userId && b.userId > 0) ? 1 : 0;
                         return myB - myA;
                     });
 
-                    // Processa e mapeia os dados
+                    // Processa
                     todosAgentes = apiAgents.map(a => {
                         const isMyAgent = (a.userId && a.userId > 0);
+                        
+                        // Garante que specialty nunca seja null
                         let rawArea = a.specialty ? a.specialty.toLowerCase() : 'geral';
                         if (rawArea === 'personalizado') rawArea = 'meus';
 
-                        // Categoria de Filtro: Garante que "tecnologia" vire "tech" usando o mapa
+                        // Lógica de Filtro igual ao Dashboard
                         let filterCategory = isMyAgent ? 'meus' : (categoryMap[rawArea] || 'negocios');
                         
-                        // Classe Visual: Usa o filtro mapeado para garantir que .icon-tech funcione
+                        // Classe Visual
                         const visualClass = isMyAgent ? 'meus' : filterCategory;
-
                         const displayIcon = getCreativeIcon(a.name, a.icon, rawArea);
 
                         return {
@@ -377,31 +372,37 @@
                         };
                     });
 
-                } else {
-                    console.error("Erro ao buscar agentes");
-                }
-            } catch (error) {
-                console.error("Erro API Agentes:", error);
-            }
+                    // Renderiza
+                    filtrarAba('todos', document.querySelector('.agent-tab-btn.active'));
 
-            // Renderiza aba inicial
-            filtrarAba('todos', document.querySelector('.agent-tab-btn.active'));
-            
-            verificarAdmin();
-        }
-        
-        async function verificarAdmin() {
-             try {
-                const response = await fetch(`${baseUrl}/api/user/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if(response.ok) {
-                    const user = await response.json();
-                    if(user.role === 'admin') {
-                        document.getElementById('adminArea').style.display = 'flex';
-                    }
+                } else {
+                    throw new Error(`Erro API: ${response.status}`);
                 }
-             } catch(e) {}
+
+            } catch (error) {
+                console.error("Erro ao carregar:", error);
+                
+                // Exibe erro na tela em vez de loop infinito
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #ff5555;">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        <p>Erro ao carregar agentes.</p>
+                        <small>${error.message}</small>
+                        <br>
+                        <button onclick="carregarTudo()" class="btn-primary" style="margin-top:10px">Tentar Novamente</button>
+                    </div>`;
+            }
+            
+            // Verifica se é admin (Feature extra)
+            try {
+                const resProfile = await fetch(`${baseUrl}/api/user/profile`, {
+                     headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if(resProfile.ok) {
+                    const user = await resProfile.json();
+                    if(user.role === 'admin') document.getElementById('adminArea').style.display = 'flex';
+                }
+            } catch(e) {}
         }
 
         function renderizar(lista) {
@@ -409,28 +410,20 @@
             grid.innerHTML = '';
 
             if (lista.length === 0) {
-                grid.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #555; border: 1px dashed rgba(255,255,255,0.1); border-radius: 15px;">
-                        <i class="fas fa-wind fa-3x" style="margin-bottom: 15px; opacity: 0.3;"></i>
-                        <p>Nenhum agente encontrado nesta categoria.</p>
-                    </div>`;
+                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #555;">Nenhum agente encontrado.</div>';
                 return;
             }
 
             lista.forEach((agent, index) => {
                 const card = document.createElement('a');
-                // URL com os parâmetros corretos para o chat
                 card.href = `chatcomIA.html?agent=${encodeURIComponent(agent.name)}&icon=${agent.displayIcon}&area=${agent.visualClass}`;
-                
-                const cardClass = `app-card fade-in`;
-                card.className = cardClass;
+                card.className = `app-card fade-in`;
                 card.style.animationDelay = `${index * 0.05}s`;
                 
                 let desc = agent.description;
                 if(!desc) {
                     if(agent.isCustom) desc = "Agente personalizado.";
                     else if(agent.visualClass === 'tech') desc = "Tecnologia e Desenvolvimento.";
-                    else if(agent.visualClass === 'operacional') desc = "Logística e Serviços.";
                     else desc = "Assistente especializado.";
                 }
 
@@ -449,35 +442,23 @@
 
         function filtrarAba(categoria, btn) {
             document.getElementById('inputBusca').value = '';
-            
             if(btn) {
                 document.querySelectorAll('.agent-tab-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             }
-
-            if (categoria === 'todos') {
-                renderizar(todosAgentes);
-            } else {
-                renderizar(todosAgentes.filter(a => a.filterCategory === categoria));
-            }
+            if (categoria === 'todos') renderizar(todosAgentes);
+            else renderizar(todosAgentes.filter(a => a.filterCategory === categoria));
         }
 
         function executarBusca() {
             const termo = document.getElementById('inputBusca').value.toLowerCase();
-            document.querySelectorAll('.agent-tab-btn').forEach(b => b.classList.remove('active'));
-
             if (termo === '') {
-                // Retorna para "todos" se limpar a busca
-                document.querySelectorAll('.agent-tab-btn')[0].classList.add('active'); 
                 renderizar(todosAgentes);
                 return;
             }
-
             const filtrados = todosAgentes.filter(a => 
-                a.name.toLowerCase().includes(termo) || 
-                (a.description && a.description.toLowerCase().includes(termo))
+                a.name.toLowerCase().includes(termo)
             );
-
             renderizar(filtrados);
         }
 

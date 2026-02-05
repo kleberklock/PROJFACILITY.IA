@@ -192,15 +192,27 @@ function getCategoryColor(area) {
     // Normaliza para garantir (remove espaços e poe minusculo)
     const key = (area || 'outros').toLowerCase().trim();
 
+    // Mapeia tanto as chaves do Backend quanto as do Frontend
     const colors = {
         'tecnologia': '#00F3FF', // Ciano Neon
+        'tech': '#00F3FF',       
+        
         'juridico': '#FFD700',   // Dourado
+        
         'saude': '#00FF88',      // Verde Neon
+        
         'engenharia': '#FF9900', // Laranja
+        
         'criativos': '#FF3366',  // Rosa Neon
+        'criativo': '#FF3366',
+        
         'negocios': '#0099FF',   // Azul
+        
         'educacao': '#9933FF',   // Roxo
+        
         'operacional': '#888888',// Cinza
+        
+        'meus': '#7c3aed',       // Roxo do tema (Agentes Pessoais)
         'outros': '#FFFFFF'      // Branco
     };
 
