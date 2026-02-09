@@ -84,6 +84,15 @@ namespace PROJFACILITY.IA.Controllers
                 if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) 
                     return Unauthorized(new { message = "Usuário não identificado." });
 
+                // --- ALTERAÇÃO: Validação e Criação de Nova Sessão ---
+                // Se o sessionId for inválido ou solicitar nova sessão, gera um novo GUID.
+                // Isso é feito ANTES de buscar o histórico para garantir contexto limpo.
+                if (string.IsNullOrEmpty(sessionId) || sessionId.ToLower() == "nova" || sessionId == "undefined" || sessionId == "new-session")
+                {
+                    sessionId = Guid.NewGuid().ToString();
+                }
+                // -----------------------------------------------------
+
                 var history = await _context.ChatMessages
                     .Where(m => m.UserId == userId && m.SessionId == sessionId) 
                     .OrderByDescending(m => m.Timestamp)
@@ -109,7 +118,8 @@ namespace PROJFACILITY.IA.Controllers
                 _context.ChatMessages.Add(aiMsg);
                 await _context.SaveChangesAsync(ct);
 
-                return Ok(new { reply = responseAI, tokens = tokens });
+                // Retorna o sessionId (pode ser o novo gerado) para que o front atualize
+                return Ok(new { reply = responseAI, tokens = tokens, sessionId = sessionId });
             }
             catch (Exception ex)
             {
