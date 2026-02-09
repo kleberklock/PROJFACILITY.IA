@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Agentes | Facility.IA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style-master.css"> <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="config.js"></script>
+    
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+    </script>
+</head>
+<body>
+    <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
+
+    <div class="layout">
+        <nav class="sidebar" id="sidebar">
+            <div class="logo desktop-only">FACILITY<span>.IA</span></div>
+            <a href="admin.html" class="nav-btn"><i class="fas fa-arrow-left"></i> Voltar Admin</a>
+            <a href="cadastrodeagente.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-plus"></i> Novo Agente</a>
+        </nav>
+
+        <main class="content">
+            <div class="hero-banner" style="background: linear-gradient(135deg, #062c26 0%, #1a1a1a 100%); border-color: rgba(0, 243, 255, 0.2);">
+                <div class="hero-content">
+                    <h2 class="hero-title" style="color: #00F3FF;">Gerenciar Agentes</h2>
+                    <p class="hero-desc">Edite prompts, ícones e exclua agentes do sistema.</p>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th width="50">Ícone</th>
+                            <th>Nome</th>
+                            <th>Especialidade</th>
+                            <th>Tipo</th>
+                            <th width="120">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agentsTableBody">
+                        <tr><td colspan="5" align="center"><i class="fas fa-spinner fa-spin"></i> Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="script.js"></script>
+    
+    <script>
+        const API_URL = (typeof BASE_URL !== 'undefined') ? BASE_URL : 'http://localhost:5217';
+
+        async function carregarAgentes() {
+            try {
+                // Busca todos os agentes (O backend já filtra o que o user pode ver)
+                const res = await fetch(`${API_URL}/api/agents`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!res.ok) throw new Error("Erro ao buscar agentes");
+                
+                const agentes = await res.json();
+                const tbody = document.getElementById('agentsTableBody');
+                tbody.innerHTML = '';
+
+                if (agentes.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" align="center">Nenhum agente encontrado.</td></tr>';
+                    return;
+                }
+
+                agentes.forEach(agente => {
+                    const tipo = agente.userId ? '<span style="color:#ccc">Pessoal</span>' : '<span style="color:#00F3FF; font-weight:bold;">Sistema (Global)</span>';
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td align="center"><i class="fas ${agente.icon}" style="font-size:1.2rem; color:#00F3FF;"></i></td>
+                        <td>${agente.name}</td>
+                        <td><span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:4px;">${agente.specialty}</span></td>
+                        <td>${tipo}</td>
+                        <td>
+                            <button onclick="window.location.href='editar_agente.html?id=${agente.id}'" class="btn-icon" title="Editar" style="color:#ffcc00; background:none; border:none; cursor:pointer; margin-right:10px;"><i class="fas fa-edit"></i></button>
+                            <button onclick="deletarAgente(${agente.id})" class="btn-icon" title="Excluir" style="color:#ff5555; background:none; border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Erro', 'Falha ao carregar lista de agentes.', 'error');
+            }
+        }
+
+        async function deletarAgente(id) {
+            const result = await Swal.fire({
+                title: 'Tem certeza?',
+                text: "Isso apagará o agente e todo o conhecimento treinado dele!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff5555',
+                cancelButtonColor: '#333',
+                confirmButtonText: 'Sim, excluir!',
+                background: '#1a1a1a',
+                color: '#fff'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const res = await fetch(`${API_URL}/api/agents/${id}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (res.ok) {
+                        Swal.fire('Excluído!', 'Agente removido.', 'success');
+                        carregarAgentes();
+                    } else {
+                        throw new Error('Falha na exclusão');
+                    }
+                } catch (e) {
+                    Swal.fire('Erro', 'Não foi possível excluir o agente.', 'error');
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', carregarAgentes);
+    </script>
+</body>
+</html>

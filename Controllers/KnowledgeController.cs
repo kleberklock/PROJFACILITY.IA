@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims; 
 using System.IO;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 namespace PROJFACILITY.IA.Controllers
 {
@@ -77,7 +78,7 @@ namespace PROJFACILITY.IA.Controllers
 
                 using var stream = file.OpenReadStream();
                 
-                // MUDANÇA: Verifica o retorno booleano
+                // O Service usa 'Tag' internamente para salvar a 'profession'
                 bool sucesso = await _knowledgeService.ProcessarArquivoEIngerir(stream, file.FileName, profession, userId, isSystemKnowledge);
                 
                 if (sucesso)
@@ -109,7 +110,6 @@ namespace PROJFACILITY.IA.Controllers
             {
                 using var stream = new MemoryStream(Encoding.UTF8.GetBytes(request.Text));
                 
-                // Agora o método retorna bool, mas aqui podemos ignorar ou checar
                 await _knowledgeService.IngerirConhecimento(stream, "texto_manual.txt", request.Profession, userId);
                 
                 return Ok(new { message = "Texto absorvido com sucesso!" });
@@ -118,6 +118,67 @@ namespace PROJFACILITY.IA.Controllers
             {
                 return BadRequest(new { message = $"Erro ao ingerir texto: {ex.Message}" });
             }
+        }
+
+        // --- MÉTODOS CORRIGIDOS (Usando .Tag em vez de .Profession) ---
+
+        [HttpGet("{agentId}/files")]
+        public async Task<ActionResult> GetFiles(int agentId)
+        {
+            int currentUserId = GetUserId();
+            
+            // Verifica se o agente existe
+            var agent = await _context.Agents.FindAsync(agentId);
+            if (agent == null) return NotFound("Agente não encontrado.");
+
+            var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
+            bool isAdmin = roleClaim != null && roleClaim.Value == "admin";
+
+            // Valida permissão
+            if (agent.UserId != null && agent.UserId != currentUserId && !isAdmin)
+            {
+                return Forbid();
+            }
+
+            // CORREÇÃO AQUI: Usa 'k.Tag' em vez de 'k.Profession'
+            var files = await _context.KnowledgeDocuments
+                .Where(k => k.Tag == agent.Name) 
+                .Select(k => new { k.Id, k.FileName, k.CreatedAt }) 
+                .OrderByDescending(k => k.Id)
+                .ToListAsync();
+
+            return Ok(files);
+        }
+
+        [HttpDelete("file/{fileId}")]
+        public async Task<IActionResult> DeleteFile(int fileId)
+        {
+            var doc = await _context.KnowledgeDocuments.FindAsync(fileId);
+            if (doc == null) return NotFound("Arquivo não encontrado.");
+
+            // CORREÇÃO AQUI: Usa 'doc.Tag' para achar o agente
+            var agent = await _context.Agents.FirstOrDefaultAsync(a => a.Name == doc.Tag);
+            
+            if (agent != null)
+            {
+                int currentUserId = GetUserId();
+                var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
+                bool isAdmin = roleClaim != null && roleClaim.Value == "admin";
+
+                // Se o agente tem dono e não é o usuário atual (e nem admin), bloqueia
+                if (agent.UserId != null && agent.UserId != currentUserId && !isAdmin)
+                {
+                    return Forbid("Sem permissão para alterar este agente.");
+                }
+            }
+
+            // Remove do banco (O arquivo físico/vetor idealmente seria removido via Service, 
+            // mas aqui estamos removendo o registro do banco diretamente para simplificar o Controller,
+            // ou você pode chamar _knowledgeService.ExcluirArquivo se tiver implementado lá)
+            _context.KnowledgeDocuments.Remove(doc);
+            await _context.SaveChangesAsync();
+            
+            return Ok(new { message = "Arquivo removido da base de conhecimento." });
         }
 
         public class IngestTextRequest

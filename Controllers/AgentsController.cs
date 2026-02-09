@@ -5,6 +5,8 @@ using PROJFACILITY.IA.Models;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace PROJFACILITY.IA.Controllers
 {
@@ -30,7 +32,7 @@ namespace PROJFACILITY.IA.Controllers
             return 0;
         }
 
-        // --- FUNÇÃO INTELIGENTE DE CATEGORIZAÇÃO (Mantida) ---
+        // --- FUNÇÃO INTELIGENTE DE CATEGORIZAÇÃO ---
         private string InferirEspecialidade(string nome, string prompt)
         {
             var texto = (nome + " " + prompt).ToLower();
@@ -76,12 +78,47 @@ namespace PROJFACILITY.IA.Controllers
         public async Task<ActionResult<IEnumerable<Agent>>> GetAgents([FromQuery] int? userId)
         {
             int currentUserId = GetUserId();
+            // Se userId for passado (filtro), usa ele, senão usa o atual
             if (userId == null || userId == 0) userId = currentUserId;
 
+            // Admin vê tudo? Depende da regra. Aqui vou manter que usuário vê os seus + públicos.
+            // Se quiser que o admin veja LITERALMENTE TODOS no painel, a query muda um pouco.
+            
+            var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
+            bool isAdmin = roleClaim != null && roleClaim.Value == "admin";
+
+            if (isAdmin)
+            {
+                 return await _context.Agents
+                    .OrderByDescending(a => a.Id)
+                    .ToListAsync();
+            }
+
             return await _context.Agents
-                .Where(a => a.IsPublic || a.UserId == null || (userId.HasValue && a.UserId == userId))
+                .Where(a => a.IsPublic || a.UserId == null || (a.UserId == currentUserId))
                 .OrderByDescending(a => a.Id) 
                 .ToListAsync();
+        }
+
+        // NOVO: Método para buscar UM agente específico (usado na edição)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Agent>> GetAgent(int id)
+        {
+            var agent = await _context.Agents.FindAsync(id);
+
+            if (agent == null) return NotFound("Agente não encontrado.");
+
+            // Verifica permissão
+            int currentUserId = GetUserId();
+            var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
+            bool isAdmin = roleClaim != null && roleClaim.Value == "admin";
+
+            if (!agent.IsPublic && agent.UserId != currentUserId && !isAdmin)
+            {
+                return Forbid();
+            }
+
+            return agent;
         }
 
         [HttpPost]
@@ -106,7 +143,6 @@ namespace PROJFACILITY.IA.Controllers
                 finalUserId = null; // Sem dono específico (Global)
                 finalIsPublic = true;
 
-                // Define Especialidade: Se veio no request, usa. Se não, infere.
                 if (!string.IsNullOrEmpty(request.Specialty) && request.Specialty != "automatico")
                 {
                     finalSpecialty = request.Specialty.ToLower();
@@ -140,12 +176,87 @@ namespace PROJFACILITY.IA.Controllers
             return Ok(new { message = "Criado com sucesso!", id = agent.Id, specialty = agent.Specialty });
         }
 
-        // Métodos Update e Delete mantidos conforme original (mas omitidos aqui por brevidade se não houver alterações)
+        // --- MÉTODOS DE ATUALIZAÇÃO E EXCLUSÃO CORRIGIDOS ---
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAgent(int id, [FromBody] CreateAgentRequest request) { /* Lógica mantida */ return Ok(); }
+        public async Task<IActionResult> UpdateAgent(int id, [FromBody] CreateAgentRequest request) 
+        { 
+            var agent = await _context.Agents.FindAsync(id);
+            if (agent == null) return NotFound("Agente não encontrado.");
+
+            int currentUserId = GetUserId();
+            var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
+            bool isAdmin = roleClaim != null && roleClaim.Value == "admin";
+
+            // Apenas o dono ou Admin pode editar
+            // Se agent.UserId for null, é do sistema (só admin edita)
+            if (agent.UserId != currentUserId && !isAdmin && agent.UserId != null)
+            {
+                return Forbid("Você não tem permissão para editar este agente.");
+            }
+            if (agent.UserId == null && !isAdmin)
+            {
+                 return Forbid("Apenas administradores podem editar agentes do sistema.");
+            }
+
+            // Atualiza os campos
+            agent.Name = request.Name;
+            agent.SystemInstruction = request.Prompt;
+            agent.Icon = request.Icon;
+            
+            // Admin pode forçar a especialidade
+            if (!string.IsNullOrEmpty(request.Specialty) && request.Specialty != "automatico")
+            {
+                agent.Specialty = request.Specialty.ToLower();
+            }
+            else if (string.IsNullOrEmpty(agent.Specialty))
+            {
+                 // Se estiver vazio por algum motivo, re-infere
+                 agent.Specialty = InferirEspecialidade(request.Name, request.Prompt);
+            }
+
+            _context.Entry(agent).State = EntityState.Modified;
+            
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Agents.Any(e => e.Id == id)) return NotFound();
+                else throw;
+            }
+
+            return Ok(new { message = "Agente atualizado com sucesso!" });
+        }
         
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAgent(int id) { /* Lógica mantida */ return Ok(); }
+        public async Task<IActionResult> DeleteAgent(int id) 
+        { 
+            var agent = await _context.Agents.FindAsync(id);
+            if (agent == null) return NotFound("Agente não encontrado.");
+
+            int currentUserId = GetUserId();
+            var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
+            bool isAdmin = roleClaim != null && roleClaim.Value == "admin";
+
+            // Verificação de segurança
+            if (agent.UserId != currentUserId && !isAdmin && agent.UserId != null)
+            {
+                return Forbid("Você não tem permissão para excluir este agente.");
+            }
+            if (agent.UserId == null && !isAdmin)
+            {
+                 return Forbid("Apenas administradores podem excluir agentes do sistema.");
+            }
+
+            // Aqui você pode adicionar lógica para remover KnowledgeDocuments vinculados antes, se necessário.
+            
+            _context.Agents.Remove(agent);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Agente excluído com sucesso!" });
+        }
 
         public class CreateAgentRequest
         {
@@ -153,7 +264,6 @@ namespace PROJFACILITY.IA.Controllers
             public string Prompt { get; set; } = string.Empty;
             public int CreatorId { get; set; }
             public string Icon { get; set; } = "fa-robot";
-            // NOVO CAMPO
             public string Specialty { get; set; } = string.Empty; 
         }
     }
