@@ -13,21 +13,147 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
         
-        // Pega ID da URL
         const urlParams = new URLSearchParams(window.location.search);
         const agentId = urlParams.get('id');
         if (!agentId) window.location.href = 'gerenciar_agentes.html';
     </script>
 
     <style>
-        .edit-container { max-width: 800px; margin: 0 auto; }
-        .icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 10px; margin-bottom: 20px; max-height: 150px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid #333; }
-        .icon-option { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: #2a2a40; border-radius: 8px; cursor: pointer; color: #888; border: 2px solid transparent; }
-        .icon-option:hover { background: #3a3a50; color: white; }
-        .icon-option.selected { background: rgba(0, 243, 255, 0.2); border-color: #00F3FF; color: #00F3FF; }
+        /* Layout Grid para Desktop */
+        .edit-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .edit-layout { grid-template-columns: 1fr; }
+        }
+
+        /* Cards Estilizados */
+        .glass-card {
+            background: rgba(30, 30, 40, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .section-title {
+            color: #00F3FF;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        /* Área de Upload Drag & Drop */
+        .upload-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: #00F3FF;
+            background: rgba(0, 243, 255, 0.05);
+        }
+
+        .upload-zone i {
+            font-size: 2.5rem;
+            color: #666;
+            margin-bottom: 10px;
+            transition: 0.3s;
+        }
+
+        .upload-zone:hover i { color: #00F3FF; transform: scale(1.1); }
+
+        /* Lista de Arquivos */
+        .file-list {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .file-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 12px 15px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .file-card:hover {
+            background: rgba(255, 255, 255, 0.07);
+            border-color: rgba(0, 243, 255, 0.3);
+        }
+
+        .file-info { display: flex; align-items: center; gap: 12px; color: #ddd; }
+        .file-icon { color: #ffcc00; font-size: 1.2rem; }
         
-        .file-list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.05); margin-bottom: 5px; border-radius: 4px; border-left: 3px solid #00F3FF; }
-        .file-list-item span { color: #ddd; font-size: 0.9rem; }
+        .btn-delete {
+            color: #666;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+            padding: 5px;
+        }
+        .btn-delete:hover { color: #ff5555; transform: scale(1.1); }
+
+        /* Grid de Ícones */
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 8px;
+            max-height: 120px;
+            overflow-y: auto;
+            padding: 5px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .icon-option {
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #2a2a40;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #888;
+            border: 2px solid transparent;
+        }
+        .icon-option:hover { color: white; background: #3a3a50; }
+        .icon-option.selected {
+            border-color: #00F3FF;
+            color: #00F3FF;
+            background: rgba(0, 243, 255, 0.1);
+        }
+
+        /* Scrollbar Personalizada */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00F3FF; }
     </style>
 </head>
 <body>
@@ -40,23 +166,30 @@
         </nav>
 
         <main class="content">
-            <div class="edit-container">
-                <h2 style="color: #00F3FF; border-bottom: 1px solid #333; padding-bottom: 10px;">
-                    <i class="fas fa-edit"></i> Editar Agente
-                </h2>
+            <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="color: white; margin: 0;">Editar <span style="color: #00F3FF;">Agente</span></h2>
+                <button onclick="salvarAlteracoes()" class="btn-primary" style="padding: 10px 25px;">
+                    <i class="fas fa-save"></i> Salvar Tudo
+                </button>
+            </div>
 
-                <div class="auth-card" style="margin-top: 20px;">
-                    <label style="color: #ccc; display: block; margin-bottom: 8px;">Ícone</label>
-                    <div class="icon-grid" id="iconContainer"></div>
-                    <input type="hidden" id="selectedIcon">
-
+            <div class="edit-layout">
+                <div class="glass-card">
+                    <div class="section-title"><i class="fas fa-user-cog"></i> Configurações do Agente</div>
+                    
                     <div class="form-group">
-                        <label style="color: #ccc;">Nome do Agente</label>
-                        <input type="text" id="agentName" class="auth-input" style="width: 100%;">
+                        <label style="color: #ccc; font-size: 0.9rem;">Ícone de Identificação</label>
+                        <div class="icon-grid" id="iconContainer"></div>
+                        <input type="hidden" id="selectedIcon">
                     </div>
 
                     <div class="form-group">
-                        <label style="color: #ccc;">Especialidade</label>
+                        <label style="color: #ccc;">Nome do Assistente</label>
+                        <input type="text" id="agentName" class="auth-input" style="width: 100%;" placeholder="Ex: Consultor Jurídico">
+                    </div>
+
+                    <div class="form-group">
+                        <label style="color: #ccc;">Especialidade (Categoria)</label>
                         <select id="agentCategory" class="auth-input" style="width: 100%; background: #2a2a40; color: white;">
                             <option value="tecnologia">Tecnologia & Dev</option>
                             <option value="juridico">Jurídico</option>
@@ -71,27 +204,32 @@
                     </div>
 
                     <div class="form-group">
-                        <label style="color: #ccc;">Instrução do Sistema (Prompt)</label>
-                        <textarea id="agentPrompt" class="auth-input" rows="6" style="width: 100%;"></textarea>
+                        <label style="color: #ccc;">Prompt do Sistema (Personalidade)</label>
+                        <textarea id="agentPrompt" class="auth-input" rows="8" style="width: 100%; resize: vertical;" placeholder="Defina como o agente deve se comportar, o que ele sabe e como deve responder..."></textarea>
                     </div>
-
-                    <button onclick="salvarAlteracoes()" id="btnSalvar" class="btn-primary" style="width: 100%; background: #00F3FF; color: black; font-weight: bold;">
-                        Salvar Alterações
-                    </button>
                 </div>
 
-                <div style="margin-top: 30px;">
-                    <h3 style="color: white; font-size: 1.1rem; margin-bottom: 15px;">Base de Conhecimento (Arquivos)</h3>
-                    
-                    <div id="fileListContainer">
-                        <p style="color:#666;">Carregando arquivos...</p>
+                <div class="glass-card">
+                    <div class="section-title">
+                        <i class="fas fa-brain"></i> Base de Conhecimento
+                        <span style="font-size: 0.8rem; color: #666; margin-left: auto;" id="fileCount">0 arquivos</span>
                     </div>
 
-                    <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">
-                        <input type="file" id="newFile" style="display:none" onchange="uploadNovoArquivo()">
-                        <button onclick="document.getElementById('newFile').click()" style="background:transparent; border: 1px dashed #666; color: #888; padding: 10px; width: 100%; border-radius: 8px; cursor: pointer;">
-                            <i class="fas fa-plus"></i> Adicionar novo arquivo
-                        </button>
+                    <p style="color: #888; font-size: 0.9rem; margin-bottom: 15px;">
+                        O agente usa esses arquivos para responder com precisão. Suporta PDF, DOCX e TXT.
+                    </p>
+
+                    <div class="upload-zone" id="dropZone" onclick="document.getElementById('newFile').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h4 style="color: white; margin: 5px 0;">Arraste arquivos aqui</h4>
+                        <span style="color: #666; font-size: 0.8rem;">ou clique para selecionar do computador</span>
+                        <input type="file" id="newFile" style="display:none" onchange="handleFileSelect(this)">
+                    </div>
+
+                    <div id="fileListContainer" class="file-list">
+                        <div style="text-align: center; color: #666; padding: 20px;">
+                            <i class="fas fa-spinner fa-spin"></i> Carregando arquivos...
+                        </div>
                     </div>
                 </div>
             </div>
@@ -104,10 +242,8 @@
     <script>
         const API_URL = (typeof BASE_URL !== 'undefined') ? BASE_URL : 'http://localhost:5217';
         
-        // Ícones (Mesma lista do cadastro)
+        // --- ÍCONES ---
         const icons = ["fa-robot", "fa-user-tie", "fa-briefcase", "fa-laptop-code", "fa-gavel", "fa-stethoscope", "fa-calculator", "fa-bullhorn", "fa-chart-line", "fa-lightbulb", "fa-pen-nib", "fa-tools", "fa-hard-hat", "fa-truck", "fa-ship", "fa-plane", "fa-camera", "fa-music", "fa-gamepad", "fa-dumbbell", "fa-utensils", "fa-book", "fa-graduation-cap", "fa-microscope", "fa-flask", "fa-seedling", "fa-paw", "fa-balance-scale", "fa-building", "fa-home"];
-
-        // Inicializa Grid de Ícones
         const container = document.getElementById('iconContainer');
         icons.forEach(icon => {
             const div = document.createElement('div');
@@ -123,9 +259,12 @@
             document.getElementById('selectedIcon').value = iconClass;
         }
 
+        // --- CARREGAMENTO INICIAL ---
+        document.addEventListener('DOMContentLoaded', carregarDados);
+
         async function carregarDados() {
             try {
-                // 1. Carrega Dados do Agente
+                // 1. Agente
                 const resAgent = await fetch(`${API_URL}/api/agents/${agentId}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -142,12 +281,17 @@
                     if (el.innerHTML.includes(agent.icon)) el.classList.add('selected');
                 });
 
-                // 2. Carrega Arquivos
+                // 2. Arquivos
                 carregarArquivos();
 
             } catch (error) {
                 console.error(error);
-                Swal.fire('Erro', 'Falha ao carregar dados.', 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Não foi possível carregar os dados do agente.',
+                    background: '#1a1a1a', color: '#fff'
+                });
             }
         }
 
@@ -159,39 +303,63 @@
                 });
                 
                 if(!resFiles.ok) {
-                    divFiles.innerHTML = '<p style="color:#666">Nenhum arquivo encontrado ou sem permissão.</p>';
+                    divFiles.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Sem permissão ou erro ao buscar arquivos.</div>';
                     return;
                 }
 
                 const files = await resFiles.json();
                 divFiles.innerHTML = '';
+                document.getElementById('fileCount').innerText = `${files.length} arquivo(s)`;
 
                 if (files.length === 0) {
-                    divFiles.innerHTML = '<p style="color:#666; font-size:0.9rem;"><i>Nenhum arquivo treinado neste agente.</i></p>';
+                    divFiles.innerHTML = `
+                        <div style="text-align: center; color: #666; padding: 30px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px;">
+                            <i class="fas fa-folder-open" style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                            <p style="margin:0;">Nenhum conhecimento treinado ainda.</p>
+                        </div>`;
                     return;
                 }
 
                 files.forEach(file => {
+                    // Decide ícone com base na extensão (apenas visual)
+                    let fileIcon = 'fa-file-alt';
+                    if(file.fileName.endsWith('.pdf')) fileIcon = 'fa-file-pdf';
+                    if(file.fileName.endsWith('.docx')) fileIcon = 'fa-file-word';
+
                     const div = document.createElement('div');
-                    div.className = 'file-list-item';
+                    div.className = 'file-card';
                     div.innerHTML = `
-                        <span><i class="fas fa-file-alt"></i> ${file.fileName}</span>
-                        <button onclick="excluirArquivo(${file.id})" style="background:none; border:none; color:#ff5555; cursor:pointer;" title="Remover"><i class="fas fa-trash"></i></button>
+                        <div class="file-info">
+                            <i class="fas ${fileIcon} file-icon"></i>
+                            <div>
+                                <div style="font-weight: bold; font-size: 0.9rem;">${file.fileName}</div>
+                                <div style="font-size: 0.7rem; color: #666;">Adicionado em ${new Date(file.createdAt).toLocaleDateString()}</div>
+                            </div>
+                        </div>
+                        <button onclick="excluirArquivo(${file.id})" class="btn-delete" title="Remover conhecimento">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     `;
                     divFiles.appendChild(div);
                 });
             } catch (e) {
-                divFiles.innerHTML = '<p style="color:red">Erro ao listar arquivos.</p>';
+                divFiles.innerHTML = '<p style="color:red; text-align:center;">Erro ao conectar com servidor.</p>';
             }
         }
 
+        // --- SALVAR ALTERAÇÕES ---
         async function salvarAlteracoes() {
+            const btn = document.querySelector('button[onclick="salvarAlteracoes()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
+            btn.disabled = true;
+
             const data = {
                 name: document.getElementById('agentName').value,
                 prompt: document.getElementById('agentPrompt').value,
                 icon: document.getElementById('selectedIcon').value,
                 specialty: document.getElementById('agentCategory').value,
-                creatorId: 0 // Não é usado no update, mas o model pede
+                creatorId: 0 
             };
 
             try {
@@ -202,22 +370,31 @@
                 });
 
                 if (res.ok) {
-                    Swal.fire('Sucesso', 'Agente atualizado!', 'success');
+                    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
+                    Toast.fire({ icon: 'success', title: 'Agente atualizado com sucesso!' });
                 } else {
-                    Swal.fire('Erro', 'Falha ao atualizar.', 'error');
+                    throw new Error('Falha na atualização');
                 }
             } catch (e) {
-                Swal.fire('Erro', e.message, 'error');
+                Swal.fire({ icon: 'error', title: 'Erro', text: 'Não foi possível salvar as alterações.', background: '#1a1a1a', color: '#fff' });
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         }
 
+        // --- EXCLUIR ARQUIVO ---
         async function excluirArquivo(fileId) {
             const confirm = await Swal.fire({
-                title: 'Remover arquivo?',
-                text: "O agente deixará de usar este conhecimento.",
+                title: 'Esquecer arquivo?',
+                text: "O agente perderá o conhecimento contido neste documento.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#ff5555'
+                confirmButtonColor: '#ff5555',
+                cancelButtonColor: '#333',
+                confirmButtonText: 'Sim, remover',
+                cancelButtonText: 'Cancelar',
+                background: '#1a1a1a', color: '#fff'
             });
 
             if (confirm.isConfirmed) {
@@ -227,27 +404,54 @@
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (res.ok) {
-                        carregarArquivos(); // Recarrega a lista
-                        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                        carregarArquivos();
+                        const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
                         Toast.fire({ icon: 'success', title: 'Arquivo removido' });
                     }
-                } catch(e) { Swal.fire('Erro', 'Falha ao remover arquivo.', 'error'); }
+                } catch(e) { 
+                    Swal.fire('Erro', 'Falha ao remover arquivo.', 'error'); 
+                }
             }
         }
 
-        async function uploadNovoArquivo() {
-            const fileInput = document.getElementById('newFile');
-            const file = fileInput.files[0];
-            if (!file) return;
+        // --- DRAG AND DROP & UPLOAD LOGIC ---
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                uploadArquivo(files[0]);
+            }
+        });
+
+        function handleFileSelect(input) {
+            if (input.files.length > 0) {
+                uploadArquivo(input.files[0]);
+            }
+        }
+
+        async function uploadArquivo(file) {
+            // Feedback Visual imediato
+            const dropZoneOriginalContent = dropZone.innerHTML;
+            dropZone.innerHTML = `<i class="fas fa-circle-notch fa-spin" style="color:#00F3FF; font-size:2rem;"></i><br><span style="color:white;">Processando ${file.name}...</span>`;
+            dropZone.style.pointerEvents = 'none';
 
             const formData = new FormData();
             formData.append('file', file);
-            formData.append('profession', document.getElementById('agentName').value); // Usa o nome atual
-            // Pega ID do usuário do token (para validar no back)
-            // O backend KnowledgeController.Upload pega o userId do token, então não precisamos enviar explicitamente se o controller estiver bem feito, mas seu código original pede.
-            // Vou omitir aqui e confiar que o Controller pega do token ou falha com mensagem clara.
-            
-            Swal.showLoading();
+            // IMPORTANTE: Envia o nome atual que está no input, pois o backend usa isso para linkar (Tag/Profession)
+            formData.append('profession', document.getElementById('agentName').value); 
+            // O backend pega o userId do token, mas se pedir explicitamente podemos mandar 0 ou omitir se o controller tratar
 
             try {
                 const res = await fetch(`${API_URL}/api/knowledge/upload`, {
@@ -257,19 +461,26 @@
                 });
 
                 if (res.ok) {
-                    Swal.fire('Sucesso', 'Arquivo enviado e processado!', 'success');
+                    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
+                    Toast.fire({ icon: 'success', title: 'Conhecimento absorvido!' });
                     carregarArquivos();
                 } else {
                     const txt = await res.text();
-                    Swal.fire('Erro', txt, 'error');
+                    try {
+                        const jsonErr = JSON.parse(txt);
+                        Swal.fire({ icon: 'error', title: 'Erro no Upload', text: jsonErr.message || 'Erro desconhecido', background: '#1a1a1a', color: '#fff' });
+                    } catch {
+                         Swal.fire({ icon: 'error', title: 'Erro no Upload', text: txt, background: '#1a1a1a', color: '#fff' });
+                    }
                 }
             } catch (e) {
-                Swal.fire('Erro', 'Falha no upload.', 'error');
+                Swal.fire({ icon: 'error', title: 'Erro de Conexão', text: 'Falha ao enviar arquivo.', background: '#1a1a1a', color: '#fff' });
+            } finally {
+                // Restaura a DropZone
+                dropZone.innerHTML = `<i class="fas fa-cloud-upload-alt"></i><h4 style="color: white; margin: 5px 0;">Arraste arquivos aqui</h4><span style="color: #666; font-size: 0.8rem;">ou clique para selecionar</span><input type="file" id="newFile" style="display:none" onchange="handleFileSelect(this)">`;
+                dropZone.style.pointerEvents = 'auto';
             }
-            fileInput.value = ''; // Limpa input
         }
-
-        document.addEventListener('DOMContentLoaded', carregarDados);
     </script>
 </body>
 </html>
