@@ -547,6 +547,25 @@
         </div>
     </div>
 
+    <div id="modalNovoPrompt" class="modal-overlay" style="display: none; align-items: center; justify-content: center;">
+        <div class="modal-content" style="max-width: 500px; text-align: left; background: #1e232d; border: 1px solid rgba(255,255,255,0.1);">
+            <h3 style="margin-top:0; margin-bottom: 20px; color: var(--primary);">Criar Novo Prompt</h3>
+            
+            <label style="color:#aaa; font-size:0.9rem; display:block; margin-bottom:5px;">Título (Ex: Corretor de Texto)</label>
+            <input type="text" id="inputPromptTitle" class="minimal-input" style="margin-bottom: 20px; width:100%;" placeholder="Dê um nome curto">
+            
+            <label style="color:#aaa; font-size:0.9rem; display:block; margin-bottom:5px;">Conteúdo do Prompt</label>
+            <textarea id="inputPromptContent" class="minimal-textarea" style="min-height: 120px; width:100%;" placeholder="Digite o comando que a IA deve executar..."></textarea>
+
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn-outline" onclick="fecharModalPrompt()" style="margin-right: 10px;">Cancelar</button>
+                <button class="action-fab" onclick="salvarPromptAPI()">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="script.js"></script>
@@ -836,8 +855,146 @@
             }
         }
 
+        /* --- LÓGICA DE PROMPTS PESSOAIS --- */
+        
+        // 1. Controle do Modal
+        function novoPromptModal() {
+            document.getElementById('inputPromptTitle').value = '';
+            document.getElementById('inputPromptContent').value = '';
+            document.getElementById('modalNovoPrompt').style.display = 'flex';
+        }
+
+        function fecharModalPrompt() {
+            document.getElementById('modalNovoPrompt').style.display = 'none';
+        }
+
+        // 2. Carregar Prompts da API
+        async function carregarPrompts() {
+            const grid = document.getElementById('promptsGrid');
+            if(!grid) return;
+            
+            grid.innerHTML = '<div style="color:#666; grid-column:1/-1; text-align:center; padding:30px;"><i class="fas fa-spinner fa-spin"></i> Carregando seus prompts...</div>';
+
+            try {
+                const response = await fetch(`${baseUrl}/api/prompts`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const prompts = await response.json();
+                    grid.innerHTML = '';
+
+                    if (prompts.length === 0) {
+                        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#666; padding:40px;">
+                            <i class="fas fa-terminal" style="font-size: 2rem; opacity: 0.5;"></i><br>
+                            Nenhum prompt salvo. Crie atalhos para usar no chat!
+                        </div>`;
+                        return;
+                    }
+
+                    prompts.forEach(p => {
+                        const div = document.createElement('div');
+                        div.className = 'item-card';
+                        // Tratamento para evitar quebras no JS ao passar string
+                        const safeContent = p.content.replace(/"/g, '&quot;').replace(/'/g, "\\'"); 
+                        const preview = p.content.length > 80 ? p.content.substring(0, 80) + '...' : p.content;
+
+                        div.innerHTML = `
+                            <div class="card-header">
+                                <div class="agent-info">
+                                    <div class="agent-icon-box" style="background: rgba(16, 185, 129, 0.1); color: var(--primary);">
+                                        <i class="fas fa-bolt"></i>
+                                    </div>
+                                    <div class="agent-name">${p.title}</div>
+                                </div>
+                                <button onclick="excluirPrompt(${p.id})" style="background:transparent; border:none; color:#ff5555; cursor:pointer;" title="Excluir">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="card-desc" style="margin: 15px 0; font-style: italic; color: #bbb; border-left: 2px solid #333; padding-left:10px;">
+                                "${preview}"
+                            </div>
+
+                            <div style="margin-top: auto;">
+                                <button onclick="usarPromptNoChat('${safeContent}')" class="action-fab" style="width:100%; justify-content:center;">
+                                    Usar no Chat <i class="fas fa-arrow-right" style="margin-left:5px;"></i>
+                                </button>
+                            </div>
+                        `;
+                        grid.appendChild(div);
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+                grid.innerHTML = `<div style="color:#ff5555; text-align:center;">Erro ao carregar prompts.</div>`;
+            }
+        }
+
+        // 3. Salvar Prompt (POST)
+        async function salvarPromptAPI() {
+            const title = document.getElementById('inputPromptTitle').value;
+            const content = document.getElementById('inputPromptContent').value;
+
+            if (!title || !content) return showToast('Preencha título e conteúdo', 'warning');
+
+            const btn = document.querySelector('#modalNovoPrompt .action-fab');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'Salvando...'; btn.disabled = true;
+
+            try {
+                const response = await fetch(`${baseUrl}/api/prompts`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ title, content })
+                });
+
+                if (response.ok) {
+                    showToast('Prompt salvo!', 'success');
+                    fecharModalPrompt();
+                    carregarPrompts();
+                } else {
+                    showToast('Erro ao salvar.', 'error');
+                }
+            } catch (e) {
+                showToast('Erro de conexão.', 'error');
+            } finally {
+                btn.innerHTML = originalText; btn.disabled = false;
+            }
+        }
+
+        // 4. Excluir Prompt (DELETE)
+        async function excluirPrompt(id) {
+            if(!confirm('Tem certeza que deseja apagar este prompt?')) return;
+            try {
+                const response = await fetch(`${baseUrl}/api/prompts/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    carregarPrompts();
+                    showToast('Prompt excluído.', 'success');
+                }
+            } catch (e) { showToast('Erro ao excluir.', 'error'); }
+        }
+
+        // 5. REDIRECIONAMENTO INTELIGENTE
+        function usarPromptNoChat(texto) {
+            // Salva o texto no navegador para recuperar na outra página
+            localStorage.setItem('prompt_pendente', texto);
+            window.location.href = 'chatcomIA.html';
+        }
+
         // --- INICIALIZAÇÃO ---
-        document.addEventListener('DOMContentLoaded', () => carregarAgentes());
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarAgentes();
+            // Garante que o botão 'Novo' do HTML chame a função correta
+            const btnNovo = document.querySelector("button[onclick*='novoPromptModal']");
+            if(btnNovo) btnNovo.onclick = novoPromptModal;
+        });
         
         // Gestos Mobile
         document.addEventListener('DOMContentLoaded', () => {

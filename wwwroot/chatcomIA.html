@@ -157,34 +157,28 @@
         }
 
         /* Adjust Markdown Elements */
-        /* --- CORREÇÃO DE OVERFLOW REFORÇADA --- */
-        
-        /* 1. Limita o container geral da mensagem para não ocupar 100% da tela */
         .message-content-wrapper {
-            max-width: 85%; /* O balão só pode ir até 85% da tela */
-            min-width: 0;   /* Essencial para Flexbox não travar */
+            max-width: 85%;
+            min-width: 0;
             display: flex;
             flex-direction: column;
         }
 
-        /* 2. Força o texto a quebrar e respeitar o limite acima */
         .message-bubble {
-            max-width: 100%;       /* Respeita os 85% do wrapper */
+            max-width: 100%;
             overflow-wrap: break-word;
             word-wrap: break-word;
             word-break: break-word;
-            white-space: normal;   /* Garante quebra de linha padrão */
+            white-space: normal;
         }
 
-        /* 3. Bloco de Código (Pre) ganha Scroll em vez de estourar */
         .message-bubble pre {
-            max-width: 100%;       /* Não passa do balão */
-            overflow-x: auto;      /* Cria barra de rolagem horizontal se precisar */
-            white-space: pre;      /* Mantém a formatação do código */
-            border-radius: 6px;    /* Visual */
+            max-width: 100%;
+            overflow-x: auto;
+            white-space: pre;
+            border-radius: 6px;
         }
 
-        /* 4. Tabelas também ganham scroll se forem grandes */
         .message-bubble table {
             display: block;
             overflow-x: auto;
@@ -196,7 +190,58 @@
         .message-bubble table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
         .message-bubble th, .message-bubble td { border: 1px solid #444; padding: 6px; text-align: left; }
         .message-bubble th { background: #333; }
-        .message-bubble p { margin-bottom: 10px; } /* Garante espaçamento entre parágrafos durante a digitação */
+        .message-bubble p { margin-bottom: 10px; }
+
+        /* --- ESTILOS DO MODAL (ADICIONADO) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: #161b22;
+            padding: 30px; border-radius: 20px; width: 90%; max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- Estilo da lista de prompts no chat --- */
+        .prompt-list-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .prompt-list-item:hover {
+            background: rgba(16, 185, 129, 0.1); /* Cor primária bem suave */
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .prompt-list-item strong {
+            display: block;
+            color: #fff;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .prompt-list-item p {
+            color: #888;
+            font-size: 0.8rem;
+            margin: 0;
+            white-space: nowrap; 
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body class="chat-mode">
@@ -247,10 +292,17 @@
                         <div class="input-container">
                             <div style="position:relative;">
                                 <div class="action-icon" onclick="toggleMenu('attachMenu')"><i class="fas fa-paperclip"></i></div>
+                                
                                 <div class="floating-menu" id="attachMenu">
-                                    <div class="menu-option" onclick="triggerFileUpload('application/pdf')"><i class="far fa-file-pdf"></i> PDF</div>
-                                    <div class="menu-option" onclick="triggerFileUpload('image/*')"><i class="far fa-file-image"></i> Imagem</div>
-                                    <div class="menu-option" onclick="saveCurrentInputAsPrompt()"><i class="fas fa-save"></i> Salvar Prompt</div>
+                                    <div class="menu-option" onclick="triggerFileUpload('application/pdf')">
+                                        <i class="far fa-file-pdf"></i> PDF
+                                    </div>
+                                    <div class="menu-option" onclick="triggerFileUpload('image/*')">
+                                        <i class="far fa-file-image"></i> Imagem
+                                    </div>
+                                    <div class="menu-option" onclick="abrirMeusPromptsChat()">
+                                        <i class="fas fa-list-ul"></i> Prompts Salvos
+                                    </div>
                                 </div>
                             </div>
 
@@ -350,20 +402,33 @@
         const agentArea = params.get('area') || 'geral';
 
         setupChat(agentName, agentIcon, agentArea);
-        // NOTA: O setupChat agora chama o carregamento do histórico da API
         
         if(window.innerWidth <= 768) {
             const mobileMenu = document.querySelector('.mobile-only');
             if(mobileMenu) mobileMenu.style.display = 'block';
         }
+
+        // --- AUTO-PREENCHIMENTO DE PROMPT ---
+        const promptPendente = localStorage.getItem('prompt_pendente');
+        if (promptPendente) {
+            const campoInput = document.getElementById('userInput');
+            if (campoInput) {
+                campoInput.value = promptPendente;
+                campoInput.focus();
+                if(campoInput.style) {
+                    campoInput.style.height = 'auto';
+                    campoInput.style.height = campoInput.scrollHeight + 'px';
+                }
+            }
+            localStorage.removeItem('prompt_pendente');
+        }
     });
 
-    // --- SETUP DO CHAT (ATUALIZADO PARA SUPORTAR SESSIONID) ---
+    // --- SETUP DO CHAT ---
     function setupChat(name, icon, area) {
         if(name.includes('-')) name = name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
         const params = new URLSearchParams(window.location.search);
-        // Tenta pegar o ID da URL se existir, senão cria novo ID baseado no tempo
         currentSessionId = params.get('sessionId') || Date.now().toString(); 
         
         currentAgentName = name;
@@ -378,15 +443,12 @@
         messagesArea.innerHTML = "";
         loadSwitches(area);
 
-        // SE TIVER SESSION ID NA URL, CARREGA MENSAGENS ANTIGAS DO BANCO
         if (params.get('sessionId')) {
             loadSessionMessages(currentSessionId);
         } else {
-            // Se é nova, mostra saudação padrão
             addMessage('ai', `Olá! Sou seu ${name}. Como posso ajudar hoje?`, currentAgentIcon, false);
         }
 
-        // CARREGA A LISTA LATERAL DA API (Substitui o localStorage)
         loadHistoryFromAPI();
     }
 
@@ -419,15 +481,13 @@
 
     // --- ENVIO DE MENSAGEM COM STOP REAL ---
     async function handleSendMessage() {
-        // 1. Lógica de PARAR (Stop Real)
         if (isGenerating) {
             if (currentAbortController) {
-                currentAbortController.abort(); // <--- CORTA A CONEXÃO COM O SERVIDOR
+                currentAbortController.abort(); 
                 currentAbortController = null;
             }
             isGenerating = false;
             
-            // Avisa visualmente que parou
             const loadingMsg = messagesArea.querySelector('.ai-message:last-child .message-bubble');
             if(loadingMsg) loadingMsg.innerHTML += " <br><i>[Interrompido pelo usuário]</i>";
             
@@ -435,14 +495,12 @@
             return;
         }
 
-        // 2. Validações Iniciais
         const text = userInput.value.trim();
         if (!text && !currentFile) return;
 
         slashMenu.style.display = 'none';
         if(text) addMessage("user", text);
         
-        // Exibição Rica do Arquivo
         if(currentFile) {
             const fileHTML = `<div class="rich-preview" style="background: rgba(255,255,255,0.1); display:inline-flex;">
                 <i class="fas fa-file" style="font-size:1.5rem; color:var(--primary)"></i>
@@ -454,19 +512,14 @@
             addMessage("user", fileHTML, null, false, true); 
         }
 
-        // Cria bolha da IA
         const aiDiv = addMessage("ai", "", currentAgentIcon, true); 
-        
-        // Reseta inputs
         userInput.value = ""; 
         const fileToSend = currentFile;
         clearAttachments();
 
-        // 3. Prepara Estado de Envio
         isGenerating = true;
         setSendButtonState('stop');
         
-        // CRIA O CONTROLADOR DE CANCELAMENTO
         currentAbortController = new AbortController();
         const signal = currentAbortController.signal;
 
@@ -475,7 +528,6 @@
             let contextPrompt = activeContexts.size > 0 ? "Contextos: " + Array.from(activeContexts).map(c => c.l).join(", ") + ". " : "";
             let responseText = "";
             
-            // Delay visual mínimo
             await new Promise(r => setTimeout(r, 500));
 
             if (typeof CONFIG !== 'undefined' && CONFIG.API_URL) {
@@ -486,26 +538,24 @@
                     formData.append('sessionId', currentSessionId); 
                     if(fileToSend) formData.append('file', fileToSend);
 
-                    // FETCH COM SINAL DE ABORTO
                     const res = await fetch(`${CONFIG.API_URL}/api/chat/enviar`, { 
                         method: 'POST', 
                         headers: { 'Authorization': `Bearer ${token}` },
                         body: formData,
-                        signal: signal // <--- LIGA O BOTÃO AO SERVIDOR
+                        signal: signal
                     });
 
                     if (res.ok) {
                         const data = await res.json();
                         responseText = data.reply;
                     } else {
-                         // Se foi cancelado pelo usuário (499) ou erro
                          if(res.status === 499) throw new Error("AbortError"); 
                          throw new Error("Erro na API");
                     }
 
                 } catch(e) { 
                     if (e.name === 'AbortError' || e.message === 'AbortError') {
-                        throw new Error("Geração cancelada."); // Joga para o catch principal tratar o stop
+                        throw new Error("Geração cancelada."); 
                     }
                     console.log("API offline ou erro, usando simulação.", e); 
                     responseText = simulateAIResponse(text, currentAgentName);
@@ -514,7 +564,6 @@
                  responseText = simulateAIResponse(text, currentAgentName);
             }
 
-            // --- RENDERIZAÇÃO PROGRESSIVA ---
             const bubble = aiDiv.querySelector('.message-bubble');
             bubble.classList.remove('typing-cursor');
             bubble.innerHTML = ""; 
@@ -524,7 +573,7 @@
             let currentMarkdown = "";
 
             const typeLoop = () => { 
-                if(!isGenerating) return; // Se parou no meio da animação
+                if(!isGenerating) return; 
 
                 if(i < responseText.length) { 
                     currentMarkdown += responseText.charAt(i);
@@ -539,7 +588,6 @@
             typeLoop();
 
         } catch (e) {
-            // Se foi cancelamento, não mostra erro vermelho, apenas para.
             if (e.message === "Geração cancelada." || e.name === 'AbortError') {
                 isGenerating = false;
                 setSendButtonState('send');
@@ -558,19 +606,13 @@
 
     function finalizeMessage(aiDiv, text) {
         const bubble = aiDiv.querySelector('.message-bubble');
-        
-        // 1. Renderiza Markdown Final (garantia de fechamento de tags)
         bubble.innerHTML = marked.parse(text);
         
-        // 2. Aplica Highlight.js nos blocos de código
         bubble.querySelectorAll('pre code').forEach((block) => {
             hljs.highlightElement(block);
-            
-            // Adiciona Header e Botão Copiar no Bloco
             const pre = block.parentElement;
             const lang = block.className.replace('hljs language-', '') || 'Code';
-            
-            if (!pre.querySelector('.code-header')) { // Evita duplicar se já renderizou
+            if (!pre.querySelector('.code-header')) { 
                 const header = document.createElement('div');
                 header.className = 'code-header';
                 header.innerHTML = `<span>${lang}</span> <button class="copy-code-btn" onclick="copiarTexto(this, this.parentElement.nextElementSibling.innerText)"><i class="far fa-copy"></i> Copiar Código</button>`;
@@ -578,14 +620,11 @@
             }
         });
 
-        // 3. Reseta Estado (Removido salvamento local)
         isGenerating = false;
         setSendButtonState('send');
         smartScroll();
 
-        // 4. Adiciona Ações da Mensagem
         const contentWrapper = aiDiv.querySelector('.message-content-wrapper');
-        // Verifica se já existe action-row para não duplicar
         if (!contentWrapper.querySelector('.action-row')) {
             const actionsDiv = document.createElement('div');
             actionsDiv.className = 'action-row';
@@ -608,7 +647,7 @@
     }
 
     function smartScroll() {
-        const threshold = 100; // px do fundo
+        const threshold = 100; 
         const position = messagesArea.scrollTop + messagesArea.offsetHeight;
         const height = messagesArea.scrollHeight;
         
@@ -630,8 +669,6 @@
         d.className = `message-row ${isAI ? 'ai-message' : 'user-message'}`;
 
         const avatarHTML = isAI ? `<div class="ai-avatar"><i class="fas fa-${icon || 'robot'}"></i></div>` : '';
-        // Se for user e não HTML, converte quebras de linha para <br>
-        // Se for IA (typing), o conteúdo inicial é vazio ou spinner, depois entra o markdown
         let content = typing ? '<i class="fas fa-circle-notch fa-spin"></i> Processando...' : (isHTML ? text : text.replace(/\n/g, '<br>')); 
 
         const editBtn = (!isAI && !typing) ? `<i class="fas fa-pencil-alt edit-msg-btn" onclick="editUserMessage('${text.replace(/'/g, "\\'")}')" title="Editar e reenviar"></i>` : '';
@@ -646,11 +683,9 @@
 
         messagesArea.appendChild(d);
         smartScroll();
-        // NOTA: Removemos o salvamento local aqui, o backend cuida disso
         return d;
     }
 
-    // --- UPLOAD RICO ---
     function triggerFileUpload(accept) { toggleMenu('attachMenu'); const i = document.getElementById('realFileInput'); i.accept = accept; i.click(); }
     
     function handleFileSelected(e) { 
@@ -672,16 +707,13 @@
     
     function clearAttachments() { currentFile = null; document.getElementById('realFileInput').value=""; document.getElementById('attachmentsPreview').innerHTML=""; }
 
-    // --- HISTÓRICO VIA API (NOVA IMPLEMENTAÇÃO) ---
-    
+    // --- HISTÓRICO ---
     async function loadHistoryFromAPI() {
         const list = document.getElementById('historyList');
-        // Mostra loading discreto
         list.innerHTML = '<div style="padding:10px; color:#666; font-size:0.8rem;">Carregando...</div>';
 
         try {
             const token = localStorage.getItem('token');
-            // Chama o endpoint que criamos no Controller
             const res = await fetch(`${CONFIG.API_URL}/api/chat/sessions`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -705,7 +737,6 @@
         const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
 
         history.forEach(h => {
-            // Ajuste para ler propriedades do backend (Title, Timestamp) - Caso venha Maiusculo ou Minusculo
             const dateStr = h.timestamp || h.Timestamp;
             const date = new Date(dateStr);
             if(isNaN(date.getTime())) return;
@@ -719,11 +750,10 @@
             if(items.length > 0) {
                 list.innerHTML += `<div class="history-date-header">${label}</div>`;
                 items.forEach(h => {
-                    const sessId = h.id || h.Id; // ID da Sessão vindo do banco
+                    const sessId = h.id || h.Id; 
                     const title = (h.title || h.Title || "Conversa sem título").substring(0, 30);
                     const agent = h.agentId || h.AgentId || currentAgentName;
                     
-                    // Ao clicar, recarrega a página com o ID da sessão na URL
                     list.innerHTML += `
                         <div class="history-item" onclick="window.location.href='chatcomIA.html?name=${agent}&sessionId=${sessId}'">
                             <i class="fas fa-comment"></i>
@@ -741,44 +771,34 @@
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const msgs = await res.json();
-            
-            messagesArea.innerHTML = ""; // Limpa a tela
+            messagesArea.innerHTML = ""; 
             
             msgs.forEach(m => {
-                // Backend retorna 'assistant' ou 'user' -> Frontend usa 'ai' ou 'user'
                 const senderBackend = m.sender || m.Sender; 
                 const sender = (senderBackend && senderBackend.toLowerCase() === 'user') ? 'user' : 'ai';
                 const text = m.text || m.Text;
-                
-                // Renderiza mensagem antiga (false = não digitar, apenas mostrar)
                 addMessage(sender, text, currentAgentIcon, false, false); 
             });
-            
             smartScroll();
         } catch (e) {
-            console.error("Erro ao carregar mensagens antigas", e);
             addMessage('ai', 'Erro ao carregar o histórico desta conversa.', 'exclamation-triangle', false);
         }
     }
 
-    // --- EXPORTAR (ADAPTADO PARA LER DO DOM) ---
     function exportChat(format) {
         if(format === 'pdf') {
             const element = document.getElementById('messagesArea');
             const opt = { margin: 1, filename: `chat-${currentAgentName}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
             html2pdf().set(opt).from(element).save();
         } else {
-            // Nova lógica para TXT: Lê diretamente da tela, já que não temos localStorage
             let text = "";
             const messages = document.querySelectorAll('.message-row');
             messages.forEach(row => {
                 const isUser = row.classList.contains('user-message');
                 const sender = isUser ? "USUÁRIO" : currentAgentName.toUpperCase();
-                // Tenta pegar texto puro, ignorando botões de copiar
                 const content = row.querySelector('.message-bubble').innerText; 
                 text += `[${sender}]: ${content}\n----------------\n`;
             });
-
             const blob = new Blob([text], { type: "text/plain" });
             const a = document.createElement("a");
             a.href = URL.createObjectURL(blob);
@@ -787,7 +807,6 @@
         }
     }
 
-    // Funcionalidades Auxiliares (Switches, Menus)
     function loadSwitches(area) {
         let key = 'geral';
         if (area.includes('jur')) key = 'juridico';
@@ -808,7 +827,6 @@
     function togglePanel() { const p = document.getElementById('promptsPanel'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; }
     function toggleSidebarMobile() { document.getElementById('mainSidebar').classList.toggle('active'); }
 
-    // Listeners Globais
     document.addEventListener('click', (e) => {
         if(!e.target.closest('.action-icon') && !e.target.closest('.floating-menu')) document.querySelectorAll('.floating-menu').forEach(m => m.style.display = 'none');
         if(!e.target.closest('.prompts') && !e.target.closest('.floating-panel')) document.getElementById('promptsPanel').style.display = 'none';
@@ -817,6 +835,99 @@
     userInput.addEventListener('keydown', (e) => {
         if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
     });
+
+    /* --- LÓGICA DE PROMPTS SALVOS NO CHAT --- */
+
+    async function abrirMeusPromptsChat() {
+        document.getElementById('attachMenu').style.display = 'none';
+        
+        const modal = document.getElementById('modalPromptsChat');
+        const lista = document.getElementById('listaPromptsChatContent');
+        modal.style.display = 'flex';
+        lista.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Buscando seus prompts...</div>';
+
+        try {
+            const token = localStorage.getItem('token');
+            const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : 'http://localhost:5217';
+
+            const response = await fetch(`${apiUrl}/api/prompts`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const prompts = await response.json();
+
+                if (prompts.length === 0) {
+                    lista.innerHTML = `
+                        <div style="text-align:center; color:#888; padding:20px;">
+                            <i class="fas fa-folder-open" style="font-size:2rem; margin-bottom:10px;"></i><br>
+                            Você não tem prompts salvos.<br>
+                            <a href="meus_prompts.html" style="color:var(--primary); text-decoration:none; font-size:0.9rem;">Criar prompts</a>
+                        </div>`;
+                    return;
+                }
+
+                lista.innerHTML = ''; 
+
+                prompts.forEach(p => {
+                    const item = document.createElement('div');
+                    item.className = 'prompt-list-item';
+                    const conteudoSafe = encodeURIComponent(p.content);
+                    item.onclick = () => selecionarPromptChat(conteudoSafe);
+                    
+                    item.innerHTML = `
+                        <strong>${p.title}</strong>
+                        <p>${p.content}</p>
+                    `;
+                    lista.appendChild(item);
+                });
+            } else {
+                lista.innerHTML = '<div style="color:#ff6b6b; text-align:center;">Erro ao carregar prompts.</div>';
+            }
+        } catch (e) {
+            console.error(e);
+            lista.innerHTML = '<div style="color:#ff6b6b; text-align:center;">Erro de conexão.</div>';
+        }
+    }
+
+    function selecionarPromptChat(conteudoEncoded) {
+        const conteudo = decodeURIComponent(conteudoEncoded);
+        const input = document.getElementById('userInput');
+        
+        if (input.value.trim() !== '') {
+            input.value += '\n\n' + conteudo;
+        } else {
+            input.value = conteudo;
+        }
+        input.focus();
+        fecharModalPromptsChat();
+    }
+
+    function fecharModalPromptsChat() {
+        document.getElementById('modalPromptsChat').style.display = 'none';
+    }
+
+    window.addEventListener('click', function(e) {
+        const modal = document.getElementById('modalPromptsChat');
+        if (e.target == modal) {
+            fecharModalPromptsChat();
+        }
+    });
    </script>
+
+   <div id="modalPromptsChat" class="modal-overlay" style="z-index: 3000;">
+    <div class="modal-content" style="max-width: 500px; text-align: left; max-height: 80vh; display: flex; flex-direction: column;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+            <h3 style="margin:0; color: var(--primary);"><i class="fas fa-bolt"></i> Escolher Prompt</h3>
+            <button onclick="fecharModalPromptsChat()" style="background:none; border:none; color:#666; cursor:pointer; font-size:1.2rem;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div id="listaPromptsChatContent" style="overflow-y: auto; flex: 1; padding-right: 5px;">
+            <div style="text-align:center; color:#666; padding:20px;">Carregando...</div>
+        </div>
+    </div>
+   </div>
 </body>
 </html>
