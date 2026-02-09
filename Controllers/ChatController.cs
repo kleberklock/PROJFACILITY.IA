@@ -76,6 +76,7 @@ namespace PROJFACILITY.IA.Controllers
             [FromForm] string message, 
             [FromForm] string agentId, 
             [FromForm] string sessionId,
+            [FromForm] string? activeContexts, // <--- ALTERADO PARA string? (OPCIONAL)
             CancellationToken ct)
         {
             try 
@@ -84,14 +85,11 @@ namespace PROJFACILITY.IA.Controllers
                 if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) 
                     return Unauthorized(new { message = "Usuário não identificado." });
 
-                // --- ALTERAÇÃO: Validação e Criação de Nova Sessão ---
-                // Se o sessionId for inválido ou solicitar nova sessão, gera um novo GUID.
-                // Isso é feito ANTES de buscar o histórico para garantir contexto limpo.
+                // Validação e Criação de Nova Sessão
                 if (string.IsNullOrEmpty(sessionId) || sessionId.ToLower() == "nova" || sessionId == "undefined" || sessionId == "new-session")
                 {
                     sessionId = Guid.NewGuid().ToString();
                 }
-                // -----------------------------------------------------
 
                 var history = await _context.ChatMessages
                     .Where(m => m.UserId == userId && m.SessionId == sessionId) 
@@ -108,7 +106,8 @@ namespace PROJFACILITY.IA.Controllers
                 _context.ChatMessages.Add(userMsg);
                 await _context.SaveChangesAsync(ct);
                 
-                var (responseAI, tokens) = await _chatService.GetAIResponse(message, agentId, history, userId, ct);
+                // Passa o contexto (pode ser null) para o serviço
+                var (responseAI, tokens) = await _chatService.GetAIResponse(message, agentId, history, userId, activeContexts, ct);
 
                 var aiMsg = new ChatMessage 
                 { 
@@ -118,7 +117,6 @@ namespace PROJFACILITY.IA.Controllers
                 _context.ChatMessages.Add(aiMsg);
                 await _context.SaveChangesAsync(ct);
 
-                // Retorna o sessionId (pode ser o novo gerado) para que o front atualize
                 return Ok(new { reply = responseAI, tokens = tokens, sessionId = sessionId });
             }
             catch (Exception ex)
@@ -128,7 +126,6 @@ namespace PROJFACILITY.IA.Controllers
         }
 
         // --- 4. DEBUG DE RECUPERAÇÃO REAL (NOVO) ---
-        // Acesse no navegador: /api/chat/debug-search?query=codigo&agentName=Agente%20de%20Teste%2001
         [HttpGet("debug-search")]
         public async Task<IActionResult> DebugSearch([FromQuery] string query, [FromQuery] string agentName)
         {

@@ -309,8 +309,14 @@
                             <div style="position:relative;">
                                 <div class="action-icon prompts" onclick="togglePanel()"><i class="fas fa-wand-magic-sparkles" style="color:var(--primary)"></i></div>
                                 <div class="floating-panel" id="promptsPanel">
-                                    <div class="panel-header"><span>Módulos de Contexto</span></div>
+                                    <div class="panel-header"><span>Módulos de Contexto (Sistema)</span></div>
                                     <div id="switchesContainer" style="padding:10px;"></div>
+                                    
+                                    <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 5px 10px;"></div>
+                                    <div class="panel-header" style="margin-top:5px;"><span>Meus Contextos (Prompts)</span></div>
+                                    <div id="userPromptsContainer" style="padding:10px; max-height: 200px; overflow-y: auto;">
+                                        <div style="text-align:center; color:#666; font-size:0.8rem;">Carregando...</div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -403,6 +409,9 @@
 
         setupChat(agentName, agentIcon, agentArea);
         
+        // Carrega os prompts do usuário (Contextos Ativos)
+        loadUserContexts();
+
         if(window.innerWidth <= 768) {
             const mobileMenu = document.querySelector('.mobile-only');
             if(mobileMenu) mobileMenu.style.display = 'block';
@@ -479,6 +488,52 @@
         userInput.focus();
     }
 
+    // --- CARREGAR CONTEXTOS DO USUÁRIO ---
+    async function loadUserContexts() {
+        const container = document.getElementById('userPromptsContainer');
+        if (!container) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
+            
+            const response = await fetch(`${apiUrl}/api/prompts`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const prompts = await response.json();
+                container.innerHTML = "";
+
+                if (prompts.length === 0) {
+                    container.innerHTML = '<div style="text-align:center; color:#666; font-size:0.8rem;">Nenhum prompt salvo.</div>';
+                    return;
+                }
+
+                prompts.forEach((p, i) => {
+                    const safeContent = p.content.replace(/"/g, '&quot;');
+                    
+                    const itemHTML = `
+                    <div class="prompt-switch-item">
+                        <div>
+                            <div style="font-weight:bold; font-size:0.85rem; color:#eee;">${p.title}</div>
+                        </div>
+                        <label class="mini-switch">
+                            <input type="checkbox" class="user-context-switch" value="${safeContent}">
+                            <span class="mini-slider"></span>
+                        </label>
+                    </div>`;
+                    container.innerHTML += itemHTML;
+                });
+            } else {
+                container.innerHTML = '<div style="color:#ff6b6b; font-size:0.8rem;">Erro ao carregar.</div>';
+            }
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = '<div style="color:#ff6b6b; font-size:0.8rem;">Offline.</div>';
+        }
+    }
+
     // --- ENVIO DE MENSAGEM COM STOP REAL ---
     async function handleSendMessage() {
         if (isGenerating) {
@@ -525,7 +580,7 @@
 
         try {
             const token = localStorage.getItem('token'); 
-            let contextPrompt = activeContexts.size > 0 ? "Contextos: " + Array.from(activeContexts).map(c => c.l).join(", ") + ". " : "";
+            let contextPrompt = activeContexts.size > 0 ? "Contextos do Sistema: " + Array.from(activeContexts).map(c => c.l).join(", ") + ". " : "";
             let responseText = "";
             
             await new Promise(r => setTimeout(r, 500));
@@ -533,6 +588,19 @@
             if (typeof CONFIG !== 'undefined' && CONFIG.API_URL) {
                 try {
                     const formData = new FormData();
+                    
+                    // --- NOVA LÓGICA: Coletar Contextos Ativos ---
+                    const userSwitches = document.querySelectorAll('.user-context-switch:checked');
+                    let userContextsContent = "";
+                    
+                    if (userSwitches.length > 0) {
+                        userContextsContent = Array.from(userSwitches)
+                            .map(checkbox => checkbox.value)
+                            .join("\n\n---\n\n");
+                    }
+                    formData.append('activeContexts', userContextsContent);
+                    // ---------------------------------------------
+
                     formData.append('message', contextPrompt + text);
                     formData.append('agentId', currentAgentName); 
                     formData.append('sessionId', currentSessionId); 

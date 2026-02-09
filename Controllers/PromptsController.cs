@@ -22,8 +22,11 @@ namespace PROJFACILITY.IA.Controllers
         [HttpGet]
         public async Task<IActionResult> GetMyPrompts()
         {
-            var userIdStr = User.Identity?.Name;
-            if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
+            // Tenta pegar o ID do ClaimTypes.NameIdentifier (padrão JWT) ou Identity.Name
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
+            
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) 
+                return Unauthorized();
 
             var prompts = await _context.Prompts
                 .Where(p => p.UserId == userId)
@@ -35,8 +38,9 @@ namespace PROJFACILITY.IA.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePrompt([FromBody] Prompt prompt)
         {
-            var userIdStr = User.Identity?.Name;
-            if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) 
+                return Unauthorized();
 
             prompt.UserId = userId;
             prompt.CreatedAt = DateTime.UtcNow;
@@ -45,12 +49,35 @@ namespace PROJFACILITY.IA.Controllers
             await _context.SaveChangesAsync();
             return Ok(prompt);
         }
+
+        // --- NOVO MÉTODO: EDITAR PROMPT ---
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdatePrompt(int id, [FromBody] Prompt promptUpdate)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) 
+                return Unauthorized();
+
+            var prompt = await _context.Prompts.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+            
+            if (prompt == null) return NotFound("Prompt não encontrado ou não pertence a você.");
+
+            // Atualiza apenas os campos permitidos
+            prompt.Title = promptUpdate.Title;
+            prompt.Content = promptUpdate.Content;
+            // Opcional: prompt.IsFavorite = promptUpdate.IsFavorite;
+
+            await _context.SaveChangesAsync();
+            return Ok(prompt);
+        }
+        // ----------------------------------
         
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePrompt(int id)
         {
-            var userIdStr = User.Identity?.Name;
-            if (!int.TryParse(userIdStr, out int userId)) return Unauthorized();
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) 
+                return Unauthorized();
 
             var prompt = await _context.Prompts.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
             

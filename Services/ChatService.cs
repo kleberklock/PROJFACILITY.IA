@@ -8,7 +8,7 @@ using PROJFACILITY.IA.Data;
 using PROJFACILITY.IA.Models;
 using Microsoft.Extensions.Logging;
 using System.Text.Json; 
-using System.Collections.Generic; // Garante uso de List
+using System.Collections.Generic; 
 
 namespace PROJFACILITY.IA.Services
 {
@@ -54,6 +54,7 @@ namespace PROJFACILITY.IA.Services
             string agentId, 
             List<PROJFACILITY.IA.Models.ChatMessage> historicoDb, 
             int userId,
+            string? activeContexts, // <--- ALTERADO PARA string? (OPCIONAL)
             CancellationToken ct) 
         {
             var user = await _context.Users.FindAsync(userId);
@@ -71,6 +72,14 @@ namespace PROJFACILITY.IA.Services
 
             var agent = await _context.Agents.FirstOrDefaultAsync(a => a.Name == agentId, ct);
             string systemInstruction = agent?.SystemInstruction ?? "Você é um assistente virtual útil.";
+
+            // --- LÓGICA DE CONTEXTOS ATIVOS ---
+            // Verifica se activeContexts não é nulo nem vazio antes de usar
+            if (!string.IsNullOrEmpty(activeContexts))
+            {
+                systemInstruction += $"\n\n[CONTEXTOS ATIVOS DEFINIDOS PELO USUÁRIO]:\n{activeContexts}";
+            }
+            // ----------------------------------
 
             string contextoExtraido = await BuscarConhecimentoNoPinecone(userMessage, agentId, userId);
 
@@ -141,9 +150,7 @@ namespace PROJFACILITY.IA.Services
                 };
 
                 var searchResponse = await index.QueryAsync(searchRequest);
-
-                // CORREÇÃO: Tratamento seguro da lista de matches
-                var matches = searchResponse.Matches ?? new ScoredVector[0]; // fallback array vazio
+                var matches = searchResponse.Matches ?? new ScoredVector[0]; 
 
                 if (matches.Any())
                 {
@@ -164,18 +171,15 @@ namespace PROJFACILITY.IA.Services
 
         private string GerarRespostaSimulada(string agentId, string userMessage) => "[MODO OFFLINE] Verifique API Keys.";
 
-        // --- MÉTODO DE DIAGNÓSTICO (CORRIGIDO) ---
         public async Task<object> DebugRetrieval(string query, string agentName, int userId)
         {
             if (_embeddingClient == null || _pinecone == null) return new { Error = "Serviços offline" };
 
             try
             {
-                // 1. Gera Embedding
                 var emb = await _embeddingClient.GenerateEmbeddingAsync(query);
                 float[] vec = emb.Value.Vector.ToArray();
 
-                // 2. Filtros
                 var filtroUserId = new Metadata();
                 filtroUserId.Add("$in", new string[] { userId.ToString(), "system" });
 
@@ -183,7 +187,6 @@ namespace PROJFACILITY.IA.Services
                 filtroPrincipal.Add("tag", agentName);
                 filtroPrincipal.Add("userId", filtroUserId);
 
-                // 3. Busca
                 var index = _pinecone.Index(_indexName);
                 var resp = await index.QueryAsync(new QueryRequest
                 {
@@ -193,8 +196,6 @@ namespace PROJFACILITY.IA.Services
                     Filter = filtroPrincipal
                 });
 
-                // 4. CORREÇÃO CRÍTICA AQUI:
-                // Normaliza a lista antes de usar LINQ para evitar erro CS8978
                 var safeMatches = resp.Matches ?? new ScoredVector[0];
 
                 return new 
@@ -202,7 +203,7 @@ namespace PROJFACILITY.IA.Services
                     Query = query,
                     UserIdBuscado = userId,
                     AgentTagBuscada = agentName,
-                    MatchesEncontrados = safeMatches.Count(), // Agora usa .Count() no IEnumerable seguro
+                    MatchesEncontrados = safeMatches.Count(), 
                     Detalhes = safeMatches.Select(m => new 
                     {
                         Score = m.Score,

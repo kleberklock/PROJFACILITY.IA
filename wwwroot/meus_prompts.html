@@ -491,7 +491,6 @@
                 <h3 style="margin-top: 15px;">Como criar seu Agente IA?</h3>
                 <p style="color: #888;">É como contratar um funcionário digital especialista.</p>
             </div>
-
             <div class="tutorial-step">
                 <div class="step-icon">1</div>
                 <div>
@@ -499,7 +498,6 @@
                     <p style="margin:0; font-size:0.9rem; color:#aaa;">Ex: "Revisor Jurídico". Diga para ele agir como um advogado sênior.</p>
                 </div>
             </div>
-
             <div class="tutorial-step">
                 <div class="step-icon">2</div>
                 <div>
@@ -507,7 +505,6 @@
                     <p style="margin:0; font-size:0.9rem; color:#aaa;">Suba PDFs, manuais ou planilhas. Ele vai ler tudo em segundos.</p>
                 </div>
             </div>
-
             <div class="tutorial-step">
                 <div class="step-icon">3</div>
                 <div>
@@ -515,7 +512,6 @@
                     <p style="margin:0; font-size:0.9rem; color:#aaa;">Salve e vá para o chat. Ele usará o que aprendeu para te ajudar.</p>
                 </div>
             </div>
-
             <div style="text-align: center; margin-top: 30px;">
                 <button class="action-fab" onclick="fecharTutorialEabrirForm()">
                     Entendi, vamos criar! <i class="fas fa-arrow-right"></i>
@@ -549,8 +545,10 @@
 
     <div id="modalNovoPrompt" class="modal-overlay" style="display: none; align-items: center; justify-content: center;">
         <div class="modal-content" style="max-width: 500px; text-align: left; background: #1e232d; border: 1px solid rgba(255,255,255,0.1);">
-            <h3 style="margin-top:0; margin-bottom: 20px; color: var(--primary);">Criar Novo Prompt</h3>
+            <h3 id="modalPromptTitle" style="margin-top:0; margin-bottom: 20px; color: var(--primary);">Criar Novo Prompt</h3>
             
+            <input type="hidden" id="inputPromptId">
+
             <label style="color:#aaa; font-size:0.9rem; display:block; margin-bottom:5px;">Título (Ex: Corretor de Texto)</label>
             <input type="text" id="inputPromptTitle" class="minimal-input" style="margin-bottom: 20px; width:100%;" placeholder="Dê um nome curto">
             
@@ -855,12 +853,25 @@
             }
         }
 
-        /* --- LÓGICA DE PROMPTS PESSOAIS --- */
+        /* --- LÓGICA DE PROMPTS PESSOAIS (ATUALIZADO) --- */
         
         // 1. Controle do Modal
         function novoPromptModal() {
+            // Limpa para criar novo
+            document.getElementById('inputPromptId').value = '';
             document.getElementById('inputPromptTitle').value = '';
             document.getElementById('inputPromptContent').value = '';
+            document.getElementById('modalPromptTitle').innerText = 'Criar Novo Prompt';
+            document.getElementById('modalNovoPrompt').style.display = 'flex';
+        }
+
+        // 1.1 NOVA FUNÇÃO: Editar Prompt
+        function editarPrompt(id, title, content) {
+            // Preenche com dados existentes
+            document.getElementById('inputPromptId').value = id;
+            document.getElementById('inputPromptTitle').value = title;
+            document.getElementById('inputPromptContent').value = content;
+            document.getElementById('modalPromptTitle').innerText = 'Editar Prompt';
             document.getElementById('modalNovoPrompt').style.display = 'flex';
         }
 
@@ -895,8 +906,11 @@
                     prompts.forEach(p => {
                         const div = document.createElement('div');
                         div.className = 'item-card';
-                        // Tratamento para evitar quebras no JS ao passar string
-                        const safeContent = p.content.replace(/"/g, '&quot;').replace(/'/g, "\\'"); 
+                        
+                        // Tratamento para evitar quebras no JS
+                        const safeTitle = p.title ? p.title.replace(/"/g, '&quot;').replace(/'/g, "\\'") : '';
+                        const safeContent = p.content ? p.content.replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, '\\n') : '';
+                        
                         const preview = p.content.length > 80 ? p.content.substring(0, 80) + '...' : p.content;
 
                         div.innerHTML = `
@@ -907,9 +921,14 @@
                                     </div>
                                     <div class="agent-name">${p.title}</div>
                                 </div>
-                                <button onclick="excluirPrompt(${p.id})" style="background:transparent; border:none; color:#ff5555; cursor:pointer;" title="Excluir">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                <div>
+                                    <button onclick="editarPrompt(${p.id}, '${safeTitle}', '${safeContent}')" style="background:transparent; border:none; color:#bbb; cursor:pointer; margin-right:10px;" title="Editar">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </button>
+                                    <button onclick="excluirPrompt(${p.id})" style="background:transparent; border:none; color:#ff5555; cursor:pointer;" title="Excluir">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
                             </div>
                             
                             <div class="card-desc" style="margin: 15px 0; font-style: italic; color: #bbb; border-left: 2px solid #333; padding-left:10px;">
@@ -931,8 +950,9 @@
             }
         }
 
-        // 3. Salvar Prompt (POST)
+        // 3. Salvar Prompt (POST ou PUT)
         async function salvarPromptAPI() {
+            const id = document.getElementById('inputPromptId').value; // Pega o ID
             const title = document.getElementById('inputPromptTitle').value;
             const content = document.getElementById('inputPromptContent').value;
 
@@ -943,8 +963,12 @@
             btn.innerHTML = 'Salvando...'; btn.disabled = true;
 
             try {
-                const response = await fetch(`${baseUrl}/api/prompts`, {
-                    method: 'POST',
+                // Decide se é Criação (POST) ou Edição (PUT)
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `${baseUrl}/api/prompts/${id}` : `${baseUrl}/api/prompts`;
+
+                const response = await fetch(url, {
+                    method: method,
                     headers: { 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}` 
@@ -953,7 +977,7 @@
                 });
 
                 if (response.ok) {
-                    showToast('Prompt salvo!', 'success');
+                    showToast(id ? 'Prompt atualizado!' : 'Prompt salvo!', 'success');
                     fecharModalPrompt();
                     carregarPrompts();
                 } else {
@@ -983,7 +1007,6 @@
 
         // 5. REDIRECIONAMENTO INTELIGENTE
         function usarPromptNoChat(texto) {
-            // Salva o texto no navegador para recuperar na outra página
             localStorage.setItem('prompt_pendente', texto);
             window.location.href = 'chatcomIA.html';
         }
@@ -991,7 +1014,6 @@
         // --- INICIALIZAÇÃO ---
         document.addEventListener('DOMContentLoaded', () => {
             carregarAgentes();
-            // Garante que o botão 'Novo' do HTML chame a função correta
             const btnNovo = document.querySelector("button[onclick*='novoPromptModal']");
             if(btnNovo) btnNovo.onclick = novoPromptModal;
         });
