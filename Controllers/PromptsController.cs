@@ -19,6 +19,28 @@ namespace PROJFACILITY.IA.Controllers
             _context = context;
         }
 
+        // --- NOVO ENDPOINT: Buscar Prompts do Sistema (ADICIONADO) ---
+        [HttpGet("system")]
+        [AllowAnonymous] // Permite carregar mesmo se houver problema temporário no token, ou remova se quiser estrito
+        public async Task<IActionResult> GetSystemPrompts()
+        {
+            try
+            {
+                // Busca os prompts do sistema ordenados para facilitar o agrupamento no front
+                var prompts = await _context.SystemPrompts
+                    .OrderBy(p => p.Area)
+                    .ThenBy(p => p.Profession)
+                    .ToListAsync();
+
+                return Ok(prompts);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Erro ao buscar prompts do sistema", error = ex.Message });
+            }
+        }
+        // -------------------------------------------------------------
+
         [HttpGet]
         public async Task<IActionResult> GetMyPrompts()
         {
@@ -50,7 +72,6 @@ namespace PROJFACILITY.IA.Controllers
             return Ok(prompt);
         }
 
-        // --- NOVO MÉTODO: EDITAR PROMPT ---
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdatePrompt(int id, [FromBody] Prompt promptUpdate)
         {
@@ -70,7 +91,6 @@ namespace PROJFACILITY.IA.Controllers
             await _context.SaveChangesAsync();
             return Ok(prompt);
         }
-        // ----------------------------------
         
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePrompt(int id)

@@ -217,4 +217,249 @@ function getCategoryColor(area) {
     };
 
     return colors[key] || colors['outros'];
+    /* --- LÓGICA DO MODAL DE PROMPTS (SISTEMA E USUÁRIO) --- */
+
+let cachedSystemPrompts = null;
+let cachedUserPrompts = null;
+
+// Função chamada ao clicar no ícone da caneta
+function abrirMeusPromptsChat() {
+    // Esconde outros menus se estiverem abertos
+    const attachMenu = document.getElementById('attachMenu');
+    if(attachMenu) attachMenu.style.display = 'none';
+    
+    // Abre modal
+    const modal = document.getElementById('modalPromptsChat');
+    if(modal) {
+        modal.style.display = 'flex';
+        // Inicia na aba "Sistema" por padrão
+        switchModalTab('system');
+    }
+}
+
+function fecharModalPromptsChat() {
+    const modal = document.getElementById('modalPromptsChat');
+    if(modal) modal.style.display = 'none';
+}
+
+function switchModalTab(tabName) {
+    // Gerencia estado visual dos botões
+    document.getElementById('tabBtnSystem').classList.remove('active');
+    document.getElementById('tabBtnUser').classList.remove('active');
+    
+    // Gerencia visibilidade do conteúdo
+    document.getElementById('tabContentSystem').style.display = 'none';
+    document.getElementById('tabContentUser').style.display = 'none';
+
+    if (tabName === 'system') {
+        document.getElementById('tabBtnSystem').classList.add('active');
+        document.getElementById('tabContentSystem').style.display = 'block';
+        loadSystemPrompts();
+    } else {
+        document.getElementById('tabBtnUser').classList.add('active');
+        document.getElementById('tabContentUser').style.display = 'block';
+        loadUserPrompts();
+    }
+}
+
+// --- CARREGAR PROMPTS DO SISTEMA ---
+async function loadSystemPrompts() {
+    const container = document.getElementById('systemPromptsContainer');
+    const loader = document.getElementById('systemPromptsLoader');
+    
+    // Se já temos cache, usa ele
+    if (cachedSystemPrompts) {
+        renderSystemPrompts(cachedSystemPrompts);
+        loader.style.display = 'none';
+        return;
+    }
+
+    loader.style.display = 'block';
+    container.innerHTML = '';
+
+    try {
+        const token = localStorage.getItem('token');
+        const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
+        
+        const res = await fetch(`${apiUrl}/api/prompts/system`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+            cachedSystemPrompts = await res.json();
+            renderSystemPrompts(cachedSystemPrompts);
+        } else {
+            container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro ao carregar prompts do sistema.</div>';
+        }
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro de conexão.</div>';
+    } finally {
+        loader.style.display = 'none';
+    }
+}
+
+function renderSystemPrompts(prompts) {
+    const container = document.getElementById('systemPromptsContainer');
+    container.innerHTML = '';
+    
+    if(!prompts || prompts.length === 0) {
+        container.innerHTML = '<p style="padding:20px; color:#999;">Nenhum prompt de sistema encontrado.</p>';
+        return;
+    }
+
+    // Agrupar por Area
+    const groups = {};
+    prompts.forEach(p => {
+        if (!groups[p.area]) groups[p.area] = [];
+        groups[p.area].push(p);
+    });
+
+    // Renderizar Accordions
+    for (const [area, items] of Object.entries(groups)) {
+        // Criar Accordion Item
+        const accItem = document.createElement('div');
+        accItem.className = 'accordion-item';
+        
+        // Header (Área)
+        const header = document.createElement('div');
+        header.className = 'accordion-header';
+        
+        // Ícone baseado na área (opcional, simples mapeamento de cor)
+        let iconColor = '#10b981'; // Padrão verde
+        if(area.includes('Juridico')) iconColor = '#eab308'; // Amarelo
+        if(area.includes('Tech')) iconColor = '#3b82f6'; // Azul
+        if(area.includes('Saude')) iconColor = '#ef4444'; // Vermelho
+        
+        header.innerHTML = `
+            <span style="display:flex; align-items:center;">
+                <i class="fas fa-layer-group" style="margin-right:10px; color:${iconColor}"></i> 
+                ${area}
+            </span> 
+            <i class="fas fa-chevron-down" style="transition: transform 0.3s;"></i>
+        `;
+        
+        // Lógica de toggle do accordion
+        header.onclick = () => {
+            const isActive = accItem.classList.contains('active');
+            // Opcional: Fechar outros accordions ao abrir um? Se quiser, descomente abaixo:
+            // document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('active'));
+            
+            if(isActive) accItem.classList.remove('active');
+            else accItem.classList.add('active');
+        };
+        
+        // Body (Cards)
+        const body = document.createElement('div');
+        body.className = 'accordion-body';
+        
+        items.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'system-prompt-card';
+            // Encode URI Component para evitar quebra com aspas
+            card.onclick = () => selecionarPromptChat(encodeURIComponent(p.content));
+            card.innerHTML = `
+                <div class="sp-prof">${p.profession}</div>
+                <div class="sp-title">${p.buttonTitle}</div>
+            `;
+            body.appendChild(card);
+        });
+
+        accItem.appendChild(header);
+        accItem.appendChild(body);
+        container.appendChild(accItem);
+    }
+}
+
+// --- CARREGAR MEUS PROMPTS ---
+async function loadUserPrompts() {
+    const container = document.getElementById('listaPromptsChatContent');
+    const loader = document.getElementById('userPromptsLoader');
+    
+    if (cachedUserPrompts) {
+        renderUserPrompts(cachedUserPrompts);
+        loader.style.display = 'none';
+        return;
+    }
+    
+    loader.style.display = 'block';
+    container.innerHTML = '';
+
+    try {
+        const token = localStorage.getItem('token');
+        const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
+
+        const res = await fetch(`${apiUrl}/api/prompts`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+            cachedUserPrompts = await res.json();
+            renderUserPrompts(cachedUserPrompts);
+        } else {
+            container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro ao carregar seus prompts.</div>';
+        }
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro de conexão.</div>';
+    } finally {
+        loader.style.display = 'none';
+    }
+}
+
+function renderUserPrompts(prompts) {
+    const container = document.getElementById('listaPromptsChatContent');
+    container.innerHTML = '';
+
+    if (!prompts || prompts.length === 0) {
+        container.innerHTML = `
+            <div style="text-align:center; color:#888; padding:30px;">
+                <i class="fas fa-folder-open" style="font-size:2rem; margin-bottom:15px; opacity:0.5;"></i><br>
+                Você não tem prompts salvos.<br>
+                <a href="meus_prompts.html" style="color:var(--primary); text-decoration:none; font-size:0.9rem; margin-top:10px; display:inline-block;">Criar prompts</a>
+            </div>`;
+        return;
+    }
+
+    prompts.forEach(p => {
+        const item = document.createElement('div');
+        // Reutilizando estilo de lista, se houver, ou aplicando inline
+        item.style.padding = '15px';
+        item.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+        item.style.cursor = 'pointer';
+        item.style.transition = 'background 0.2s';
+        
+        item.onmouseover = () => { item.style.backgroundColor = 'rgba(255,255,255,0.03)'; };
+        item.onmouseout = () => { item.style.backgroundColor = 'transparent'; };
+        
+        item.onclick = () => selecionarPromptChat(encodeURIComponent(p.content));
+        
+        item.innerHTML = `
+            <strong style="color:var(--primary); font-size:1rem; display:block; margin-bottom:5px;">${p.title}</strong>
+            <p style="color:#ccc; font-size:0.9rem; margin:0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${p.content}</p>
+        `;
+        container.appendChild(item);
+    });
+}
+
+// Função auxiliar para inserir no chat e fechar modal
+function selecionarPromptChat(conteudoEncoded) {
+    const conteudo = decodeURIComponent(conteudoEncoded);
+    const input = document.getElementById('userInput');
+    
+    if(!input) return;
+
+    if (input.value.trim() !== '') {
+        input.value += '\n\n' + conteudo;
+    } else {
+        input.value = conteudo;
+    }
+    
+    // Foca e ajusta altura
+    input.focus();
+    input.style.height = 'auto';
+    input.style.height = (input.scrollHeight) + 'px';
+
+    fecharModalPromptsChat();
+}
 }
