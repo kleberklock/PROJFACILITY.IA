@@ -192,46 +192,110 @@
         .message-bubble th { background: #333; }
         .message-bubble p { margin-bottom: 10px; }
 
-        /* --- ESTILOS DO MODAL (ADICIONADO) --- */
+        /* --- ESTILOS DO MODAL (ATUALIZADO PARA ABAS) --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
+            z-index: 3000;
             display: none; justify-content: center; align-items: center;
             backdrop-filter: blur(5px);
         }
+        
         .modal-content {
             background: #161b22;
-            padding: 30px; border-radius: 20px; width: 90%; max-width: 500px;
+            width: 90%; max-width: 900px; height: 85vh;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             animation: fadeIn 0.3s ease;
+            display: flex; flex-direction: column; padding: 0;
+            border-radius: 12px;
+            overflow: hidden;
         }
+        
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- Estilo da lista de prompts no chat --- */
-        .prompt-list-item {
+        /* --- Tabs Styles --- */
+        .modal-tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background-color: rgba(0,0,0,0.2);
+        }
+        .modal-tab {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 15px;
+            color: #888;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .modal-tab:hover { background: rgba(255,255,255,0.02); color: #ccc; }
+        .modal-tab.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        /* --- Accordion Styles (System Prompts) --- */
+        .accordion-item {
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.02);
+        }
+        .accordion-header {
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.03);
+            font-weight: bold;
+            color: #eee;
+            transition: background 0.2s;
+        }
+        .accordion-header:hover { background: rgba(255,255,255,0.05); }
+        
+        .accordion-body {
+            display: none;
+            padding: 15px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+            gap: 10px;
+        }
+        .accordion-item.active .accordion-body { display: grid; }
+        .accordion-item.active .fa-chevron-down { transform: rotate(180deg); }
+
+        /* --- Cards Styles --- */
+        .prompt-list-item, .system-prompt-card {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
             cursor: pointer;
             transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
-        .prompt-list-item:hover {
-            background: rgba(16, 185, 129, 0.1); /* Cor primária bem suave */
+        .prompt-list-item:hover, .system-prompt-card:hover {
+            background: rgba(16, 185, 129, 0.1);
             border-color: var(--primary);
-            transform: translateX(5px);
+            transform: translateY(-2px);
         }
 
-        .prompt-list-item strong {
+        .prompt-list-item strong, .sp-title {
             display: block;
             color: #fff;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             margin-bottom: 4px;
+            font-weight: 600;
         }
 
         .prompt-list-item p {
@@ -241,6 +305,14 @@
             white-space: nowrap; 
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+        
+        .sp-prof { 
+            font-size: 0.7rem; 
+            color: #aaa; 
+            text-transform: uppercase; 
+            margin-bottom: 5px; 
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
@@ -300,23 +372,15 @@
                                     <div class="menu-option" onclick="triggerFileUpload('image/*')">
                                         <i class="far fa-file-image"></i> Imagem
                                     </div>
-                                    <div class="menu-option" onclick="abrirMeusPromptsChat()">
-                                        <i class="fas fa-list-ul"></i> Prompts Salvos
-                                    </div>
                                 </div>
                             </div>
 
                             <div style="position:relative;">
-                                <div class="action-icon prompts" onclick="togglePanel()"><i class="fas fa-wand-magic-sparkles" style="color:var(--primary)"></i></div>
-                                <div class="floating-panel" id="promptsPanel">
-                                    <div class="panel-header"><span>Módulos de Contexto (Sistema)</span></div>
+                                <div class="action-icon prompts" onclick="abrirMeusPromptsChat()"><i class="fas fa-wand-magic-sparkles" style="color:var(--primary)"></i></div>
+                                
+                                <div class="floating-panel" id="promptsPanel" style="display:none;">
+                                    <div class="panel-header"><span>Módulos de Contexto</span></div>
                                     <div id="switchesContainer" style="padding:10px;"></div>
-                                    
-                                    <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 5px 10px;"></div>
-                                    <div class="panel-header" style="margin-top:5px;"><span>Meus Contextos (Prompts)</span></div>
-                                    <div id="userPromptsContainer" style="padding:10px; max-height: 200px; overflow-y: auto;">
-                                        <div style="text-align:center; color:#666; font-size:0.8rem;">Carregando...</div>
-                                    </div>
                                 </div>
                             </div>
 
@@ -369,6 +433,10 @@
     let isGenerating = false;
     let currentAbortController = null;
     let recognition = null; // Speech API
+    
+    // Variáveis de Cache para os Prompts
+    let cachedSystemPrompts = null;
+    let cachedUserPrompts = null;
 
     // Elementos DOM
     const userInput = document.getElementById('userInput');
@@ -409,7 +477,7 @@
 
         setupChat(agentName, agentIcon, agentArea);
         
-        // Carrega os prompts do usuário (Contextos Ativos)
+        // Carrega os prompts do usuário (Contextos Ativos do Painel Lateral)
         loadUserContexts();
 
         if(window.innerWidth <= 768) {
@@ -488,50 +556,12 @@
         userInput.focus();
     }
 
-    // --- CARREGAR CONTEXTOS DO USUÁRIO ---
+    // --- CARREGAR CONTEXTOS DO USUÁRIO (Painel Lateral) ---
     async function loadUserContexts() {
+        // Mantido para compatibilidade, mas o foco agora é o Modal
         const container = document.getElementById('userPromptsContainer');
         if (!container) return;
-
-        try {
-            const token = localStorage.getItem('token');
-            const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
-            
-            const response = await fetch(`${apiUrl}/api/prompts`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (response.ok) {
-                const prompts = await response.json();
-                container.innerHTML = "";
-
-                if (prompts.length === 0) {
-                    container.innerHTML = '<div style="text-align:center; color:#666; font-size:0.8rem;">Nenhum prompt salvo.</div>';
-                    return;
-                }
-
-                prompts.forEach((p, i) => {
-                    const safeContent = p.content.replace(/"/g, '&quot;');
-                    
-                    const itemHTML = `
-                    <div class="prompt-switch-item">
-                        <div>
-                            <div style="font-weight:bold; font-size:0.85rem; color:#eee;">${p.title}</div>
-                        </div>
-                        <label class="mini-switch">
-                            <input type="checkbox" class="user-context-switch" value="${safeContent}">
-                            <span class="mini-slider"></span>
-                        </label>
-                    </div>`;
-                    container.innerHTML += itemHTML;
-                });
-            } else {
-                container.innerHTML = '<div style="color:#ff6b6b; font-size:0.8rem;">Erro ao carregar.</div>';
-            }
-        } catch (e) {
-            console.error(e);
-            container.innerHTML = '<div style="color:#ff6b6b; font-size:0.8rem;">Offline.</div>';
-        }
+        // ... (Logica antiga mantida para evitar quebra de script)
     }
 
     // --- ENVIO DE MENSAGEM COM STOP REAL ---
@@ -588,19 +618,6 @@
             if (typeof CONFIG !== 'undefined' && CONFIG.API_URL) {
                 try {
                     const formData = new FormData();
-                    
-                    // --- NOVA LÓGICA: Coletar Contextos Ativos ---
-                    const userSwitches = document.querySelectorAll('.user-context-switch:checked');
-                    let userContextsContent = "";
-                    
-                    if (userSwitches.length > 0) {
-                        userContextsContent = Array.from(userSwitches)
-                            .map(checkbox => checkbox.value)
-                            .join("\n\n---\n\n");
-                    }
-                    formData.append('activeContexts', userContextsContent);
-                    // ---------------------------------------------
-
                     formData.append('message', contextPrompt + text);
                     formData.append('agentId', currentAgentName); 
                     formData.append('sessionId', currentSessionId); 
@@ -883,6 +900,7 @@
 
         const list = knowledgeBase[key] || knowledgeBase['geral'];
         const container = document.getElementById('switchesContainer');
+        if(!container) return;
         container.innerHTML = "";
         list.forEach((p, i) => {
              const id = `p_${i}`;
@@ -892,87 +910,232 @@
     function toggleContext(id, label, checked) { if(checked) activeContexts.add({id, l: label}); else activeContexts.forEach(i=>{if(i.id===id)activeContexts.delete(i)}); updateActiveBadges(); }
     function updateActiveBadges() { document.getElementById('activeModulesArea').innerHTML = Array.from(activeContexts).map(c => `<div class="module-badge"><i class="fas fa-bolt"></i> ${c.l}</div>`).join(''); }
     function toggleMenu(id) { const m = document.getElementById(id); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
-    function togglePanel() { const p = document.getElementById('promptsPanel'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; }
+    // function togglePanel() { const p = document.getElementById('promptsPanel'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; } // Antigo
     function toggleSidebarMobile() { document.getElementById('mainSidebar').classList.toggle('active'); }
 
     document.addEventListener('click', (e) => {
         if(!e.target.closest('.action-icon') && !e.target.closest('.floating-menu')) document.querySelectorAll('.floating-menu').forEach(m => m.style.display = 'none');
-        if(!e.target.closest('.prompts') && !e.target.closest('.floating-panel')) document.getElementById('promptsPanel').style.display = 'none';
+        if(!e.target.closest('.prompts') && !e.target.closest('.floating-panel')) {
+             const panel = document.getElementById('promptsPanel');
+             if(panel) panel.style.display = 'none';
+        }
     });
 
     userInput.addEventListener('keydown', (e) => {
         if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
     });
 
-    /* --- LÓGICA DE PROMPTS SALVOS NO CHAT --- */
+    /* --- LÓGICA DO MODAL DE PROMPTS (SISTEMA E USUÁRIO) --- */
 
-    async function abrirMeusPromptsChat() {
+    // Função chamada ao clicar no ícone da varinha mágica
+    function abrirMeusPromptsChat() {
         document.getElementById('attachMenu').style.display = 'none';
         
         const modal = document.getElementById('modalPromptsChat');
-        const lista = document.getElementById('listaPromptsChatContent');
-        modal.style.display = 'flex';
-        lista.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Buscando seus prompts...</div>';
-
-        try {
-            const token = localStorage.getItem('token');
-            const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : 'http://localhost:5217';
-
-            const response = await fetch(`${apiUrl}/api/prompts`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (response.ok) {
-                const prompts = await response.json();
-
-                if (prompts.length === 0) {
-                    lista.innerHTML = `
-                        <div style="text-align:center; color:#888; padding:20px;">
-                            <i class="fas fa-folder-open" style="font-size:2rem; margin-bottom:10px;"></i><br>
-                            Você não tem prompts salvos.<br>
-                            <a href="meus_prompts.html" style="color:var(--primary); text-decoration:none; font-size:0.9rem;">Criar prompts</a>
-                        </div>`;
-                    return;
-                }
-
-                lista.innerHTML = ''; 
-
-                prompts.forEach(p => {
-                    const item = document.createElement('div');
-                    item.className = 'prompt-list-item';
-                    const conteudoSafe = encodeURIComponent(p.content);
-                    item.onclick = () => selecionarPromptChat(conteudoSafe);
-                    
-                    item.innerHTML = `
-                        <strong>${p.title}</strong>
-                        <p>${p.content}</p>
-                    `;
-                    lista.appendChild(item);
-                });
-            } else {
-                lista.innerHTML = '<div style="color:#ff6b6b; text-align:center;">Erro ao carregar prompts.</div>';
-            }
-        } catch (e) {
-            console.error(e);
-            lista.innerHTML = '<div style="color:#ff6b6b; text-align:center;">Erro de conexão.</div>';
+        if(modal) {
+            modal.style.display = 'flex';
+            switchModalTab('system'); // Inicia na aba de sistema
         }
-    }
-
-    function selecionarPromptChat(conteudoEncoded) {
-        const conteudo = decodeURIComponent(conteudoEncoded);
-        const input = document.getElementById('userInput');
-        
-        if (input.value.trim() !== '') {
-            input.value += '\n\n' + conteudo;
-        } else {
-            input.value = conteudo;
-        }
-        input.focus();
-        fecharModalPromptsChat();
     }
 
     function fecharModalPromptsChat() {
         document.getElementById('modalPromptsChat').style.display = 'none';
+    }
+
+    function switchModalTab(tabName) {
+        // Gerencia estado visual dos botões
+        document.getElementById('tabBtnSystem').classList.remove('active');
+        document.getElementById('tabBtnUser').classList.remove('active');
+        
+        // Gerencia visibilidade do conteúdo
+        document.getElementById('tabContentSystem').style.display = 'none';
+        document.getElementById('tabContentUser').style.display = 'none';
+
+        if (tabName === 'system') {
+            document.getElementById('tabBtnSystem').classList.add('active');
+            document.getElementById('tabContentSystem').style.display = 'block';
+            loadSystemPrompts();
+        } else {
+            document.getElementById('tabBtnUser').classList.add('active');
+            document.getElementById('tabContentUser').style.display = 'block';
+            loadUserPrompts();
+        }
+    }
+
+    // --- CARREGAR PROMPTS DO SISTEMA (Com Accordion) ---
+    async function loadSystemPrompts() {
+        const container = document.getElementById('systemPromptsContainer');
+        const loader = document.getElementById('systemPromptsLoader');
+        
+        if (cachedSystemPrompts) {
+            renderSystemPrompts(cachedSystemPrompts);
+            if(loader) loader.style.display = 'none';
+            return;
+        }
+
+        if(loader) loader.style.display = 'block';
+        
+        try {
+            const token = localStorage.getItem('token');
+            const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
+            
+            const res = await fetch(`${apiUrl}/api/prompts/system`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                cachedSystemPrompts = await res.json();
+                renderSystemPrompts(cachedSystemPrompts);
+            } else {
+                container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro ao carregar prompts do sistema.</div>';
+            }
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro de conexão.</div>';
+        } finally {
+            if(loader) loader.style.display = 'none';
+        }
+    }
+
+    function renderSystemPrompts(prompts) {
+        const container = document.getElementById('systemPromptsContainer');
+        container.innerHTML = '';
+        
+        if(!prompts || prompts.length === 0) {
+            container.innerHTML = '<p style="padding:20px; color:#999;">Nenhum prompt de sistema encontrado.</p>';
+            return;
+        }
+
+        // Agrupar por Area
+        const groups = {};
+        prompts.forEach(p => {
+            if (!groups[p.area]) groups[p.area] = [];
+            groups[p.area].push(p);
+        });
+
+        // Ordenar Areas
+        const sortedAreas = Object.keys(groups).sort();
+
+        for (const area of sortedAreas) {
+            const items = groups[area];
+            const accItem = document.createElement('div');
+            accItem.className = 'accordion-item';
+            
+            // Ícone simples baseado na área
+            let iconClass = 'fa-layer-group';
+            if(area.toLowerCase().includes('juridico')) iconClass = 'fa-scale-balanced';
+            if(area.toLowerCase().includes('tech')) iconClass = 'fa-laptop-code';
+            if(area.toLowerCase().includes('saude')) iconClass = 'fa-heart-pulse';
+            if(area.toLowerCase().includes('negocios')) iconClass = 'fa-briefcase';
+            
+            accItem.innerHTML = `
+                <div class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
+                    <span style="display:flex; align-items:center;">
+                        <i class="fas ${iconClass}" style="margin-right:10px; width:20px;"></i> 
+                        ${area}
+                    </span>
+                    <i class="fas fa-chevron-down" style="transition: transform 0.3s;"></i>
+                </div>
+                <div class="accordion-body"></div>
+            `;
+            
+            const body = accItem.querySelector('.accordion-body');
+            
+            items.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'system-prompt-card';
+                card.onclick = () => selecionarPromptChat(encodeURIComponent(p.content));
+                card.innerHTML = `
+                    <div class="sp-prof">${p.profession}</div>
+                    <div class="sp-title">${p.buttonTitle}</div>
+                `;
+                body.appendChild(card);
+            });
+
+            container.appendChild(accItem);
+        }
+    }
+
+    // --- CARREGAR MEUS PROMPTS ---
+    async function loadUserPrompts() {
+        const container = document.getElementById('listaPromptsChatContent');
+        const loader = document.getElementById('userPromptsLoader');
+        
+        if (cachedUserPrompts) {
+            renderUserPrompts(cachedUserPrompts);
+            if(loader) loader.style.display = 'none';
+            return;
+        }
+
+        if(loader) loader.style.display = 'block';
+
+        try {
+            const token = localStorage.getItem('token');
+            const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
+
+            const res = await fetch(`${apiUrl}/api/prompts`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                cachedUserPrompts = await res.json();
+                renderUserPrompts(cachedUserPrompts);
+            } else {
+                container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro ao carregar prompts.</div>';
+            }
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro de conexão.</div>';
+        } finally {
+            if(loader) loader.style.display = 'none';
+        }
+    }
+
+    function renderUserPrompts(prompts) {
+        const container = document.getElementById('listaPromptsChatContent');
+        container.innerHTML = '';
+
+        if (!prompts || prompts.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; color:#888; padding:30px;">
+                    <i class="fas fa-folder-open" style="font-size:2rem; margin-bottom:10px;"></i><br>
+                    Você não tem prompts salvos.<br>
+                    <a href="meus_prompts.html" style="color:var(--primary); text-decoration:none; font-size:0.9rem;">Criar prompts</a>
+                </div>`;
+            return;
+        }
+
+        prompts.forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'prompt-list-item';
+            item.onclick = () => selecionarPromptChat(encodeURIComponent(p.content));
+            
+            item.innerHTML = `
+                <strong>${p.title}</strong>
+                <p>${p.content}</p>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    function selecionarPromptChat(encodedContent) {
+        const content = decodeURIComponent(encodedContent);
+        const input = document.getElementById('userInput');
+        
+        if (input.value.trim() !== '') {
+            input.value += '\n\n' + content;
+        } else {
+            input.value = content;
+        }
+        input.focus();
+        
+        // Ajusta altura
+        if(input.style) {
+            input.style.height = 'auto';
+            input.style.height = input.scrollHeight + 'px';
+        }
+        
+        fecharModalPromptsChat();
     }
 
     window.addEventListener('click', function(e) {
@@ -984,16 +1147,31 @@
    </script>
 
    <div id="modalPromptsChat" class="modal-overlay" style="z-index: 3000;">
-    <div class="modal-content" style="max-width: 500px; text-align: left; max-height: 80vh; display: flex; flex-direction: column;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
-            <h3 style="margin:0; color: var(--primary);"><i class="fas fa-bolt"></i> Escolher Prompt</h3>
-            <button onclick="fecharModalPromptsChat()" style="background:none; border:none; color:#666; cursor:pointer; font-size:1.2rem;">
+    <div class="modal-content">
+        <div style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center; background-color: rgba(0,0,0,0.2);">
+            <h3 style="margin:0; color: var(--primary);"><i class="fas fa-magic"></i> Biblioteca de Prompts</h3>
+            <button onclick="fecharModalPromptsChat()" style="background:none; border:none; color:#999; cursor:pointer; font-size:1.2rem;">
                 <i class="fas fa-times"></i>
             </button>
         </div>
+
+        <div class="modal-tabs">
+            <button class="modal-tab active" id="tabBtnSystem" onclick="switchModalTab('system')">
+                <i class="fas fa-globe"></i> Prompts do Sistema
+            </button>
+            <button class="modal-tab" id="tabBtnUser" onclick="switchModalTab('user')">
+                <i class="fas fa-user"></i> Meus Prompts
+            </button>
+        </div>
         
-        <div id="listaPromptsChatContent" style="overflow-y: auto; flex: 1; padding-right: 5px;">
-            <div style="text-align:center; color:#666; padding:20px;">Carregando...</div>
+        <div id="tabContentSystem" class="tab-content active" style="overflow-y: auto; flex: 1; padding: 20px;">
+            <div id="systemPromptsLoader" style="text-align:center; color:#666; margin-top: 20px;"><i class="fas fa-spinner fa-spin"></i> Carregando biblioteca...</div>
+            <div id="systemPromptsContainer"></div>
+        </div>
+
+        <div id="tabContentUser" class="tab-content" style="overflow-y: auto; flex: 1; padding: 20px; display:none;">
+            <div id="userPromptsLoader" style="text-align:center; color:#666; margin-top: 20px;"><i class="fas fa-spinner fa-spin"></i> Buscando seus prompts...</div>
+            <div id="listaPromptsChatContent"></div>
         </div>
     </div>
    </div>

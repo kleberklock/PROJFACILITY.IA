@@ -8,15 +8,15 @@ namespace PROJFACILITY.IA.Models
         public int Id { get; set; }
 
         [Required]
-        public string Area { get; set; } // Ex: Jurídico, Tech
+        public required string Area { get; set; } // Adicionado 'required'
 
         [Required]
-        public string Profession { get; set; } // Ex: Advogado Civil
+        public required string Profession { get; set; } // Adicionado 'required'
 
         [Required]
-        public string ButtonTitle { get; set; } // Título do Botão
+        public required string ButtonTitle { get; set; } // Adicionado 'required'
 
         [Required]
-        public string Content { get; set; } // O prompt oculto (conteúdo)
+        public required string Content { get; set; } // Adicionado 'required'
     }
 }

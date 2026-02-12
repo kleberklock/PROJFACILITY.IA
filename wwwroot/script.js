@@ -462,4 +462,84 @@ function selecionarPromptChat(conteudoEncoded) {
 
     fecharModalPromptsChat();
 }
+// --- LÓGICA DE ABAS E PROMPTS DO SISTEMA ---
+
+function switchModalTab(tabName) {
+    document.getElementById('tabBtnSystem').classList.remove('active');
+    document.getElementById('tabBtnUser').classList.remove('active');
+    document.getElementById('tabContentSystem').style.display = 'none';
+    document.getElementById('tabContentUser').style.display = 'none';
+
+    if (tabName === 'system') {
+        document.getElementById('tabBtnSystem').classList.add('active');
+        document.getElementById('tabContentSystem').style.display = 'block';
+        loadSystemPrompts();
+    } else {
+        document.getElementById('tabBtnUser').classList.add('active');
+        document.getElementById('tabContentUser').style.display = 'block';
+        loadUserPrompts(); // Esta função já existe no seu código, reutilize-a
+    }
+}
+
+async function loadSystemPrompts() {
+    const container = document.getElementById('systemPromptsContainer');
+    if(container.innerHTML.trim() !== "") return; // Evita recarregar se já tem conteudo
+
+    try {
+        // Ajuste a URL se necessário para apontar para seu backend
+        const res = await fetch(`${CONFIG.API_URL}/api/prompts/system`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const prompts = await res.json();
+        renderSystemPrompts(prompts);
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = '<p style="color:red">Erro ao carregar prompts.</p>';
+    }
+}
+
+function renderSystemPrompts(prompts) {
+    const container = document.getElementById('systemPromptsContainer');
+    container.innerHTML = '';
+    
+    // Agrupamento por Área
+    const groups = {};
+    prompts.forEach(p => {
+        if (!groups[p.area]) groups[p.area] = [];
+        groups[p.area].push(p);
+    });
+
+    for (const [area, items] of Object.entries(groups)) {
+        const accItem = document.createElement('div');
+        accItem.className = 'accordion-item';
+        
+        // Header do Accordion
+        accItem.innerHTML = `
+            <div class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
+                <span><i class="fas fa-layer-group"></i> ${area}</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="accordion-body"></div>
+        `;
+        
+        // Cards
+        const body = accItem.querySelector('.accordion-body');
+        items.forEach(p => {
+            const card = document.createElement('div');
+            card.className = 'system-prompt-card';
+            card.onclick = () => selecionarPromptChat(encodeURIComponent(p.content));
+            card.innerHTML = `<div class="sp-prof">${p.profession}</div><div class="sp-title">${p.buttonTitle}</div>`;
+            body.appendChild(card);
+        });
+
+        container.appendChild(accItem);
+    }
+}
+
+// Atualize a função de abrir modal para iniciar na aba correta
+const originalAbrirPrompts = abrirMeusPromptsChat;
+abrirMeusPromptsChat = function() {
+    originalAbrirPrompts(); // Abre o modal
+    switchModalTab('system'); // Força a aba de sistema por padrão
+}
 }

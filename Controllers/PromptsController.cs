@@ -19,14 +19,13 @@ namespace PROJFACILITY.IA.Controllers
             _context = context;
         }
 
-        // --- NOVO ENDPOINT: Buscar Prompts do Sistema (ADICIONADO) ---
+        // --- 1. ENDPOINT DE PROMPTS DO SISTEMA (Responsável pela aba 'Sistema') ---
         [HttpGet("system")]
-        [AllowAnonymous] // Permite carregar mesmo se houver problema temporário no token, ou remova se quiser estrito
+        [AllowAnonymous] 
         public async Task<IActionResult> GetSystemPrompts()
         {
             try
             {
-                // Busca os prompts do sistema ordenados para facilitar o agrupamento no front
                 var prompts = await _context.SystemPrompts
                     .OrderBy(p => p.Area)
                     .ThenBy(p => p.Profession)
@@ -36,19 +35,17 @@ namespace PROJFACILITY.IA.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Erro ao buscar prompts do sistema", error = ex.Message });
+                // Se der erro aqui, geralmente é porque a tabela SystemPrompts não existe
+                return StatusCode(500, new { message = "Erro no banco de dados", error = ex.Message });
             }
         }
-        // -------------------------------------------------------------
 
+        // --- 2. SEUS PROMPTS (Responsável pela aba 'Meus Prompts') ---
         [HttpGet]
         public async Task<IActionResult> GetMyPrompts()
         {
-            // Tenta pegar o ID do ClaimTypes.NameIdentifier (padrão JWT) ou Identity.Name
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
-            
-            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) 
-                return Unauthorized();
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) return Unauthorized();
 
             var prompts = await _context.Prompts
                 .Where(p => p.UserId == userId)
@@ -57,16 +54,15 @@ namespace PROJFACILITY.IA.Controllers
             return Ok(prompts);
         }
 
+        // ... (Mantenha os métodos Create, Update e Delete abaixo como estavam)
         [HttpPost]
         public async Task<IActionResult> CreatePrompt([FromBody] Prompt prompt)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
-            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) 
-                return Unauthorized();
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) return Unauthorized();
 
             prompt.UserId = userId;
             prompt.CreatedAt = DateTime.UtcNow;
-            
             _context.Prompts.Add(prompt);
             await _context.SaveChangesAsync();
             return Ok(prompt);
@@ -76,31 +72,24 @@ namespace PROJFACILITY.IA.Controllers
         public async Task<IActionResult> UpdatePrompt(int id, [FromBody] Prompt promptUpdate)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
-            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) 
-                return Unauthorized();
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) return Unauthorized();
 
             var prompt = await _context.Prompts.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
-            
-            if (prompt == null) return NotFound("Prompt não encontrado ou não pertence a você.");
+            if (prompt == null) return NotFound();
 
-            // Atualiza apenas os campos permitidos
             prompt.Title = promptUpdate.Title;
             prompt.Content = promptUpdate.Content;
-            // Opcional: prompt.IsFavorite = promptUpdate.IsFavorite;
-
             await _context.SaveChangesAsync();
             return Ok(prompt);
         }
-        
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePrompt(int id)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
-            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) 
-                return Unauthorized();
+            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) return Unauthorized();
 
             var prompt = await _context.Prompts.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
-            
             if (prompt == null) return NotFound();
 
             _context.Prompts.Remove(prompt);
