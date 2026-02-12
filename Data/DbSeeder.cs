@@ -324,9 +324,12 @@ Operacional;Chef de Cozinha;Brunch (Montagem);Crie um cardápio de Brunch que mi
 
             var lines = csvData.Split(new[] { '\r', '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
 
-            foreach (var line in lines)
+           foreach (var line in lines)
             {
-                var parts = line.Split(';');
+                // CORREÇÃO: Adicionado o parâmetro '4' para parar de dividir após encontrar as 3 colunas iniciais.
+                // Isso preserva o conteúdo do prompt mesmo que tenha ponto e vírgula (;).
+                var parts = line.Split(new[] { ';' }, 4);
+
                 if (parts.Length == 4)
                 {
                     prompts.Add(new SystemPrompt

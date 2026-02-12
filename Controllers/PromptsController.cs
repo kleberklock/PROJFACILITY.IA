@@ -35,8 +35,8 @@ namespace PROJFACILITY.IA.Controllers
             }
             catch (Exception ex)
             {
-                // Se der erro aqui, geralmente é porque a tabela SystemPrompts não existe
-                return StatusCode(500, new { message = "Erro no banco de dados", error = ex.Message });
+                // Se der erro aqui, a migration não rodou e a tabela SystemPrompts não existe
+                return StatusCode(500, new { message = "Erro no banco de dados. Verifique se as Migrations foram aplicadas.", error = ex.Message });
             }
         }
 
@@ -54,7 +54,6 @@ namespace PROJFACILITY.IA.Controllers
             return Ok(prompts);
         }
 
-        // ... (Mantenha os métodos Create, Update e Delete abaixo como estavam)
         [HttpPost]
         public async Task<IActionResult> CreatePrompt([FromBody] Prompt prompt)
         {
@@ -68,7 +67,9 @@ namespace PROJFACILITY.IA.Controllers
             return Ok(prompt);
         }
 
-        [HttpPut("{id}")]
+        // --- AQUI ESTAVA O ERRO (JÁ CORRIGIDO) ---
+        // O :int impede que o servidor confunda "system" com um ID
+        [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdatePrompt(int id, [FromBody] Prompt promptUpdate)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
@@ -83,7 +84,8 @@ namespace PROJFACILITY.IA.Controllers
             return Ok(prompt);
         }
 
-        [HttpDelete("{id}")]
+        // --- AQUI TAMBÉM ---
+        [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeletePrompt(int id)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;

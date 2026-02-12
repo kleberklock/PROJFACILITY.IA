@@ -12,26 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. Liberar CORS (Configuração BLINDADA)
-/*builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll",
-        builder => builder
-            // AQUI ESTÁ A MUDANÇA: A Lista de Convidados
-            .WithOrigins(
-                "https://facility-ia-frg6cqbcggasdhea.centralus-01.azurewebsites.net", // Seu site na nuvem 
-                "http://localhost:5217", // Seu VS Code (Live Server)                                                    liberar depois de testes!!!
-                "http://127.0.0.1:5500"  // Variação do localhost
-            )
-            .AllowAnyMethod()
-            .AllowAnyHeader());
-}); */
 // 2. Liberar CORS (MODO DESENVOLVIMENTO - LIBERA TUDO)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
         builder => builder
-            .AllowAnyOrigin()  // <--- MUDANÇA: Permite qualquer site/arquivo acessar
+            .AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
@@ -64,7 +50,7 @@ builder.Services.AddAuthentication(x =>
 
 var app = builder.Build();
 
-// 5. Pipeline de Execução (ORDEM CORRIGIDA AQUI)
+// 5. Pipeline de Execução
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -76,22 +62,25 @@ app.UseStaticFiles();
 
 // O CORS deve vir DEPOIS do Routing e ANTES da Auth
 app.UseRouting();
-app.UseCors("AllowAll"); // <--- MUDANÇA CRUCIAL AQUI
+app.UseCors("AllowAll"); 
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-// --- NOVO BLOCO: Inicialização do Banco ---
+
+// --- Inicialização do Banco ---
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<PROJFACILITY.IA.Data.AppDbContext>();
-        // Garante que o banco existe
-        context.Database.EnsureCreated(); 
-        // Roda o Seeder que criamos
+        
+        // Aplica Migrations pendentes (Cria tabelas se não existirem)
+        context.Database.Migrate(); 
+        
+        // Roda o Seeder
         PROJFACILITY.IA.Data.DbSeeder.Seed(context);
     }
     catch (Exception ex)
@@ -100,6 +89,5 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "Ocorreu um erro ao popular o banco de dados.");
     }
 }
-// ------------------------------------------
 
 app.Run();
