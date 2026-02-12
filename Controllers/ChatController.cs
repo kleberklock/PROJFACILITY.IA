@@ -31,7 +31,7 @@ namespace PROJFACILITY.IA.Controllers
         [HttpGet("sessions")]
         public async Task<IActionResult> GetSessions()
         {
-            var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) return Unauthorized();
 
             var sessions = await _context.ChatMessages
@@ -58,7 +58,7 @@ namespace PROJFACILITY.IA.Controllers
         [HttpGet("history/{sessionId}")]
         public async Task<IActionResult> GetSessionMessages(string sessionId)
         {
-            var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) return Unauthorized();
 
             var messages = await _context.ChatMessages
@@ -70,22 +70,22 @@ namespace PROJFACILITY.IA.Controllers
             return Ok(messages);
         }
 
-        // 3. ENVIAR
+        // 3. ENVIAR (AGORA COM SUPORTE A MENSAGEM OCULTA)
         [HttpPost("enviar")]
         public async Task<IActionResult> EnviarMensagem(
             [FromForm] string message, 
             [FromForm] string agentId, 
             [FromForm] string sessionId,
-            [FromForm] string? activeContexts, // <--- ALTERADO PARA string? (OPCIONAL)
+            [FromForm] string? activeContexts,
+            [FromForm] bool isHidden, // <--- OBRIGATÓRIO: Parâmetro novo
             CancellationToken ct)
         {
             try 
             {
-                var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst(ClaimTypes.Name)?.Value;
                 if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) 
                     return Unauthorized(new { message = "Usuário não identificado." });
 
-                // Validação e Criação de Nova Sessão
                 if (string.IsNullOrEmpty(sessionId) || sessionId.ToLower() == "nova" || sessionId == "undefined" || sessionId == "new-session")
                 {
                     sessionId = Guid.NewGuid().ToString();
@@ -98,15 +98,20 @@ namespace PROJFACILITY.IA.Controllers
                     .OrderBy(m => m.Timestamp)
                     .ToListAsync(ct);
 
+                // --- LÓGICA DE MENSAGEM OCULTA ---
+                // Se isHidden for true, salvamos um placeholder no banco, mas usamos a message real na IA
+                string textToSave = isHidden ? "⚡ [Prompt do Sistema Executado]" : message;
+
                 var userMsg = new ChatMessage 
                 { 
                     UserId = userId, AgentId = agentId, SessionId = sessionId,
-                    Text = message, Sender = "user", Timestamp = DateTime.UtcNow 
+                    Text = textToSave, // Salva o texto mascarado ou o original
+                    Sender = "user", Timestamp = DateTime.UtcNow 
                 };
                 _context.ChatMessages.Add(userMsg);
                 await _context.SaveChangesAsync(ct);
                 
-                // Passa o contexto (pode ser null) para o serviço
+                // Envia a 'message' (conteúdo real/bruto) para o serviço da IA
                 var (responseAI, tokens) = await _chatService.GetAIResponse(message, agentId, history, userId, activeContexts, ct);
 
                 var aiMsg = new ChatMessage 
@@ -125,11 +130,11 @@ namespace PROJFACILITY.IA.Controllers
             }
         }
 
-        // --- 4. DEBUG DE RECUPERAÇÃO REAL (NOVO) ---
+        // --- 4. DEBUG DE RECUPERAÇÃO REAL ---
         [HttpGet("debug-search")]
         public async Task<IActionResult> DebugSearch([FromQuery] string query, [FromQuery] string agentName)
         {
-            var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) return Unauthorized();
 
             var resultado = await _chatService.DebugRetrieval(query, agentName, userId);
@@ -140,7 +145,7 @@ namespace PROJFACILITY.IA.Controllers
         [HttpGet("debug-pinecone/{agentName}")]
         public async Task<IActionResult> DebugPinecone(string agentName)
         {
-            var userIdStr = User.FindFirst(ClaimTypes.Name)?.Value;
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId)) return Unauthorized();
 
             var resultado = await _chatService.DebugRetrieval("teste", agentName, userId);

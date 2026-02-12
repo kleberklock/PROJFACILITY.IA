@@ -19,7 +19,7 @@ namespace PROJFACILITY.IA.Controllers
             _context = context;
         }
 
-        // --- 1. ENDPOINT DE PROMPTS DO SISTEMA (Responsável pela aba 'Sistema') ---
+        // --- 1. ENDPOINT DE PROMPTS DO SISTEMA ---
         [HttpGet("system")]
         [AllowAnonymous] 
         public async Task<IActionResult> GetSystemPrompts()
@@ -35,12 +35,12 @@ namespace PROJFACILITY.IA.Controllers
             }
             catch (Exception ex)
             {
-                // Se der erro aqui, a migration não rodou e a tabela SystemPrompts não existe
-                return StatusCode(500, new { message = "Erro no banco de dados. Verifique se as Migrations foram aplicadas.", error = ex.Message });
+                // Se der erro aqui, é porque a tabela SystemPrompts não existe no banco
+                return StatusCode(500, new { message = "Erro ao buscar prompts. A tabela pode não existir.", error = ex.Message });
             }
         }
 
-        // --- 2. SEUS PROMPTS (Responsável pela aba 'Meus Prompts') ---
+        // --- 2. SEUS PROMPTS ---
         [HttpGet]
         public async Task<IActionResult> GetMyPrompts()
         {
@@ -67,9 +67,10 @@ namespace PROJFACILITY.IA.Controllers
             return Ok(prompt);
         }
 
-        // --- AQUI ESTAVA O ERRO (JÁ CORRIGIDO) ---
-        // O :int impede que o servidor confunda "system" com um ID
-        [HttpPut("{id:int}")]
+        // --- CORREÇÃO OBRIGATÓRIA AQUI ---
+        // Adicionamos :int para o servidor saber que o ID é número.
+        // Sem isso, ele acha que "system" é um ID e bloqueia a rota acima.
+        [HttpPut("{id:int}")] 
         public async Task<IActionResult> UpdatePrompt(int id, [FromBody] Prompt promptUpdate)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.Identity?.Name;
@@ -84,7 +85,7 @@ namespace PROJFACILITY.IA.Controllers
             return Ok(prompt);
         }
 
-        // --- AQUI TAMBÉM ---
+        // --- CORREÇÃO OBRIGATÓRIA AQUI TAMBÉM ---
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeletePrompt(int id)
         {

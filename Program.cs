@@ -12,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. Liberar CORS (MODO DESENVOLVIMENTO - LIBERA TUDO)
+// 2. Liberar CORS (Permite acesso do Frontend)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -50,7 +50,7 @@ builder.Services.AddAuthentication(x =>
 
 var app = builder.Build();
 
-// 5. Pipeline de Execução
+// 5. Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -60,7 +60,6 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-// O CORS deve vir DEPOIS do Routing e ANTES da Auth
 app.UseRouting();
 app.UseCors("AllowAll"); 
 
@@ -69,25 +68,34 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// --- Inicialização do Banco ---
+// --- INICIALIZAÇÃO BLINDADA DO BANCO DE DADOS ---
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    var context = services.GetRequiredService<PROJFACILITY.IA.Data.AppDbContext>();
+
+    // 1. Tenta atualizar a estrutura do banco (Criar tabelas)
     try
     {
-        var context = services.GetRequiredService<PROJFACILITY.IA.Data.AppDbContext>();
-        
-        // Aplica Migrations pendentes (Cria tabelas se não existirem)
-        context.Database.Migrate(); 
-        
-        // Roda o Seeder
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        // Se falhar (ex: tabela já existe em conflito), apenas avisa no log e CONTINUA
+        logger.LogWarning(ex, "Aviso: O Migrate encontrou um conflito ou já estava atualizado.");
+    }
+
+    // 2. Tenta preencher os dados (Prompts) INDEPENDENTE do passo anterior
+    try
+    {
         PROJFACILITY.IA.Data.DbSeeder.Seed(context);
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Ocorreu um erro ao popular o banco de dados.");
+        logger.LogError(ex, "Erro crítico ao popular o banco de dados (Seeder).");
     }
 }
+// ------------------------------------------------
 
 app.Run();
