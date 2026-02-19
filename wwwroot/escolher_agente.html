@@ -55,21 +55,23 @@
         }
         
         /* --- ABAS DE NAVEGAÇÃO --- */
-        ..agent-tabs-wrapper {
+        .agent-tabs-wrapper { /* Corrigido: Removido o ponto duplo inicial */
             overflow-x: auto;
+            overflow-y: hidden; /* Garante que o container limite apenas o eixo Y corretamente */
             margin-bottom: 20px;
             scrollbar-width: none; 
             -ms-overflow-style: none;
+            padding-top: 5px; /* Um respiro extra direto no wrapper */
         }
         .agent-tabs-wrapper::-webkit-scrollbar { display: none; }
 
         .agent-tabs {
             display: flex;
-            justify-content: center;
+            justify-content: center; /* No mobile, o JS ou flex pode precisar de flex-start dependendo do número de abas */
             gap: 10px;
             min-width: max-content;
-            /* A MAGIA ESTÁ AQUI: 10px em cima (para o pulo) e 25px em baixo (para a sombra brilhar sem cortar) */
-            padding: 10px 20px 25px 20px; 
+            /* MAGIA ATUALIZADA: 15px em cima para o pulo + brilho da sombra não cortarem! */
+            padding: 15px 20px 25px 20px; 
         }
         .agent-tab-btn 
         {
