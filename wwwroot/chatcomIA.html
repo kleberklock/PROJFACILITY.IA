@@ -558,10 +558,8 @@
 
     // --- CARREGAR CONTEXTOS DO USUÁRIO (Painel Lateral) ---
     async function loadUserContexts() {
-        // Mantido para compatibilidade, mas o foco agora é o Modal
         const container = document.getElementById('userPromptsContainer');
         if (!container) return;
-        // ... (Logica antiga mantida para evitar quebra de script)
     }
 
     // --- ENVIO DE MENSAGEM COM STOP REAL ---
@@ -610,7 +608,12 @@
 
         try {
             const token = localStorage.getItem('token'); 
-            let contextPrompt = activeContexts.size > 0 ? "Contextos do Sistema: " + Array.from(activeContexts).map(c => c.l).join(", ") + ". " : "";
+            
+            // --- NOVA LÓGICA DE CONTEXTOS OCULTOS ---
+            let contextosSecretos = activeContexts.size > 0 
+                ? Array.from(activeContexts).map(c => `[Contexto Ativo - ${c.label}]:\n${c.content}`).join("\n\n") 
+                : "";
+            
             let responseText = "";
             
             await new Promise(r => setTimeout(r, 500));
@@ -618,9 +621,14 @@
             if (typeof CONFIG !== 'undefined' && CONFIG.API_URL) {
                 try {
                     const formData = new FormData();
-                    formData.append('message', contextPrompt + text);
+                    formData.append('message', text); // Envia apenas o texto limpo
                     formData.append('agentId', currentAgentName); 
                     formData.append('sessionId', currentSessionId); 
+                    formData.append('isHidden', 'false');
+                    
+                    if (contextosSecretos) {
+                        formData.append('activeContexts', contextosSecretos); 
+                    }
                     if(fileToSend) formData.append('file', fileToSend);
 
                     const res = await fetch(`${CONFIG.API_URL}/api/chat/enviar`, { 
@@ -892,6 +900,7 @@
         }
     }
 
+    // --- NOVA LÓGICA DE CONTEXTOS (BADGES OCULTOS) ---
     function loadSwitches(area) {
         let key = 'geral';
         if (area.includes('jur')) key = 'juridico';
@@ -904,13 +913,49 @@
         container.innerHTML = "";
         list.forEach((p, i) => {
              const id = `p_${i}`;
-             container.innerHTML += `<div class="prompt-switch-item"><div><div style="font-weight:bold; font-size:0.85rem; color:#eee;">${p.label}</div><div style="font-size:0.75rem; color:#888;">${p.desc}</div></div><label class="mini-switch"><input type="checkbox" onchange="toggleContext('${id}', '${p.label}', this.checked)"><span class="mini-slider"></span></label></div>`;
+             container.innerHTML += `<div class="prompt-switch-item"><div><div style="font-weight:bold; font-size:0.85rem; color:#eee;">${p.label}</div><div style="font-size:0.75rem; color:#888;">${p.desc}</div></div><label class="mini-switch"><input type="checkbox" onchange="toggleContext('${id}', '${p.label}', this.checked, '${p.desc}')"><span class="mini-slider"></span></label></div>`;
         });
     }
-    function toggleContext(id, label, checked) { if(checked) activeContexts.add({id, l: label}); else activeContexts.forEach(i=>{if(i.id===id)activeContexts.delete(i)}); updateActiveBadges(); }
-    function updateActiveBadges() { document.getElementById('activeModulesArea').innerHTML = Array.from(activeContexts).map(c => `<div class="module-badge"><i class="fas fa-bolt"></i> ${c.l}</div>`).join(''); }
+    
+    function toggleContext(id, label, checked, desc) { 
+        if(checked) activeContexts.add({id: id, label: label, content: desc}); 
+        else activeContexts.forEach(i => { if(i.id === id) activeContexts.delete(i); }); 
+        updateActiveBadges(); 
+    }
+
+    function updateActiveBadges() { 
+        document.getElementById('activeModulesArea').innerHTML = Array.from(activeContexts).map(c => 
+            `<div class="module-badge" style="display:inline-flex; align-items:center; gap:5px; background:rgba(16, 185, 129, 0.2); border:1px solid var(--primary); padding:3px 10px; border-radius:12px; font-size:0.75rem; color:#fff; margin-right:5px;">
+                <i class="fas fa-bolt" style="color:var(--primary)"></i> ${c.label}
+                <i class="fas fa-times" style="cursor:pointer; margin-left:5px; color:#ff4444;" onclick="removerContexto('${c.id}')"></i>
+            </div>`
+        ).join(''); 
+    }
+
+    window.removerContexto = function(id) {
+        activeContexts.forEach(c => { if(c.id === id) activeContexts.delete(c); });
+        updateActiveBadges();
+        const checkbox = document.querySelector(`input[onchange*="${id}"]`);
+        if(checkbox) checkbox.checked = false;
+    };
+    
+    // --- FUNÇÃO PARA ADICIONAR PROMPT PELO MODAL ---
+    function selecionarPromptChat(tituloEncoded, conteudoEncoded) {
+        const titulo = decodeURIComponent(tituloEncoded);
+        const conteudo = decodeURIComponent(conteudoEncoded);
+        
+        const id = 'ctx_' + Date.now();
+        activeContexts.add({ id: id, label: titulo, content: conteudo });
+        updateActiveBadges();
+        
+        if (typeof showToast === 'function') {
+            showToast(`Contexto "${titulo}" ativado com sucesso!`);
+        }
+        
+        fecharModalPromptsChat();
+    }
+
     function toggleMenu(id) { const m = document.getElementById(id); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
-    // function togglePanel() { const p = document.getElementById('promptsPanel'); p.style.display = p.style.display === 'block' ? 'none' : 'block'; } // Antigo
     function toggleSidebarMobile() { document.getElementById('mainSidebar').classList.toggle('active'); }
 
     document.addEventListener('click', (e) => {
@@ -927,14 +972,12 @@
 
     /* --- LÓGICA DO MODAL DE PROMPTS (SISTEMA E USUÁRIO) --- */
 
-    // Função chamada ao clicar no ícone da varinha mágica
     function abrirMeusPromptsChat() {
         document.getElementById('attachMenu').style.display = 'none';
-        
         const modal = document.getElementById('modalPromptsChat');
         if(modal) {
             modal.style.display = 'flex';
-            switchModalTab('system'); // Inicia na aba de sistema
+            switchModalTab('system'); 
         }
     }
 
@@ -943,11 +986,9 @@
     }
 
     function switchModalTab(tabName) {
-        // Gerencia estado visual dos botões
         document.getElementById('tabBtnSystem').classList.remove('active');
         document.getElementById('tabBtnUser').classList.remove('active');
         
-        // Gerencia visibilidade do conteúdo
         document.getElementById('tabContentSystem').style.display = 'none';
         document.getElementById('tabContentUser').style.display = 'none';
 
@@ -962,7 +1003,6 @@
         }
     }
 
-    // --- CARREGAR PROMPTS DO SISTEMA (Com Accordion) ---
     async function loadSystemPrompts() {
         const container = document.getElementById('systemPromptsContainer');
         const loader = document.getElementById('systemPromptsLoader');
@@ -1006,14 +1046,12 @@
             return;
         }
 
-        // Agrupar por Area
         const groups = {};
         prompts.forEach(p => {
             if (!groups[p.area]) groups[p.area] = [];
             groups[p.area].push(p);
         });
 
-        // Ordenar Areas
         const sortedAreas = Object.keys(groups).sort();
 
         for (const area of sortedAreas) {
@@ -1021,7 +1059,6 @@
             const accItem = document.createElement('div');
             accItem.className = 'accordion-item';
             
-            // Ícone simples baseado na área
             let iconClass = 'fa-layer-group';
             if(area.toLowerCase().includes('juridico')) iconClass = 'fa-scale-balanced';
             if(area.toLowerCase().includes('tech')) iconClass = 'fa-laptop-code';
@@ -1044,7 +1081,8 @@
             items.forEach(p => {
                 const card = document.createElement('div');
                 card.className = 'system-prompt-card';
-                card.onclick = () => selecionarPromptChat(encodeURIComponent(p.content));
+                // AQUI PASSA O TÍTULO E O CONTEÚDO
+                card.onclick = () => selecionarPromptChat(encodeURIComponent(p.buttonTitle || p.profession || 'Sistema'), encodeURIComponent(p.content));
                 card.innerHTML = `
                     <div class="sp-prof">${p.profession}</div>
                     <div class="sp-title">${p.buttonTitle}</div>
@@ -1056,7 +1094,6 @@
         }
     }
 
-    // --- CARREGAR MEUS PROMPTS ---
     async function loadUserPrompts() {
         const container = document.getElementById('listaPromptsChatContent');
         const loader = document.getElementById('userPromptsLoader');
@@ -1108,7 +1145,8 @@
         prompts.forEach(p => {
             const item = document.createElement('div');
             item.className = 'prompt-list-item';
-            item.onclick = () => selecionarPromptChat(encodeURIComponent(p.content));
+            // AQUI PASSA O TÍTULO E O CONTEÚDO
+            item.onclick = () => selecionarPromptChat(encodeURIComponent(p.title), encodeURIComponent(p.content));
             
             item.innerHTML = `
                 <strong>${p.title}</strong>
@@ -1116,26 +1154,6 @@
             `;
             container.appendChild(item);
         });
-    }
-
-    function selecionarPromptChat(encodedContent) {
-        const content = decodeURIComponent(encodedContent);
-        const input = document.getElementById('userInput');
-        
-        if (input.value.trim() !== '') {
-            input.value += '\n\n' + content;
-        } else {
-            input.value = content;
-        }
-        input.focus();
-        
-        // Ajusta altura
-        if(input.style) {
-            input.style.height = 'auto';
-            input.style.height = input.scrollHeight + 'px';
-        }
-        
-        fecharModalPromptsChat();
     }
 
     window.addEventListener('click', function(e) {

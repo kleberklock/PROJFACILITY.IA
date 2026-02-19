@@ -357,7 +357,7 @@ function renderSystemPrompts(prompts) {
             const card = document.createElement('div');
             card.className = 'system-prompt-card';
             // Encode URI Component para evitar quebra com aspas
-            card.onclick = () => selecionarPromptChat(encodeURIComponent(p.content));
+            card.onclick = () => selecionarPromptChat(encodeURIComponent(p.buttonTitle || p.profession || 'Sistema'), encodeURIComponent(p.content));
             card.innerHTML = `
                 <div class="sp-prof">${p.profession}</div>
                 <div class="sp-title">${p.buttonTitle}</div>
@@ -432,8 +432,7 @@ function renderUserPrompts(prompts) {
         item.onmouseover = () => { item.style.backgroundColor = 'rgba(255,255,255,0.03)'; };
         item.onmouseout = () => { item.style.backgroundColor = 'transparent'; };
         
-        item.onclick = () => selecionarPromptChat(encodeURIComponent(p.content));
-        
+        item.onclick = () => selecionarPromptChat(encodeURIComponent(p.title), encodeURIComponent(p.content));
         item.innerHTML = `
             <strong style="color:var(--primary); font-size:1rem; display:block; margin-bottom:5px;">${p.title}</strong>
             <p style="color:#ccc; font-size:0.9rem; margin:0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${p.content}</p>
@@ -443,22 +442,26 @@ function renderUserPrompts(prompts) {
 }
 
 // Função auxiliar para inserir no chat e fechar modal
-function selecionarPromptChat(conteudoEncoded) {
+function selecionarPromptChat(tituloEncoded, conteudoEncoded) {
+    const titulo = decodeURIComponent(tituloEncoded);
     const conteudo = decodeURIComponent(conteudoEncoded);
-    const input = document.getElementById('userInput');
     
-    if(!input) return;
-
-    if (input.value.trim() !== '') {
-        input.value += '\n\n' + conteudo;
-    } else {
-        input.value = conteudo;
+    // Cria um ID único para este contexto
+    const id = 'ctx_' + Date.now();
+    
+    // Guarda o contexto em memória
+    if (typeof activeContexts !== 'undefined') {
+        activeContexts.add({ id: id, label: titulo, content: conteudo });
     }
     
-    // Foca e ajusta altura
-    input.focus();
-    input.style.height = 'auto';
-    input.style.height = (input.scrollHeight) + 'px';
+    // Atualiza a visualização no topo do chat
+    if (typeof updateActiveBadges === 'function') {
+        updateActiveBadges();
+    }
+    
+    if (typeof showToast === 'function') {
+        showToast(`Contexto "${titulo}" ativado com sucesso!`);
+    }
 
     fecharModalPromptsChat();
 }
