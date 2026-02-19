@@ -1,8 +1,8 @@
 /* CONFIGURAÇÃO DE AMBIENTE UNIVERSAL */
 
 // 1. Defina aqui onde o Backend está rodando (Localhost agora)
-//const BASE_URL = "http://localhost:5217";
-const BASE_URL = "https://facility-ia-frg6cqbcggasdhea.centralus-01.azurewebsites.net"; // Use essa só na Azure
+const BASE_URL = "http://localhost:5217";
+//const BASE_URL = "https://facility-ia-frg6cqbcggasdhea.centralus-01.azurewebsites.net"; // Use essa só na Azure
 
 // 2. Compatibilidade para o Login (que usa CONFIG)
 const CONFIG = {

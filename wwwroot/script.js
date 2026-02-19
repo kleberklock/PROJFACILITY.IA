@@ -241,7 +241,6 @@ function getCategoryColor(area) {
 
     return colors[key] || colors['outros'];
 } // <- ESTA CHAVE ESTAVA EM FALTA
-
 /* --- LÓGICA DO MODAL DE PROMPTS (SISTEMA E USUÁRIO) --- */
 
 let cachedSystemPrompts = null;
