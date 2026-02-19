@@ -415,7 +415,7 @@
         breaks: true // Importante para quebrar linha com Enter
     });
 
-    // 3. Base de Conhecimento
+    // 3. Base de Conhecimento Estática
     const knowledgeBase = {
             juridico: [ { label: "REVISAR CONTRATO", desc: "Analisar cláusulas abusivas." }, { label: "REDIGIR PETIÇÃO", desc: "Estrutura formal jurídica." } ],
             saude: [ { label: "INTERAÇÃO MEDICAMENTOSA", desc: "Verificar conflitos." }, { label: "EXPLICAÇÃO DE EXAME", desc: "Traduzir laudos técnicos." } ],
@@ -476,9 +476,6 @@
         const agentArea = params.get('area') || 'geral';
 
         setupChat(agentName, agentIcon, agentArea);
-        
-        // Carrega os prompts do usuário (Contextos Ativos do Painel Lateral)
-        loadUserContexts();
 
         if(window.innerWidth <= 768) {
             const mobileMenu = document.querySelector('.mobile-only');
@@ -556,12 +553,6 @@
         userInput.focus();
     }
 
-    // --- CARREGAR CONTEXTOS DO USUÁRIO (Painel Lateral) ---
-    async function loadUserContexts() {
-        const container = document.getElementById('userPromptsContainer');
-        if (!container) return;
-    }
-
     // --- ENVIO DE MENSAGEM COM STOP REAL ---
     async function handleSendMessage() {
         if (isGenerating) {
@@ -621,7 +612,7 @@
             if (typeof CONFIG !== 'undefined' && CONFIG.API_URL) {
                 try {
                     const formData = new FormData();
-                    formData.append('message', text); // Envia apenas o texto limpo
+                    formData.append('message', text); // Envia apenas a mensagem visível ao utilizador
                     formData.append('agentId', currentAgentName); 
                     formData.append('sessionId', currentSessionId); 
                     formData.append('isHidden', 'false');
@@ -1081,11 +1072,16 @@
             items.forEach(p => {
                 const card = document.createElement('div');
                 card.className = 'system-prompt-card';
-                // AQUI PASSA O TÍTULO E O CONTEÚDO
-                card.onclick = () => selecionarPromptChat(encodeURIComponent(p.buttonTitle || p.profession || 'Sistema'), encodeURIComponent(p.content));
+                
+                // Correção de Casing para C# API
+                const titulo = p.buttonTitle || p.ButtonTitle || p.profession || p.Profession || 'Sistema';
+                const conteudo = p.content || p.Content || '';
+
+                card.onclick = () => selecionarPromptChat(encodeURIComponent(titulo), encodeURIComponent(conteudo));
+                
                 card.innerHTML = `
-                    <div class="sp-prof">${p.profession}</div>
-                    <div class="sp-title">${p.buttonTitle}</div>
+                    <div class="sp-prof">${p.profession || p.Profession || ''}</div>
+                    <div class="sp-title">${p.buttonTitle || p.ButtonTitle || ''}</div>
                 `;
                 body.appendChild(card);
             });
@@ -1145,12 +1141,16 @@
         prompts.forEach(p => {
             const item = document.createElement('div');
             item.className = 'prompt-list-item';
-            // AQUI PASSA O TÍTULO E O CONTEÚDO
-            item.onclick = () => selecionarPromptChat(encodeURIComponent(p.title), encodeURIComponent(p.content));
+            
+            // --- A SOLUÇÃO: À prova de falhas para maiúsculas/minúsculas vindas do C# ---
+            const titulo = p.title || p.Title || 'Meu Prompt';
+            const conteudo = p.content || p.Content || '...';
+
+            item.onclick = () => selecionarPromptChat(encodeURIComponent(titulo), encodeURIComponent(conteudo));
             
             item.innerHTML = `
-                <strong>${p.title}</strong>
-                <p>${p.content}</p>
+                <strong>${titulo}</strong>
+                <p>${conteudo}</p>
             `;
             container.appendChild(item);
         });
