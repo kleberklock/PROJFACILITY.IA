@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Security.Cryptography;
 using BCrypt.Net;
 using Microsoft.AspNetCore.Authorization; // <--- AGORA ESTÁ NO LUGAR CERTO (TOPO)
 
@@ -43,7 +44,7 @@ namespace PROJFACILITY.IA.Controllers
                 if (user != null && user.IsActive == true)
                     return BadRequest(new { message = "Este e-mail já possui cadastro. Faça login." });
 
-                string codigo = new Random().Next(100000, 999999).ToString();
+                string codigo = GerarCodigoSeguro();
 
                 if (user == null)
                 {
@@ -87,7 +88,7 @@ namespace PROJFACILITY.IA.Controllers
             if (user == null)
                 return Ok(new { message = "Se o e-mail existir, um código foi enviado." });
 
-            string codigo = new Random().Next(100000, 999999).ToString();
+            string codigo = GerarCodigoSeguro();
             
             user.VerificationCode = codigo;
             user.VerificationCodeExpires = DateTime.UtcNow.AddMinutes(15);
@@ -208,7 +209,11 @@ namespace PROJFACILITY.IA.Controllers
         }
 
         // --- MÉTODOS AUXILIARES ---
-
+        private string GerarCodigoSeguro()
+        {
+         // Gera um número verdadeiramente aleatório e criptograficamente seguro entre 100000 e 999999
+         return RandomNumberGenerator.GetInt32(100000, 999999).ToString();
+        }
         private string GerarTokenJwt(User user)
         {
             var jwtKey = _configuration["Jwt:Key"];

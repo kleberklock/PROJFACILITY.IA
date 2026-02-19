@@ -12,16 +12,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. Liberar CORS (Permite acesso do Frontend)
+// 2. Liberar CORS (Permite Azure e seu ambiente local de desenvolvimento)
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
+    options.AddPolicy("ProductionCors",
         builder => builder
-            .AllowAnyOrigin()
+            .WithOrigins(
+                "https://facility-ia-frg6cqbcggasdhea.centralus-01.azurewebsites.net", // Produção
+                "http://localhost:5217",   // Frontend local (Live Server padrão)
+                "http://127.0.0.1:5500",   // Frontend local IP
+                "http://localhost:5217"    // Backend local
+            )
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
-
 // 3. Configurar Serviços
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ChatService>();
@@ -29,7 +33,14 @@ builder.Services.AddScoped<KnowledgeService>();
 builder.Services.AddControllers();
 
 // 4. Configurar JWT
-var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"] ?? "chave_super_secreta_padrao_para_desenvolvimento_123");
+var jwtKey = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrEmpty(jwtKey) || jwtKey.Length < 32)
+{
+    // O sistema DEVE parar se não houver chave segura configurada na Azure
+    throw new InvalidOperationException("FATAL: A chave JWT não foi configurada nas variáveis de ambiente ou é muito curta!");
+}
+
+var key = Encoding.ASCII.GetBytes(jwtKey);
 builder.Services.AddAuthentication(x =>
 {
     x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -37,7 +48,7 @@ builder.Services.AddAuthentication(x =>
 })
 .AddJwtBearer(x =>
 {
-    x.RequireHttpsMetadata = false;
+    x.RequireHttpsMetadata = true; // Obrigatório em produção
     x.SaveToken = true;
     x.TokenValidationParameters = new TokenValidationParameters
     {
@@ -48,25 +59,37 @@ builder.Services.AddAuthentication(x =>
     };
 });
 
+// ==========================================
+// LINHA CRÍTICA QUE ESTAVA A FALTAR
 var app = builder.Build();
+// ==========================================
 
 // 5. Pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
+else
+{
+    // Força o uso de HTTPS em produção
+    app.UseHsts();
+}
 
+app.UseHttpsRedirection();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
-app.UseCors("AllowAll"); 
+app.UseCors("ProductionCors");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
+// ==========================================
+// LINHA CRÍTICA QUE TINHA DESAPARECIDO
 app.MapControllers();
+// ==========================================
 
 // --- INICIALIZAÇÃO BLINDADA DO BANCO DE DADOS ---
 using (var scope = app.Services.CreateScope())

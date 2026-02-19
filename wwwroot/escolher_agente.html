@@ -55,10 +55,9 @@
         }
         
         /* --- ABAS DE NAVEGAÇÃO --- */
-        .agent-tabs-wrapper {
+        ..agent-tabs-wrapper {
             overflow-x: auto;
-            padding-bottom: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             scrollbar-width: none; 
             -ms-overflow-style: none;
         }
@@ -69,10 +68,11 @@
             justify-content: center;
             gap: 10px;
             min-width: max-content;
-            padding: 0 20px;
+            /* A MAGIA ESTÁ AQUI: 10px em cima (para o pulo) e 25px em baixo (para a sombra brilhar sem cortar) */
+            padding: 10px 20px 25px 20px; 
         }
-
-        .agent-tab-btn {
+        .agent-tab-btn 
+        {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
             color: #aaa;
