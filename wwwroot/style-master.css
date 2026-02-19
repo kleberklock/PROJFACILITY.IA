@@ -245,12 +245,19 @@ input:checked + .slider:before { transform: translateX(22px); }
 .chat-input { display: flex; padding: 10px; border-top: 1px solid #333; }
 .chat-input input { flex: 1; background: transparent; border: none; color: white; padding: 10px; }
 
-/* Footer */
+/* Footer Desktop Padrão */
 footer {
     border-top: 1px solid var(--glass-border); padding: 60px 5%; margin-top: 80px;
     background: #020203; color: #666; font-size: 0.85rem;
 }
-.footer-grid { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 40px; }
+.footer-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+}
+.footer-grid .footer-col {
+    flex: 1;
+}
 .footer-col h5 { color: white; margin-bottom: 20px; font-size: 1rem; text-transform: uppercase; }
 .footer-col ul li { margin-bottom: 10px; }
 .footer-bottom { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #111; }
@@ -294,7 +301,17 @@ footer {
     /* Ajuste dos Grids para Mobile */
     .stats-grid { grid-template-columns: 1fr 1fr; gap: 15px; }
     .switch-card { display: grid; grid-template-columns: 1fr auto; }
-    .footer-grid { flex-direction: column; text-align: center; }
+    
+    /* O Footer Mobile Definitivo Aplicado no Local Correto */
+    .footer-grid { 
+        flex-direction: column; 
+        text-align: left !important; 
+        align-items: flex-start; /* Força os itens para a esquerda do contêiner */
+        gap: 30px; 
+    }
+    .footer-grid .footer-col {
+        width: 100%; /* Força as colunas a esticarem, impedindo que flutuem no meio */
+    }
 }
 /* --- FIX DE ANIMAÇÕES (Necessário para o script.js funcionar) --- */
 .animate-slide-up {
