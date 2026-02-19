@@ -25,12 +25,15 @@
             <div class="mobile-menu-btn" onclick="togglePublicMenu()">
                 <i class="fas fa-bars"></i>
             </div>
+            
+            <div class="mobile-nav-overlay" onclick="togglePublicMenu()"></div>
 
             <nav class="nav-menu" id="publicNav">
                 <div class="mobile-menu-header">
-                    <span>MENU</span>
+                    <span>MENU NAVEGAÇÃO</span>
                     <i class="fas fa-times close-btn" onclick="togglePublicMenu()"></i>
                 </div>
+
                 <ul>
                     <li><a href="index.html" onclick="togglePublicMenu()">Início</a></li>
                     <li><a href="prompts.html" onclick="togglePublicMenu()">Como funciona?</a></li>
@@ -44,8 +47,6 @@
                     </li>
                 </ul>
             </nav>
-            
-            <div class="mobile-nav-overlay" onclick="togglePublicMenu()"></div>
         </div>
     </header>
     
@@ -218,24 +219,34 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-        const element = document.getElementById('typing-text');
-        const text = "Facilitando sua vida profissional e acadêmica!";
-        const speed = 50; 
-        
-        if (element) {
-            let i = 0;
-            element.innerHTML = ""; // Limpa antes de começar
+            const element = document.getElementById('typing-text');
+            const text = "Facilitando sua vida profissional e acadêmica!";
+            const speed = 50; 
             
-            function type() {
-                if (i < text.length) {
-                    element.innerHTML += text.charAt(i);
-                    i++;
-                    setTimeout(type, speed);
+            if (element) {
+                // Forçamos a visibilidade do contentor pai para garantir que aparece
+                const heroContent = document.querySelector('.hero-content');
+                if (heroContent) {
+                    heroContent.style.opacity = "1";
                 }
+
+                // Limpamos o texto inicial
+                element.style.opacity = "1";
+                element.textContent = ""; 
+                
+                let i = 0;
+                
+                function type() {
+                    if (i < text.length) {
+                        element.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(type, speed);
+                    }
+                }
+                setTimeout(type, 800); 
             }
-            setTimeout(type, 800); 
-        }
-    });
+        });
+
         // --- LÓGICA DE AUTOCOMPLETE ---
         const profissoes = [
             "Advogado Civil", "Advogado Trabalhista", "Advogado Criminalista", "Advogado Tributário", 
@@ -378,21 +389,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
     </script>
    <script>
-    // 1. O Menu Definitivo (Conecta direto ao seu onclick do HTML e sobrescreve conflitos)
-    window.togglePublicMenu = function() {
-        const nav = document.getElementById('publicNav');
-        const overlay = document.querySelector('.mobile-nav-overlay');
-        
-        if (nav) {
-            // Alterna a classe 'active'
-            const isActive = nav.classList.toggle('active');
-            if (overlay) overlay.classList.toggle('active');
-            
-            // Trava o fundo da tela para não rolar quando o menu abrir
-            document.body.style.overflow = isActive ? 'hidden' : '';
-        }
-    };
-
+    
     document.addEventListener('DOMContentLoaded', function() {
         // 2. Efeito de Scroll no Header (Deixa escuro ao rolar)
         const header = document.querySelector('header');
@@ -403,20 +400,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // 3. Otimização de Animações (Slide-up suave nos cards)
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) entry.target.classList.add('visible');
-            });
-        }, { threshold: 0.1 });
-
-        const animElements = document.querySelectorAll('.app-card, .hero-content, .feature-item');
-        animElements.forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'all 0.6s ease-out';
-            observer.observe(el);
-        });
+        
     });
 </script>
 </body>

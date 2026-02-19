@@ -265,32 +265,7 @@ footer {
 
 /* --- 4. AJUSTES GERAIS MOBILE --- */
 
-@media screen and (max-width: 992px) {
-    /* Garante que o container do header fique em linha (Logo na esq, Botão na dir) */
-    .header-container {
-        flex-direction: row !important; /* Força linha */
-        align-items: center !important;
-        justify-content: space-between !important;
-        padding: 0 20px !important;
-        height: 70px;
-    }
 
-    /* Logo não pode ocupar 100% senão empurra o botão */
-    .logo { 
-        width: auto !important; 
-        border: none !important; 
-        padding: 0 !important;
-        flex-grow: 0;
-    }
-
-    /* O botão do menu precisa estar visível */
-    .mobile-menu-btn {
-        display: block !important;
-        font-size: 1.8rem;
-        color: white;
-        cursor: pointer;
-        margin-left: auto; /* Empurra para a direita */
-    }
 
     /* Esconde a badge BETA no celular para economizar espaço */
     .badge-beta { display: none; }
@@ -1246,132 +1221,6 @@ input:checked + .slider-demo:before { transform: translateX(26px); box-shadow: 0
     .comparison-box { width: 100%; }
     .connector-arrow { transform: rotate(90deg); margin: 10px 0; }
 }
-/* =========================================
-   NOVO HEADER MOBILE INTERATIVO
-   Cole isso no final do style-master.css
-   ========================================= */
-
-/* Botão do Menu (Hambúrguer) */
-.mobile-menu-btn {
-    display: none; /* Escondido no Desktop */
-    font-size: 1.5rem;
-    color: white;
-    cursor: pointer;
-    padding: 10px;
-    z-index: 1002;
-}
-
-.mobile-menu-header {
-    display: none; /* Escondido no Desktop */
-}
-
-.mobile-nav-overlay {
-    display: none; /* Escondido por padrão */
-}
-
-/* --- ESTILOS MOBILE (Telas menores que 992px) --- */
-@media screen and (max-width: 992px) {
-    
-    /* Mostra o botão hambúrguer */
-    .mobile-menu-btn {
-        display: block;
-    }
-
-    /* Esconde o menu original e transforma em gaveta lateral */
-    .nav-menu {
-        position: fixed;
-        top: 0;
-        right: -100%; /* Começa fora da tela */
-        width: 80%;
-        max-width: 300px;
-        height: 100vh;
-        background: rgba(13, 17, 23, 0.98);
-        backdrop-filter: blur(20px);
-        border-left: 1px solid rgba(255,255,255,0.1);
-        padding: 20px;
-        transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 2000;
-        display: flex;
-        flex-direction: column;
-        box-shadow: -10px 0 30px rgba(0,0,0,0.5);
-    }
-
-    /* Classe ativa para abrir o menu */
-    .nav-menu.active {
-        right: 0; /* Desliza para dentro */
-    }
-
-    /* Cabeçalho interno do menu mobile */
-    .mobile-menu-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
-        padding-bottom: 15px;
-        margin-bottom: 20px;
-        color: var(--primary);
-        font-weight: bold;
-        letter-spacing: 2px;
-    }
-    .close-btn {
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #fff;
-    }
-
-    /* Ajuste da lista de links */
-    .nav-menu ul {
-        flex-direction: column;
-        gap: 0;
-        width: 100%;
-        align-items: flex-start;
-    }
-
-    .nav-menu ul li {
-        width: 100%;
-        margin-bottom: 15px;
-        opacity: 0; /* Para animação */
-        transform: translateX(20px);
-        transition: 0.3s;
-    }
-
-    /* Animação dos itens aparecendo */
-    .nav-menu.active ul li {
-        opacity: 1;
-        transform: translateX(0);
-        transition-delay: 0.2s;
-    }
-
-    .nav-menu a {
-        display: block;
-        font-size: 1.1rem;
-        padding: 10px 0;
-        border-bottom: 1px solid rgba(255,255,255,0.03);
-        width: 100%;
-    }
-
-    /* Botão Entrar no Mobile */
-    .nav-menu .cta-button {
-        background: var(--primary);
-        color: black !important;
-        text-align: center;
-        margin-top: 20px;
-        display: flex;
-        justify-content: center;
-        width: 100%;
-    }
-
-    /* Overlay Escuro (Fundo) */
-    .mobile-nav-overlay.active {
-        display: block;
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.7);
-        z-index: 1001;
-        animation: fadeIn 0.3s forwards;
-    }
-}
 /* --- RESPONSIVIDADE MOBILE DO CHAT (Adicione ao final do style-master.css) --- */
 @media (max-width: 768px) {
     /* 1. Força a altura real da viewport mobile */
@@ -1651,4 +1500,107 @@ input:checked + .slider-demo:before { transform: translateX(26px); box-shadow: 0
     0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
     70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(37, 211, 102, 0); }
     100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+/* Garante que os elementos observados pelo JS se tornem visíveis */
+.visible {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+/* ==========================================================================
+   NOVA INTERATIVIDADE MOBILE (PÁGINA INICIAL)
+   ========================================================================== */
+/* Esconde elementos mobile no Desktop */
+.mobile-menu-btn, .mobile-menu-header, .mobile-nav-overlay {
+    display: none;
+}
+
+@media screen and (max-width: 992px) {
+    /* Ajusta o Header para manter Logo na esquerda e Hambúrguer na direita */
+    .header-container {
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        height: 70px;
+    }
+
+    .logo { flex-grow: 0; }
+
+    /* Estilo do Botão Hambúrguer */
+    .mobile-menu-btn {
+        display: block;
+        font-size: 1.8rem;
+        color: var(--neon-green);
+        cursor: pointer;
+        z-index: 1001;
+    }
+
+    /* Estilo do Fundo Escuro (Overlay) */
+    .mobile-nav-overlay {
+        display: block;
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.8);
+        backdrop-filter: blur(5px);
+        z-index: 998;
+        opacity: 0; visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-nav-overlay.active {
+        opacity: 1; visibility: visible;
+    }
+
+    /* O Menu em si (Gaveta Lateral que vem da direita) */
+    #publicNav {
+        position: fixed;
+        top: 0; right: -100%; /* Escondido fora da tela */
+        width: 280px; height: 100vh;
+        background: var(--dark-bg);
+        border-left: 1px solid var(--glass-border);
+        z-index: 999;
+        transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Animação suave */
+        display: flex; flex-direction: column;
+        padding: 0;
+        box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+    }
+
+    /* Classe que o JavaScript vai adicionar para mostrar o menu */
+    #publicNav.active {
+        right: 0;
+    }
+
+    /* Cabeçalho do menu com o X para fechar */
+    .mobile-menu-header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05);
+        font-weight: bold; color: white;
+        font-size: 0.9rem; letter-spacing: 1px;
+    }
+
+    .mobile-menu-header .close-btn {
+        font-size: 1.5rem; color: #ff5555; cursor: pointer;
+        transition: 0.2s;
+    }
+    .mobile-menu-header .close-btn:hover { transform: scale(1.1); }
+
+    /* Ajuste da lista de links */
+    #publicNav ul {
+        flex-direction: column;
+        padding: 20px;
+        gap: 15px;
+        align-items: stretch;
+    }
+
+    #publicNav a {
+        display: block;
+        font-size: 1.1rem;
+        padding: 12px 15px;
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+
+    #publicNav a.cta-button {
+        text-align: center;
+        margin-top: 20px;
+        border-bottom: none;
+    }
 }

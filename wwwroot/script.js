@@ -56,7 +56,7 @@ function initActiveSidebar() {
 
 /* --- SISTEMA DE ANIMAÇÃO --- */
 function runPageAnimations() {
-    const elements = document.querySelectorAll('.app-card, .hero-content, .login-card, .pro-card, .table-row');
+    const elements = document.querySelectorAll('.app-card, .login-card, .pro-card, .table-row');
     elements.forEach((el, index) => {
         el.style.opacity = '0';
         el.classList.add('animate-slide-up');
@@ -70,17 +70,7 @@ function runPageAnimations() {
     });
 }
 
-/* --- MENU MOBILE (PÁGINAS PÚBLICAS: Index, Prompts, Planos) --- */
-function togglePublicMenu() {
-    const nav = document.getElementById('publicNav');
-    const overlay = document.querySelector('.mobile-nav-overlay');
-    
-    if (nav) {
-        const isActive = nav.classList.toggle('active');
-        if (overlay) overlay.classList.toggle('active');
-        document.body.style.overflow = isActive ? 'hidden' : '';
-    }
-}
+
 
 /* --- MENU MOBILE (INTERNO: Dashboard, Chat) + GESTOS --- */
 function initMobileSystem() {
@@ -481,3 +471,21 @@ function selecionarPromptChat(tituloEncoded, conteudoEncoded) {
 
     fecharModalPromptsChat();
 }
+/* ==========================================================================
+   FUNÇÕES GLOBAIS DE INTERATIVIDADE (PÁGINAS PÚBLICAS)
+   ========================================================================== */
+
+// Função do Menu Mobile (Abre e Fecha a Gaveta)
+window.togglePublicMenu = function() {
+    const nav = document.getElementById('publicNav');
+    const overlay = document.querySelector('.mobile-nav-overlay');
+    
+    if (nav) {
+        // Alterna a gaveta e o overlay
+        const isActive = nav.classList.toggle('active');
+        if (overlay) overlay.classList.toggle('active');
+        
+        // Bloqueia o scroll do fundo (página) quando o menu está aberto
+        document.body.style.overflow = isActive ? 'hidden' : '';
+    }
+};
