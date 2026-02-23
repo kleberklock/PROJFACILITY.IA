@@ -1,108 +1,240 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" type="image/jpeg" href="/favicon.png">
     <title>Planos - Facility.IA</title>
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style-master.css"> 
+    <link rel="stylesheet" href="style-master.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* Ajustes Específicos da Página de Planos */
-        
+
         /* Slider de Ciclo (Mensal/Anual) */
-        .billing-cycle-container { display: flex; justify-content: center; margin-bottom: 60px; }
-        .toggle-wrapper {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 40px; padding: 5px; display: inline-flex; position: relative;
+        .billing-cycle-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 60px;
         }
+
+        .toggle-wrapper {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 40px;
+            padding: 5px;
+            display: inline-flex;
+            position: relative;
+        }
+
         .toggle-option {
-            padding: 10px 25px; cursor: pointer; border-radius: 35px;
-            font-size: 0.9rem; font-weight: 600; color: #aaa; z-index: 2; position: relative;
+            padding: 10px 25px;
+            cursor: pointer;
+            border-radius: 35px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #aaa;
+            z-index: 2;
+            position: relative;
             transition: color 0.3s;
         }
-        .toggle-option.active { color: #000; }
+
+        .toggle-option.active {
+            color: #000;
+        }
+
         .slider-bg {
-            position: absolute; top: 5px; left: 5px; height: calc(100% - 10px);
-            background: #00ff88; border-radius: 35px; z-index: 1; transition: 0.3s;
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            height: calc(100% - 10px);
+            background: #00ff88;
+            border-radius: 35px;
+            z-index: 1;
+            transition: 0.3s;
             box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
         }
+
         .discount-badge {
-            position: absolute; top: -10px; right: -8px; background: #ff0055;
-            color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 6px;
-            font-weight: bold; animation: bounce 2s infinite;
+            position: absolute;
+            top: -10px;
+            right: -8px;
+            background: #ff0055;
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: bold;
+            animation: bounce 2s infinite;
         }
-        @keyframes bounce { 0%, 100% {transform: translateY(0);} 50% {transform: translateY(-5px);} }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
 
         /* Grid */
-        .pricing-section { max-width: 1200px; margin: 0 auto; padding: 120px 20px 80px 20px; text-align: center; }
-        .pricing-grid { 
-            display: grid; 
-            grid-template-columns: repeat(3, 1fr); 
-            gap: 30px; 
-            margin-top: 40px; 
+        .pricing-section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 120px 20px 80px 20px;
+            text-align: center;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 40px;
             align-items: center;
         }
-        
+
         /* --- CARDS --- */
         .pricing-card {
-            background: #161b22; border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 20px; 
-            padding: 40px 30px; 
-            text-align: left; 
-            transition: 0.3s; 
+            background: #161b22;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: left;
+            transition: 0.3s;
             position: relative;
-            display: flex; 
+            display: flex;
             flex-direction: column;
-            min-height: 550px; 
+            min-height: 550px;
             justify-content: space-between;
         }
-        
-        .pricing-card:hover { transform: translateY(-10px); border-color: rgba(255,255,255,0.2); }
-        
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
         .pricing-card.featured {
-            border: 1px solid #00ff88; background: rgba(0, 255, 136, 0.02);
-            transform: scale(1.05); z-index: 2;
+            border: 1px solid #00ff88;
+            background: rgba(0, 255, 136, 0.02);
+            transform: scale(1.05);
+            z-index: 2;
             min-height: 600px;
             box-shadow: 0 0 30px rgba(0, 255, 136, 0.05);
         }
-        .pricing-card.featured:hover { transform: scale(1.05) translateY(-10px); }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-10px);
+        }
 
         /* Tipografia */
-        .plan-name { font-size: 1.5rem; color: white; margin: 0 0 10px 0; font-weight: 700; }
-        .price { font-size: 2.8rem; font-weight: 800; color: white; margin: 15px 0; letter-spacing: -1px; }
-        .price span { font-size: 1rem; color: #888; font-weight: normal; }
-        .plan-desc { color: #aaa; font-size: 0.95rem; margin-bottom: 20px; min-height: 40px; }
+        .plan-name {
+            font-size: 1.5rem;
+            color: white;
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+
+        .price {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: white;
+            margin: 15px 0;
+            letter-spacing: -1px;
+        }
+
+        .price span {
+            font-size: 1rem;
+            color: #888;
+            font-weight: normal;
+        }
+
+        .plan-desc {
+            color: #aaa;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            min-height: 40px;
+        }
 
         /* Lista de Features */
-        .features-list { margin: 0; list-style: none; padding: 0; color: #ccc; flex-grow: 1; }
-        .features-list li { margin-bottom: 12px; display: flex; align-items: center; font-size: 0.95rem; }
-        .features-list li i { margin-right: 10px; font-size: 1rem; width: 20px; text-align: center; }
+        .features-list {
+            margin: 0;
+            list-style: none;
+            padding: 0;
+            color: #ccc;
+            flex-grow: 1;
+        }
+
+        .features-list li {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        .features-list li i {
+            margin-right: 10px;
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+        }
 
         /* Botões */
         .btn-card {
-            width: 100%; padding: 15px; border-radius: 12px; font-weight: bold; 
-            text-align: center; text-decoration: none; display: block; transition: 0.3s;
-            margin-top: 30px; font-size: 0.95rem;
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: bold;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            transition: 0.3s;
+            margin-top: 30px;
+            font-size: 0.95rem;
         }
-        .btn-card-default { background: rgba(255,255,255,0.1); color: white; }
-        .btn-card-default:hover { background: white; color: black; }
-        
-        .btn-card-primary { 
-            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%); color: black; 
-            box-shadow: 0 5px 20px rgba(0,255,136,0.2); 
+
+        .btn-card-default {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
-        .btn-card-primary:hover { box-shadow: 0 8px 25px rgba(0,255,136,0.4); transform: translateY(-2px); }
+
+        .btn-card-default:hover {
+            background: white;
+            color: black;
+        }
+
+        .btn-card-primary {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: black;
+            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.2);
+        }
+
+        .btn-card-primary:hover {
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.4);
+            transform: translateY(-2px);
+        }
 
         /* Responsividade (Apenas ajustes do Grid, sem tocar no menu) */
         @media (max-width: 991px) {
-            .pricing-grid { grid-template-columns: 1fr; padding: 0 10px; gap: 40px; }
-            .pricing-card, .pricing-card.featured { min-height: auto; transform: none !important; }
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                padding: 0 10px;
+                gap: 40px;
+            }
+
+            .pricing-card,
+            .pricing-card.featured {
+                min-height: auto;
+                transform: none !important;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
@@ -114,7 +246,7 @@
                     <h1>FACILITY<span>.IA</span> <span class="badge-beta">BETA</span></h1>
                 </a>
             </div>
-        
+
             <div class="mobile-menu-btn" onclick="togglePublicMenu()">
                 <i class="fas fa-bars"></i>
             </div>
@@ -129,15 +261,15 @@
                     <li><a href="prompts.html" onclick="togglePublicMenu()">Como funciona?</a></li>
                     <li><a href="planos.html" onclick="togglePublicMenu()">Planos</a></li>
                     <li><a href="index.html#universal" onclick="togglePublicMenu()">Profissões</a></li>
-                
+
                     <li>
                         <a href="login.html" id="authBtn" class="cta-button">
-                        Entrar <i class="fas fa-arrow-right" style="margin-left:5px; font-size:0.8rem;"></i>
+                            Entrar <i class="fas fa-arrow-right" style="margin-left:5px; font-size:0.8rem;"></i>
                         </a>
                     </li>
                 </ul>
             </nav>
-        
+
             <div class="mobile-nav-overlay" onclick="togglePublicMenu()"></div>
         </div>
     </header>
@@ -153,48 +285,58 @@
                 <div class="toggle-wrapper">
                     <div class="slider-bg" id="sliderBg"></div>
                     <div class="toggle-option active" onclick="setCycle('monthly', this)">Mensal</div>
-                    <div class="toggle-option" onclick="setCycle('quarterly', this)">Trimestral <div class="discount-badge" style="background:#ff9900">-10%</div></div>
-                    <div class="toggle-option" onclick="setCycle('annual', this)">Anual <div class="discount-badge">-20%</div></div>
+                    <div class="toggle-option" onclick="setCycle('quarterly', this)">Trimestral <div
+                            class="discount-badge" style="background:#ff9900">-10%</div>
+                    </div>
+                    <div class="toggle-option" onclick="setCycle('annual', this)">Anual <div class="discount-badge">-20%
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="pricing-grid">
-                
+
                 <div class="pricing-card">
                     <div>
                         <h3 class="plan-name">Iniciante</h3>
                         <div class="price">R$ 0 <span>/mês</span></div>
                         <p class="plan-desc">Essencial para conhecer a plataforma.</p>
-                        
+
                         <ul class="features-list">
                             <li><i class="fas fa-check" style="color:#00ff88;"></i> 5.000 Tokens mensais</li>
                             <li><i class="fas fa-check" style="color:#00ff88;"></i> Agentes Básicos</li>
                             <li><i class="fas fa-check" style="color:#00ff88;"></i> Acesso ao Chat</li>
-                            <li style="opacity:0.5; text-decoration:line-through;"><i class="fas fa-times"></i> Sem Upload de Arquivos</li>
-                            <li style="opacity:0.5; text-decoration:line-through;"><i class="fas fa-times"></i> Suporte Prioritário</li>
+                            <li style="opacity:0.5; text-decoration:line-through;"><i class="fas fa-times"></i> Sem
+                                Upload de Arquivos</li>
+                            <li style="opacity:0.5; text-decoration:line-through;"><i class="fas fa-times"></i> Suporte
+                                Prioritário</li>
                         </ul>
                     </div>
-                    
-                    <a href="#" id="linkFree" class="btn-card btn-card-default">Começar Grátis</a>
+
+                    <a href="#" id="linkFree" class="btn-card btn-card-default" onclick="assinarGratis()">Começar
+                        Grátis</a>
                 </div>
 
                 <div class="pricing-card featured">
                     <div>
-                        <div style="position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:#00ff88; color:black; padding:4px 12px; border-radius:12px; font-weight:bold; font-size:0.75rem; letter-spacing:1px;">MAIS POPULAR</div>
-                        
+                        <div
+                            style="position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:#00ff88; color:black; padding:4px 12px; border-radius:12px; font-weight:bold; font-size:0.75rem; letter-spacing:1px;">
+                            MAIS POPULAR</div>
+
                         <h3 class="plan-name" style="color:#00ff88;">Plus</h3>
                         <div class="price" id="price-plus">R$ 49,90 <span>/mês</span></div>
                         <p class="plan-desc">Ideal para uso profissional diário.</p>
 
                         <ul class="features-list">
-                            <li><i class="fas fa-check" style="color:#00ff88;"></i> <strong>Tokens Ilimitados*</strong></li>
+                            <li><i class="fas fa-check" style="color:#00ff88;"></i> <strong>Tokens Ilimitados*</strong>
+                            </li>
                             <li><i class="fas fa-check" style="color:#00ff88;"></i> Todos os 50+ Agentes</li>
                             <li><i class="fas fa-check" style="color:#00ff88;"></i> Upload de PDF e Docs</li>
                             <li><i class="fas fa-check" style="color:#00ff88;"></i> Memória de Longo Prazo</li>
                             <li><i class="fas fa-check" style="color:#00ff88;"></i> Histórico Completo</li>
                         </ul>
                     </div>
-                    
+
                     <a href="#" onclick="irParaCheckout('Plus')" class="btn-card btn-card-primary">Assinar Plus</a>
                 </div>
 
@@ -205,15 +347,17 @@
                         <p class="plan-desc">Máxima performance e prioridade.</p>
 
                         <ul class="features-list">
-                            <li><i class="fas fa-check" style="color:#00ff88;"></i> <strong>Tudo do plano Plus</strong></li>
+                            <li><i class="fas fa-check" style="color:#00ff88;"></i> <strong>Tudo do plano Plus</strong>
+                            </li>
                             <li><i class="fas fa-bolt" style="color:#ffcc00;"></i> Prioridade de Processamento</li>
                             <li><i class="fas fa-check" style="color:#00ff88;"></i> Criação de Agentes Custom</li>
                             <li><i class="fas fa-check" style="color:#00ff88;"></i> Acesso Antecipado (Beta)</li>
                             <li><i class="fas fa-check" style="color:#00ff88;"></i> Suporte Dedicado</li>
                         </ul>
                     </div>
-                    
-                    <a href="#" onclick="irParaCheckout('Pro')" class="btn-card btn-card-default" style="background:white; color:black;">Assinar Pro</a>
+
+                    <a href="#" onclick="irParaCheckout('Pro')" class="btn-card btn-card-default"
+                        style="background:white; color:black;">Assinar Pro</a>
                 </div>
 
             </div>
@@ -223,7 +367,7 @@
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="script.js"></script>
-    
+
     <script>
         // --- PREÇOS ---
         const PRICES = {
@@ -255,16 +399,16 @@
                 // Usuário Logado: Botão do plano Free vira "Ir para Dashboard"
                 if (linkFree) {
                     linkFree.innerText = "Ir para Dashboard";
-                    linkFree.href = "dashboard.html";
+                    linkFree.onclick = () => { window.location.href = "dashboard.html"; return false; };
                 }
             }
 
             // 2. Inicializa Slider
             const active = document.querySelector('.toggle-option.active');
-            if(active) setTimeout(() => atualizarSlider(active), 100);
+            if (active) setTimeout(() => atualizarSlider(active), 100);
 
             // 3. Partículas
-            if(typeof particlesJS !== 'undefined') {
+            if (typeof particlesJS !== 'undefined') {
                 particlesJS("particles-js", {
                     "particles": { "number": { "value": 20 }, "color": { "value": "#ffffff" }, "opacity": { "value": 0.1 }, "size": { "value": 2 }, "move": { "enable": true, "speed": 0.5 } }
                 });
@@ -277,7 +421,7 @@
             currentCycle = cycle;
             document.querySelectorAll('.toggle-option').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
-            
+
             atualizarSlider(element);
             animarPreco('price-plus', PRICES[cycle].plus);
             animarPreco('price-pro', PRICES[cycle].pro);
@@ -288,12 +432,12 @@
             const left = element.offsetLeft;
             const width = element.offsetWidth;
             slider.style.width = `${width}px`;
-            slider.style.transform = `translateX(${left}px)`; 
+            slider.style.transform = `translateX(${left}px)`;
         }
 
         function animarPreco(id, novoValor) {
             const el = document.getElementById(id);
-            if(!el) return;
+            if (!el) return;
             el.style.opacity = 0;
             el.style.transform = "translateY(-10px)";
             setTimeout(() => {
@@ -303,22 +447,115 @@
             }, 200);
         }
 
-        function irParaCheckout(plano) {
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const padLength = 4 - (base64.length % 4);
+                if (padLength < 4) {
+                    base64 += '='.repeat(padLength);
+                }
+                const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                console.error("JWT Parse Error", e);
+                return null;
+            }
+        }
+
+        async function assinarGratis() {
             const token = localStorage.getItem('token');
             if (!token) {
-                // Redireciona para Login e depois volta pro Checkout
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const payload = parseJwt(token);
+            const role = payload ? (payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]) : null;
+
+            if (role === 'admin') {
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                try {
+                    await fetch((typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/api/admin/update-user', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ UserId: parseInt(userData.id || userData.Id || 0), NewPlan: 'Iniciante' })
+                    });
+                } catch (e) { console.error("Erro API admin", e); }
+
+                Swal.fire({
+                    title: 'Status Root',
+                    text: 'Plano rebaixado para Iniciante com sucesso (Admin bypass).',
+                    icon: 'info',
+                    background: '#161b22',
+                    color: 'white',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    localStorage.setItem('userPlan', 'Iniciante');
+                    window.location.href = 'dashboard.html';
+                });
+                return;
+            }
+
+            // Normal user
+            localStorage.setItem('userPlan', 'Iniciante');
+            window.location.href = 'dashboard.html';
+        }
+
+        async function irParaCheckout(plano) {
+            const token = localStorage.getItem('token');
+            if (!token) {
                 const returnUrl = encodeURIComponent(`checkout.html?plan=${plano}&cycle=${currentCycle}`);
                 window.location.href = `login.html?redirect=${returnUrl}`;
             } else {
-                // Logado: Vai direto pro Checkout
+                const payload = parseJwt(token);
+                const role = payload ? (payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]) : null;
+
+                if (role === 'admin') {
+                    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                    try {
+                        await fetch((typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/api/admin/update-user', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ UserId: parseInt(userData.id || userData.Id || 0), NewPlan: plano })
+                        });
+                    } catch (e) { console.error("Erro API admin", e); }
+
+                    Swal.fire({
+                        title: 'Status Root',
+                        text: `Acesso irrestrito concedido ao plano ${plano} para administradores.`,
+                        icon: 'success',
+                        background: '#161b22',
+                        color: 'white',
+                        confirmButtonColor: '#00ff88',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        localStorage.setItem('userPlan', plano);
+                        window.location.href = `sucesso.html?plan=${plano}`;
+                    });
+                    return;
+                }
+
+                // Logado comum: Vai direto pro Checkout
                 window.location.href = `checkout.html?plan=${plano}&cycle=${currentCycle}`;
             }
         }
-        
+
         window.addEventListener('resize', () => {
             const active = document.querySelector('.toggle-option.active');
-            if(active) atualizarSlider(active);
+            if (active) atualizarSlider(active);
         });
     </script>
 </body>
+
 </html>

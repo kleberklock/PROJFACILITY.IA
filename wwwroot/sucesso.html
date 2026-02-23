@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Assinatura Confirmada | Facility.IA</title>
+    <link rel="icon" type="image/jpeg" href="/favicon.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        :root {
+            /* Variáveis para o plano Plus (Verde Neon) */
+            --plus-color: #00ff88;
+            --plus-glow: rgba(0, 255, 136, 0.4);
+
+            /* Variáveis para o plano Pro (Dourado) */
+            --pro-color-1: #FFD700;
+            --pro-color-2: #FFA500;
+            --pro-glow: rgba(255, 215, 0, 0.3);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0c10;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- MODO PLUS (Verde Neon) --- */
+        body.theme-plus {
+            background: radial-gradient(circle at center, #0a1f14 0%, #0a0c10 100%);
+        }
+
+        .theme-plus .animation-icon i {
+            color: var(--plus-color);
+            text-shadow: 0 0 20px var(--plus-glow);
+        }
+
+        .theme-plus .animation-circle {
+            border: 2px solid var(--plus-color);
+            box-shadow: 0 0 30px var(--plus-glow), inset 0 0 15px var(--plus-glow);
+            animation: pulse-plus 2s infinite;
+        }
+
+        .theme-plus h1,
+        .theme-plus h2 {
+            color: var(--plus-color);
+            text-shadow: 0 0 10px var(--plus-glow);
+        }
+
+        .theme-plus .btn-access {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: black;
+            box-shadow: 0 5px 20px var(--plus-glow);
+        }
+
+        .theme-plus .btn-access:hover {
+            box-shadow: 0 8px 30px rgba(0, 255, 136, 0.6);
+            transform: scale(1.05);
+        }
+
+        @keyframes pulse-plus {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 30px var(--plus-glow), inset 0 0 15px var(--plus-glow);
+            }
+
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 50px rgba(0, 255, 136, 0.6), inset 0 0 25px rgba(0, 255, 136, 0.6);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 30px var(--plus-glow), inset 0 0 15px var(--plus-glow);
+            }
+        }
+
+        /* --- MODO PRO (Dourado Premium) --- */
+        body.theme-pro {
+            background: radial-gradient(circle at center, #1f1c08 0%, #0a0c10 100%);
+        }
+
+        .theme-pro .animation-icon i {
+            background: linear-gradient(135deg, var(--pro-color-1) 0%, var(--pro-color-2) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px var(--pro-glow));
+        }
+
+        .theme-pro .animation-circle {
+            border: 2px solid var(--pro-color-1);
+            box-shadow: 0 0 30px var(--pro-glow), inset 0 0 20px var(--pro-glow);
+            animation: spin-pulse-pro 3s linear infinite;
+            border-top-color: transparent;
+            border-bottom-color: transparent;
+        }
+
+        /* Círculo interno extra para o modo PRO */
+        .theme-pro .animation-circle::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 1px dotted var(--pro-color-2);
+            border-radius: 50%;
+            animation: spin-pulse-pro 5s linear reverse infinite;
+        }
+
+        .theme-pro h1,
+        .theme-pro h2 {
+            background: linear-gradient(135deg, #FFF7B0 0%, #FFD700 50%, #FFA500 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .theme-pro .btn-access {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: black;
+            box-shadow: 0 5px 20px var(--pro-glow);
+        }
+
+        .theme-pro .btn-access:hover {
+            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.6);
+            transform: scale(1.05);
+        }
+
+        @keyframes spin-pulse-pro {
+            0% {
+                transform: rotate(0deg) scale(1);
+                box-shadow: 0 0 20px var(--pro-glow);
+            }
+
+            50% {
+                transform: rotate(180deg) scale(1.05);
+                box-shadow: 0 0 40px rgba(255, 215, 0, 0.5);
+            }
+
+            100% {
+                transform: rotate(360deg) scale(1);
+                box-shadow: 0 0 20px var(--pro-glow);
+            }
+        }
+
+        /* --- Elementos Comuns --- */
+        .content-container {
+            text-align: center;
+            z-index: 10;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInTop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .animation-wrapper {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 30px auto;
+        }
+
+        .animation-circle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            box-sizing: border-box;
+        }
+
+        .animation-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3.5rem;
+            animation: floatIcon 3s ease-in-out infinite;
+        }
+
+        h2 {
+            font-family: 'Clash Display', sans-serif;
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            letter-spacing: 1px;
+        }
+
+        p {
+            color: #aaa;
+            font-size: 1.1rem;
+            max-width: 400px;
+            margin: 0 auto 40px auto;
+            line-height: 1.6;
+        }
+
+        .btn-access {
+            padding: 15px 40px;
+            border-radius: 30px;
+            border: none;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            transition: 0.3s;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+            animation-delay: 1.5s;
+        }
+
+        /* Animações Básicas CSS */
+        @keyframes fadeInTop {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes floatIcon {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%);
+            }
+
+            50% {
+                transform: translate(-50%, -60%);
+            }
+        }
+
+        /* Container do Canvas para Confetes e Partículas JS */
+        #particle-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="content-container">
+        <div class="animation-wrapper">
+            <div class="animation-circle"></div>
+            <div class="animation-icon" id="iconWrapper">
+                <!-- Icon inserted via JS -->
+            </div>
+        </div>
+
+        <h2 id="titleText">Processando...</h2>
+        <p id="descText">Aguarde um momento enquanto preparamos o seu ambiente.</p>
+
+        <button onclick="goToDashboard()" id="btnAction" class="btn-access" style="display:none;">
+            Acessar Meu Painel <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <!-- Script de Confetes (Canvas Confetti) -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const plan = params.get('plan') ? params.get('plan').toLowerCase() : 'plus';
+
+            const body = document.body;
+            const iconWrapper = document.getElementById('iconWrapper');
+            const titleText = document.getElementById('titleText');
+            const descText = document.getElementById('descText');
+            const btnAction = document.getElementById('btnAction');
+
+            // Sequência de Animação
+            setTimeout(() => {
+                if (plan === 'pro') {
+                    // CONFIGURAÇÃO PRO
+                    body.classList.add('theme-pro');
+                    iconWrapper.innerHTML = '<i class="fas fa-crown"></i>';
+                    titleText.innerHTML = 'Assinatura PRO Ativada!';
+                    descText.innerHTML = 'Bem-vindo ao nível máximo. Seu poder de processamento ilimitado e exclusivo foi liberado.';
+                    btnAction.style.display = 'inline-flex';
+
+                    // Explosão Dourada
+                    firePremiumConfetti();
+                } else {
+                    // CONFIGURAÇÃO PLUS (Padrão)
+                    body.classList.add('theme-plus');
+                    iconWrapper.innerHTML = '<i class="fas fa-unlock-keyhole"></i>';
+                    titleText.innerHTML = 'Assinatura PLUS Ativada!';
+                    descText.innerHTML = 'Sua conta foi turbinada com acesso a todos os agentes e limite expandido.';
+                    btnAction.style.display = 'inline-flex';
+
+                    // Explosão Verde
+                    fireNeonConfetti();
+                }
+            }, 1000); // 1 segundo de "Processando"
+        });
+
+        function firePremiumConfetti() {
+            var duration = 3000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function () {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+
+                var particleCount = 50 * (timeLeft / duration);
+
+                // Confete com Tons de Ouro
+                confetti(Object.assign({}, defaults, {
+                    particleCount,
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+                    colors: ['#FFD700', '#FFA500', '#FFFFFF', '#F2994A']
+                }));
+                confetti(Object.assign({}, defaults, {
+                    particleCount,
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+                    colors: ['#FFD700', '#FFA500', '#FFFFFF', '#F2994A']
+                }));
+            }, 250);
+        }
+
+        function fireNeonConfetti() {
+            // Explosão única central
+            confetti({
+                particleCount: 150,
+                spread: 100,
+                origin: { y: 0.6 },
+                colors: ['#00ff88', '#00cc6a', '#ffffff']
+            });
+        }
+
+        function goToDashboard() {
+            window.location.href = 'dashboard.html';
+        }
+    </script>
+</body>
+
+</html>

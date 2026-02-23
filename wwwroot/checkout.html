@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -14,6 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style-master.css">
 </head>
+
 <body style="display:flex; align-items:center; justify-content:center; height:100vh; overflow:hidden;">
 
     <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
@@ -42,10 +44,12 @@
 
         <h2 style="margin: 0 0 10px 0; color: white;">Finalizar Pagamento</h2>
         <p style="color: #aaa; margin-bottom: 30px; line-height: 1.5;">
-            Você será redirecionado para nosso ambiente seguro de pagamentos para concluir sua assinatura <strong style="color: white;" id="planName">Plus</strong>.
+            Você será redirecionado para nosso ambiente seguro de pagamentos para concluir sua assinatura <strong
+                style="color: white;" id="planName">Plus</strong>.
         </p>
 
-        <button onclick="irParaPagamento()" id="btnPay" class="cta-button-primary" style="width: 100%; padding: 15px; font-size: 1rem;">
+        <button onclick="irParaPagamento()" id="btnPay" class="cta-button-primary"
+            style="width: 100%; padding: 15px; font-size: 1rem;">
             <i class="fas fa-external-link-alt" style="margin-right: 10px;"></i>
             Ir para Pagamento Seguro
         </button>
@@ -65,7 +69,7 @@
             const plan = params.get('plan') || 'Plus';
             document.getElementById('planName').innerText = plan;
 
-            if(typeof particlesJS !== 'undefined') {
+            if (typeof particlesJS !== 'undefined') {
                 particlesJS("particles-js", {
                     "particles": { "number": { "value": 15 }, "color": { "value": "#00ff88" }, "opacity": { "value": 0.1 }, "size": { "value": 2 }, "move": { "enable": true, "speed": 0.5 } }
                 });
@@ -82,11 +86,13 @@
             setTimeout(() => {
                 alert("Aqui você seria enviado para a URL de pagamento.");
                 // Em produção: window.location.href = "https://pagamento.seuapp.com...";
-                
-                // Demo: Simula sucesso e volta
-                window.location.href = 'dashboard.html';
+
+                // Demo: Simula sucesso e vai para a tela de animação
+                localStorage.setItem('userPlan', plan);
+                window.location.href = `sucesso.html?plan=${encodeURIComponent(plan)}`;
             }, 1500);
         }
     </script>
 </body>
+
 </html>

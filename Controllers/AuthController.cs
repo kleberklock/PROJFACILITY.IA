@@ -9,7 +9,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Security.Cryptography;
 using BCrypt.Net;
-using Microsoft.AspNetCore.Authorization; // <--- AGORA ESTÁ NO LUGAR CERTO (TOPO)
+using Microsoft.AspNetCore.Authorization;
 
 namespace PROJFACILITY.IA.Controllers
 {
@@ -204,6 +204,26 @@ namespace PROJFACILITY.IA.Controllers
             var token = GerarTokenJwt(user);
             user.LastLogin = DateTime.UtcNow;
             await _context.SaveChangesAsync();
+
+            // --- INÍCIO DA ADIÇÃO: ALERTA DE LOGIN ---
+            _ = Task.Run(async () => 
+            {
+                try 
+                {
+                    var mensagem = $"Alerta de Segurança: O usuário <b>{user.Email}</b> acabou de fazer login no Facility.IA.<br>Data e Hora: {DateTime.Now:dd/MM/yyyy HH:mm:ss}";
+                    
+                    await _emailService.SendEmailAsync(
+                        "facility.ia001@gmail.com", // <--- COLOQUE SEU E-MAIL AQUI
+                        "Alerta de Novo Login - Facility.IA", 
+                        mensagem
+                    );
+                } 
+                catch 
+                {
+                    // Ignora o erro silenciosamente para não impedir o login do usuário se o e-mail falhar
+                }
+            });
+            // --- FIM DA ADIÇÃO ---
 
             return Ok(new { token, user = new { user.Id, user.Name, user.Email, Role = user.Role } });
         }

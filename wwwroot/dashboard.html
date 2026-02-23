@@ -154,15 +154,15 @@
 
             <div class="spacer"></div>
             
-            <div class="card-plan-status" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px;">
+            <div id="dashboardPlanCard" class="card-plan-status" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px; transition: all 0.3s ease;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h3 style="margin:0; font-size:0.9rem; color:#aaa; font-weight:600;">SEU PLANO</h3>
-                    <span id="planBadge" style="background:#00ff88; color:black; padding:3px 10px; border-radius:12px; font-weight:bold; font-size:0.7rem;">LIVRE</span>
+                    <span id="planBadge" style="background:#00ff88; color:black; padding:3px 10px; border-radius:12px; font-weight:bold; font-size:0.7rem;">INICIANTE</span>
                 </div>
                 <div style="margin-top:10px;">
                     <h2 id="planName" style="margin:0; font-size:1.4rem;">Iniciante</h2>
                 </div>
-                <div style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
+                <div style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;" id="upgradeSection">
                     <a href="planos.html" style="color:#00ff88; text-decoration:none; font-size:0.85rem; font-weight:bold; display:flex; align-items:center; gap:5px;">
                         <i class="fas fa-arrow-up"></i> Fazer Upgrade
                     </a>
@@ -433,10 +433,56 @@
             
             const planBadge = document.getElementById('planBadge');
             const planName = document.getElementById('planName');
-            if (plan && planBadge && planName) {
-                planBadge.innerText = plan.toUpperCase();
-                planName.innerText = plan === 'Free' ? 'Iniciante' : plan;
-                if(plan === 'Pro') planBadge.style.background = '#ffcc00'; 
+            const dashboardPlanCard = document.getElementById('dashboardPlanCard');
+            const upgradeSection = document.getElementById('upgradeSection');
+            
+            // Read from local storage specifically if userPlan was explicitly set during success.html or planos.html
+            const localStoredPlan = localStorage.getItem('userPlan');
+            const activePlan = localStoredPlan || plan || 'Iniciante';
+
+            if (planBadge && planName && dashboardPlanCard) {
+                // Reset card styles first
+                dashboardPlanCard.style.background = "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)";
+                dashboardPlanCard.style.border = "1px solid rgba(255,255,255,0.1)";
+                dashboardPlanCard.style.boxShadow = "none";
+                planName.style.background = "none";
+                planName.style.webkitTextFillColor = "white";
+                planName.style.color = "white";
+                
+                if (activePlan.toLowerCase() === 'iniciante' || activePlan.toLowerCase() === 'free') {
+                    planBadge.innerText = 'INICIANTE';
+                    planBadge.style.background = '#00ff88';
+                    planBadge.style.color = 'black';
+                    planName.innerText = 'Iniciante';
+                    if(upgradeSection) upgradeSection.style.display = 'block';
+                } 
+                else if (activePlan.toLowerCase() === 'plus') {
+                    planBadge.innerText = 'PLUS';
+                    planBadge.style.background = '#00ff88';
+                    planBadge.style.color = 'black';
+                    planName.innerText = 'Plus';
+                    planName.style.color = '#00ff88';
+                    dashboardPlanCard.style.border = "1px solid rgba(0,255,136,0.3)";
+                    dashboardPlanCard.style.boxShadow = "0 0 15px rgba(0, 255, 136, 0.1)";
+                    if(upgradeSection) upgradeSection.style.display = 'block'; // Can upgrade to Pro
+                }
+                else if (activePlan.toLowerCase() === 'pro') {
+                    planBadge.innerText = 'PRO';
+                    planBadge.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
+                    planBadge.style.color = 'black';
+                    planBadge.innerHTML = '<i class="fas fa-crown"></i> PRO';
+                    
+                    planName.innerText = 'Pro (Premium)';
+                    planName.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
+                    planName.style.webkitBackgroundClip = 'text';
+                    planName.style.webkitTextFillColor = 'transparent';
+                    
+                    dashboardPlanCard.style.background = "linear-gradient(135deg, #1f1c08 0%, #16213e 100%)";
+                    dashboardPlanCard.style.border = "1px solid rgba(255, 215, 0, 0.4)";
+                    dashboardPlanCard.style.boxShadow = "0 0 20px rgba(255, 215, 0, 0.15)";
+                    
+                    if(upgradeSection) upgradeSection.style.display = 'none'; // Max level
+                }
             }
 
             const avatarEls = [document.getElementById('sidebarAvatar'), document.getElementById('mobileAvatar')];
