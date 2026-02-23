@@ -99,7 +99,7 @@ namespace PROJFACILITY.IA.Controllers
                         },
                     },
                     Mode = "subscription",
-                    SuccessUrl = $"{domain}/dashboard.html?payment=success",
+                    SuccessUrl = $"{domain}/sucesso.html?plan={request.Plan}",
                     CancelUrl = $"{domain}/checkout.html?payment=canceled",
                     Metadata = new Dictionary<string, string>
                     {

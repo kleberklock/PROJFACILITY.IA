@@ -475,7 +475,7 @@
             const payload = parseJwt(token);
             const role = payload ? (payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]) : null;
 
-            if (role === 'admin') {
+            if (role && role.toLowerCase() === 'admin') {
                 const userData = JSON.parse(localStorage.getItem('userData') || '{}');
                 try {
                     await fetch((typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/api/admin/update-user', {
@@ -517,7 +517,7 @@
                 const payload = parseJwt(token);
                 const role = payload ? (payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]) : null;
 
-                if (role === 'admin') {
+                if (role && role.toLowerCase() === 'admin') {
                     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
                     try {
                         await fetch((typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/api/admin/update-user', {
