@@ -396,10 +396,9 @@
                     authBtn.style.boxShadow = "0 0 15px rgba(0,255,136,0.3)";
                 }
 
-                // Usuário Logado: Botão do plano Free vira "Ir para Dashboard"
+                // CORREÇÃO: Apenas muda o texto, mantém a função original onclick="assinarGratis()"
                 if (linkFree) {
-                    linkFree.innerText = "Ir para Dashboard";
-                    linkFree.onclick = () => { window.location.href = "dashboard.html"; return false; };
+                    linkFree.innerText = "Mudar para Iniciante";
                 }
             }
 
@@ -473,10 +472,13 @@
             }
 
             const payload = parseJwt(token);
-            const role = payload ? (payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]) : null;
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+            // Verificação robusta da Role
+            const roleToken = payload ? (payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || payload["Role"]) : null;
+            const role = roleToken || userData.role || userData.Role || null;
 
             if (role && role.toLowerCase() === 'admin') {
-                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
                 try {
                     await fetch((typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/api/admin/update-user', {
                         method: 'POST',
@@ -503,7 +505,7 @@
                 return;
             }
 
-            // Normal user
+            // Usuário comum apenas atualiza localmente e redireciona (ou chama API de downgrade se existir)
             localStorage.setItem('userPlan', 'Iniciante');
             window.location.href = 'dashboard.html';
         }
@@ -515,10 +517,14 @@
                 window.location.href = `login.html?redirect=${returnUrl}`;
             } else {
                 const payload = parseJwt(token);
-                const role = payload ? (payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]) : null;
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
 
+                // Verificação robusta da Role (Token ou LocalStorage)
+                const roleToken = payload ? (payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || payload["Role"]) : null;
+                const role = roleToken || userData.role || userData.Role || null;
+
+                // Se for Admin, faz o bypass do pagamento
                 if (role && role.toLowerCase() === 'admin') {
-                    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
                     try {
                         await fetch((typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : '') + '/api/admin/update-user', {
                             method: 'POST',
@@ -546,7 +552,7 @@
                     return;
                 }
 
-                // Logado comum: Vai direto pro Checkout
+                // Se for Usuário Comum, vai para o Checkout normalmente
                 window.location.href = `checkout.html?plan=${plano}&cycle=${currentCycle}`;
             }
         }
