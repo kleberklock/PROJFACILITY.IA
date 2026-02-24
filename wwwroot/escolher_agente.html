@@ -462,16 +462,7 @@
                     </div>`;
             }
 
-            // Verifica se é admin (Feature extra)
-            try {
-                const resProfile = await fetch(`${baseUrl}/api/user/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (resProfile.ok) {
-                    const user = await resProfile.json();
-                    if (user.role === 'admin') document.getElementById('adminArea').style.display = 'flex';
-                }
-            } catch (e) { }
+
         }
 
         function renderizar(lista) {

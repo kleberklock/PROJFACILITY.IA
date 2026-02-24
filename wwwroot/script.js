@@ -4,9 +4,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // 1. Inicializa Partículas
     initParticles();
 
-    // 2. Verifica Login e Carrega Dados (Foto/Nome)
-    verificarLogin();
-    loadUserData();
+    // 2. Inicia Sessão e Carrega Dados (Foto/Nome)
+    iniciarSessaoEDados();
 
     // 3. Animações
     runPageAnimations();
@@ -128,47 +127,7 @@ function initParticles() {
 
 /* --- UTILITÁRIOS E AUTENTICAÇÃO --- */
 
-async function verificarLogin() {
-    const token = localStorage.getItem('token');
-    const path = window.location.pathname.toLowerCase();
-    const publicPages = ['login.html', 'index.html', 'cadastro', '/', 'prompts.html', 'planos.html'];
-    const isPublic = publicPages.some(p => path.includes(p) || path === '/' || path.endsWith('/'));
 
-    if (!token) {
-        if (!isPublic) window.location.href = 'login.html';
-        return;
-    }
-
-    try {
-        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:5217';
-
-        const response = await fetch(`${baseUrl}/api/user/profile`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (response.ok) {
-            const user = await response.json();
-
-            const nomeDisplay = document.getElementById('nomeUsuarioDisplay');
-            if (nomeDisplay) nomeDisplay.textContent = user.name;
-
-            const imgPerfil = document.getElementById('imgPerfilUsuario');
-            if (imgPerfil) {
-                if (user.profilePicture) {
-                    imgPerfil.src = `${baseUrl}${user.profilePicture}`;
-                } else {
-                    imgPerfil.src = 'assets/default-avatar.png';
-                }
-            }
-        } else {
-            if (!isPublic) {
-                console.warn('Sessão expirada');
-            }
-        }
-    } catch (error) {
-        console.error("Erro ao validar sessão:", error);
-    }
-}
 
 function fixMobileVh() {
     let vh = window.innerHeight * 0.01;
@@ -186,16 +145,23 @@ window.fazerLogout = function () {
 }
 
 /* --- SIDEBAR & USER DATA MANAGEMENT --- */
-async function loadUserData() {
+async function iniciarSessaoEDados() {
+    const token = localStorage.getItem('token');
+    const path = window.location.pathname.toLowerCase();
+    const publicPages = ['login.html', 'index.html', 'cadastro', '/', 'prompts.html', 'planos.html'];
+    const isPublic = publicPages.some(p => path.includes(p) || path === '/' || path.endsWith('/'));
+
+    if (!token) {
+        if (!isPublic) window.location.href = 'login.html';
+        return;
+    }
+
     try {
         // Otimização de Performance: Atualiza UI com dados em cache (Instantâneo)
         const localData = JSON.parse(localStorage.getItem('userData') || '{}');
         if (localData && Object.keys(localData).length > 0) {
             updateUI(localData.name, localData.email, localData.plan, localData.profilePicture);
         }
-
-        const token = localStorage.getItem('token');
-        if (!token) return;
 
         // URL base vinda do config.js
         const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:5217';
@@ -215,9 +181,16 @@ async function loadUserData() {
             }
             // Guarda dados frescos
             localStorage.setItem('userData', JSON.stringify(user));
+        } else {
+            if (!isPublic) {
+                console.warn('Sessão expirada ou token inválido');
+                localStorage.removeItem('token');
+                localStorage.removeItem('userData');
+                window.location.href = 'login.html';
+            }
         }
     } catch (e) {
-        console.error("Erro ao carregar perfil de utilizador:", e);
+        console.error("Erro ao iniciar sessão e carregar dados:", e);
     }
 
     const dateEl = document.getElementById('dateDisplay');
@@ -289,9 +262,27 @@ function updateUI(name, email, plan, profilePicture) {
         }
     }
 
+    // --- Lógica Específica para perfil.html ---
+    const displayName = document.getElementById('displayName');
+    if (displayName) displayName.innerText = finalName;
+
+    const displayEmail = document.getElementById('displayEmail');
+    if (displayEmail) displayEmail.innerText = email || 'email@exemplo.com';
+
+    const inputName = document.getElementById('inputName');
+    if (inputName && !inputName.value) inputName.value = finalName;
+
+    const inputEmail = document.getElementById('inputEmail');
+    if (inputEmail && !inputEmail.value) inputEmail.value = email || '';
+
+    const displayPlan = document.getElementById('displayPlan');
+    if (displayPlan) displayPlan.innerText = activePlan;
+
+    // --- ---
+
     // Update avatar based on API or config
     const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:5217';
-    const avatarEls = [document.getElementById('sidebarAvatar'), document.getElementById('mobileAvatar')];
+    const avatarEls = [document.getElementById('sidebarAvatar'), document.getElementById('mobileAvatar'), document.getElementById('mainAvatar')];
     avatarEls.forEach(el => {
         if (el) {
             el.innerText = "";

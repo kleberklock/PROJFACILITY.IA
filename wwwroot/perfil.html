@@ -7,9 +7,8 @@
     <link rel="icon" type="image/jpeg" href="/favicon.png">
     <title>Meu Perfil | Facility.IA</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        const token = localStorage.getItem('token');
-        if (!token) window.location.href = 'login.html';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = 'login.html';
     </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -156,43 +155,6 @@
     <script src="script.js"></script>
 
     <script>
-        // Função para carregar os dados reais do Backend
-        async function loadProfile() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (response.ok) {
-                    const user = await response.json();
-
-                    // Preenche campos de texto
-                    document.getElementById('displayName').innerText = user.name || 'Usuário';
-                    document.getElementById('displayEmail').innerText = user.email || 'email@exemplo.com';
-                    document.getElementById('inputName').value = user.name || '';
-                    document.getElementById('inputEmail').value = user.email || '';
-                    document.getElementById('displayPlan').innerText = user.plan || 'Free';
-
-                    // Lógica de exibição da Foto
-                    const avatar = document.getElementById('mainAvatar');
-                    if (user.profilePicture) {
-                        // Se tem foto no backend, mostra ela
-                        avatar.innerText = "";
-                        avatar.style.backgroundImage = `url('${API_BASE_URL}${user.profilePicture}')`;
-                    } else {
-                        // Se não tem, mostra inicial do nome
-                        avatar.style.backgroundImage = 'none';
-                        avatar.innerText = user.name ? user.name.charAt(0).toUpperCase() : 'U';
-                    }
-                } else {
-                    showToast('Erro ao carregar perfil.', 'error');
-                }
-            } catch (e) {
-                console.error(e);
-                showToast('Erro de conexão.', 'error');
-            }
-        }
-
         // Função de upload conectada ao backend
         async function uploadPhoto(input) {
             if (input.files && input.files[0]) {
@@ -285,7 +247,6 @@
             document.querySelector('.overlay').classList.toggle('active');
         }
 
-        document.addEventListener('DOMContentLoaded', loadProfile);
     </script>
 </body>
 
