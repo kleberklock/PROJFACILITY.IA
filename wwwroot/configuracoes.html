@@ -1,5 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -14,6 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style-master.css">
 </head>
+
 <body>
     <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
     <div class="mobile-header">
@@ -26,14 +28,62 @@
     <div class="layout">
         <nav class="sidebar" id="sidebar">
             <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
-            <a href="dashboard.html" class="nav-btn active"><i class="fas fa-th-large"></i> Início</a>
+
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
             <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
-            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i>Prompts/Agentes</a>
+            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Prompts/Agentes</a>
             <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
             <a href="prompts.html" class="nav-btn"><i class="fas fa-lightbulb"></i> Como Funciona</a>
             <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
+
+            <div id="adminArea"
+                style="display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
+                <div
+                    style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
+                    Administração</div>
+
+                <a href="treinamento.html" class="nav-btn"><i class="fas fa-brain"></i> Treinamento</a>
+                <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i>
+                    Agentes</a>
+                <a href="admin.html" class="nav-btn" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel
+                    Admin</a>
+            </div>
+
             <div class="spacer"></div>
-            <a href="#" onclick="fazerLogout()" class="nav-btn" style="color:#ff5555; margin-top:20px;"><i class="fas fa-sign-out-alt"></i> Sair</a>
+
+            <div id="dashboardPlanCard" class="card-plan-status"
+                style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px; transition: all 0.3s ease;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0; font-size:0.9rem; color:#aaa; font-weight:600;">SEU PLANO</h3>
+                    <span id="planBadge"
+                        style="background:#00ff88; color:black; padding:3px 10px; border-radius:12px; font-weight:bold; font-size:0.7rem;">INICIANTE</span>
+                </div>
+                <div style="margin-top:10px;">
+                    <h2 id="planName" style="margin:0; font-size:1.4rem;">Iniciante</h2>
+                </div>
+                <div style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;"
+                    id="upgradeSection">
+                    <a href="planos.html"
+                        style="color:#00ff88; text-decoration:none; font-size:0.85rem; font-weight:bold; display:flex; align-items:center; gap:5px;">
+                        <i class="fas fa-arrow-up"></i> Fazer Upgrade
+                    </a>
+                </div>
+            </div>
+
+            <a href="perfil.html" class="user-mini">
+                <div class="avatar" id="sidebarAvatar">U</div>
+                <div style="font-size:0.85rem; color:#ccc; overflow:hidden;">
+                    <div id="sidebarUserName"
+                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">Usuário
+                    </div>
+                    <div style="color:#666; font-size:0.75rem;">Ver Perfil</div>
+                </div>
+            </a>
+
+            <a href="#" onclick="fazerLogout()" class="nav-btn"
+                style="color:#ff5555; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
         </nav>
 
         <main class="content">
@@ -42,24 +92,29 @@
 
                 <div class="profile-card" style="text-align: left; padding: 30px;">
                     <h3 style="color:white; margin-top:0;">Alterar Senha</h3>
-                    <p style="color:#888; font-size:0.9rem; margin-bottom:20px;">Recomendamos usar uma senha forte com caracteres especiais.</p>
-                    
+                    <p style="color:#888; font-size:0.9rem; margin-bottom:20px;">Recomendamos usar uma senha forte com
+                        caracteres especiais.</p>
+
                     <label style="color:#ccc; font-size:0.9rem;">Senha Atual</label>
                     <input type="password" id="oldPass" class="modal-input">
-                    
+
                     <label style="color:#ccc; font-size:0.9rem;">Nova Senha</label>
                     <input type="password" id="newPass" class="modal-input">
-                    
+
                     <label style="color:#ccc; font-size:0.9rem;">Confirmar Nova Senha</label>
                     <input type="password" id="confirmPass" class="modal-input">
 
-                    <button onclick="updatePassword()" class="hero-btn" style="margin-top:10px; font-size:0.9rem;">Atualizar Senha</button>
+                    <button onclick="updatePassword()" class="hero-btn"
+                        style="margin-top:10px; font-size:0.9rem;">Atualizar Senha</button>
                 </div>
 
-                <div class="profile-card" style="text-align: left; padding: 30px; margin-top: 20px; border-color: rgba(255, 85, 85, 0.3);">
+                <div class="profile-card"
+                    style="text-align: left; padding: 30px; margin-top: 20px; border-color: rgba(255, 85, 85, 0.3);">
                     <h3 style="color:#ff5555; margin-top:0;">Zona de Perigo</h3>
                     <p style="color:#888; font-size:0.9rem;">Ações irreversíveis para sua conta.</p>
-                    <button onclick="alert('Funcionalidade indisponível na Demo.')" style="background:transparent; border:1px solid #ff5555; color:#ff5555; padding:10px 20px; border-radius:8px; cursor:pointer;">Excluir Conta</button>
+                    <button onclick="alert('Funcionalidade indisponível na Demo.')"
+                        style="background:transparent; border:1px solid #ff5555; color:#ff5555; padding:10px 20px; border-radius:8px; cursor:pointer;">Excluir
+                        Conta</button>
                 </div>
             </div>
         </main>
@@ -68,14 +123,14 @@
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="script.js"></script>
-   
+
     <script>
         function updatePassword() {
             // Simulação
             const old = document.getElementById('oldPass').value;
             const newP = document.getElementById('newPass').value;
-            if(!old || !newP) return alert("Preencha todos os campos.");
-            
+            if (!old || !newP) return alert("Preencha todos os campos.");
+
             alert("Senha atualizada com sucesso! (Simulação)");
             document.getElementById('oldPass').value = "";
             document.getElementById('newPass').value = "";
@@ -83,7 +138,8 @@
         }
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.querySelector('.overlay').classList.toggle('active'); }
         function fazerLogout() { localStorage.removeItem('token'); localStorage.removeItem('userData'); window.location.href = 'index.html'; }
-        if(typeof particlesJS !== 'undefined') { particlesJS("particles-js", { "particles": { "number": { "value": 20 }, "color": { "value": "#ffffff" }, "opacity": { "value": 0.1 }, "size": { "value": 2 }, "move": { "enable": true, "speed": 0.5 } } }); }
+        if (typeof particlesJS !== 'undefined') { particlesJS("particles-js", { "particles": { "number": { "value": 20 }, "color": { "value": "#ffffff" }, "opacity": { "value": 0.1 }, "size": { "value": 2 }, "move": { "enable": true, "speed": 0.5 } } }); }
     </script>
 </body>
+
 </html>

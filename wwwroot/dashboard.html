@@ -1,5 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,46 +8,49 @@
     <title>Vitrine | Facility.IA</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-    const token = localStorage.getItem('token');
-    
-    // 1. Redireciona se não tiver token
-    if (!token) {
-        window.location.href = 'login.html';
-    } else {
-        try {
-            // 2. Decodifica o Token JWT para ler a Role
-            const base64Url = token.split('.')[1];
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const payload = JSON.parse(window.atob(base64));
-            
-            // 3. Verifica se é Admin
-            const role = payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-            
-            // 4. Aguarda o DOM carregar para exibir o menu
-            document.addEventListener("DOMContentLoaded", function() {
-                const adminArea = document.getElementById('adminArea');
-                if (adminArea) {
-                    if (role === 'admin') {
-                        adminArea.style.display = 'flex'; // MOSTRA SÓ SE FOR ADMIN
-                    } else {
-                        adminArea.remove(); // REMOVE DO HTML SE NÃO FOR ADMIN
-                    }
-                }
-            });
+        const token = localStorage.getItem('token');
 
-        } catch (e) {
-            console.error("Erro no token:", e);
+        // 1. Redireciona se não tiver token
+        if (!token) {
             window.location.href = 'login.html';
+        } else {
+            try {
+                // 2. Decodifica o Token JWT para ler a Role
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const payload = JSON.parse(window.atob(base64));
+
+                // 3. Verifica se é Admin
+                const role = payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+                // 4. Aguarda o DOM carregar para exibir o menu
+                document.addEventListener("DOMContentLoaded", function () {
+                    const adminArea = document.getElementById('adminArea');
+                    if (adminArea) {
+                        if (role === 'admin') {
+                            adminArea.style.display = 'flex'; // MOSTRA SÓ SE FOR ADMIN
+                        } else {
+                            adminArea.remove(); // REMOVE DO HTML SE NÃO FOR ADMIN
+                        }
+                    }
+                });
+
+            } catch (e) {
+                console.error("Erro no token:", e);
+                window.location.href = 'login.html';
+            }
         }
-    }
-</script>
+    </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style-master.css">
 
     <style>
         /* --- ESTILOS VISUAIS DE ÍCONES (CRIATIVOS) --- */
-        .card-icon i { color: white !important; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        .card-icon i {
+            color: white !important;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
 
         /* MEUS AGENTES (VIP) - Roxo Profundo e Índigo */
         .icon-meus {
@@ -117,10 +121,11 @@
         }
     </style>
 </head>
+
 <body>
 
     <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
-    
+
     <div class="mobile-header">
         <i class="fas fa-bars menu-trigger" onclick="toggleSidebar()"></i>
         <div class="mobile-title">FACILITY.IA</div>
@@ -134,51 +139,61 @@
     <div class="layout">
         <nav class="sidebar" id="sidebar">
             <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
-            
-           <a href="dashboard.html" class="nav-btn active"><i class="fas fa-th-large"></i> Início</a>
+
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
             <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
-            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i>Prompts/Agentes</a>
+            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Prompts/Agentes</a>
             <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
             <a href="prompts.html" class="nav-btn"><i class="fas fa-lightbulb"></i> Como Funciona</a>
             <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
-            
-            <div id="adminArea" style="display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
-    <div style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">Administração</div>
-    
-    <a href="treinamento.html" class="nav-btn"><i class="fas fa-brain"></i> Treinamento</a>
-    
-    <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i> Agentes</a>
-    
-    <a href="admin.html" class="nav-btn active" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel Admin</a>
-</div>
+
+            <div id="adminArea"
+                style="display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
+                <div
+                    style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
+                    Administração</div>
+
+                <a href="treinamento.html" class="nav-btn"><i class="fas fa-brain"></i> Treinamento</a>
+                <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i>
+                    Agentes</a>
+                <a href="admin.html" class="nav-btn" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel
+                    Admin</a>
+            </div>
 
             <div class="spacer"></div>
-            
-            <div id="dashboardPlanCard" class="card-plan-status" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px; transition: all 0.3s ease;">
+
+            <div id="dashboardPlanCard" class="card-plan-status"
+                style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px; transition: all 0.3s ease;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h3 style="margin:0; font-size:0.9rem; color:#aaa; font-weight:600;">SEU PLANO</h3>
-                    <span id="planBadge" style="background:#00ff88; color:black; padding:3px 10px; border-radius:12px; font-weight:bold; font-size:0.7rem;">INICIANTE</span>
+                    <span id="planBadge"
+                        style="background:#00ff88; color:black; padding:3px 10px; border-radius:12px; font-weight:bold; font-size:0.7rem;">INICIANTE</span>
                 </div>
                 <div style="margin-top:10px;">
                     <h2 id="planName" style="margin:0; font-size:1.4rem;">Iniciante</h2>
                 </div>
-                <div style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;" id="upgradeSection">
-                    <a href="planos.html" style="color:#00ff88; text-decoration:none; font-size:0.85rem; font-weight:bold; display:flex; align-items:center; gap:5px;">
+                <div style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;"
+                    id="upgradeSection">
+                    <a href="planos.html"
+                        style="color:#00ff88; text-decoration:none; font-size:0.85rem; font-weight:bold; display:flex; align-items:center; gap:5px;">
                         <i class="fas fa-arrow-up"></i> Fazer Upgrade
                     </a>
                 </div>
             </div>
 
-            <a href="#" onclick="fazerLogout()" class="nav-btn" style="color:#ff5555; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
-                <i class="fas fa-sign-out-alt"></i> Sair
-            </a>
-
             <a href="perfil.html" class="user-mini">
                 <div class="avatar" id="sidebarAvatar">U</div>
                 <div style="font-size:0.85rem; color:#ccc; overflow:hidden;">
-                    <div id="sidebarUserName" style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">Usuário</div>
+                    <div id="sidebarUserName"
+                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">Usuário
+                    </div>
                     <div style="color:#666; font-size:0.75rem;">Ver Perfil</div>
                 </div>
+            </a>
+
+            <a href="#" onclick="fazerLogout()" class="nav-btn"
+                style="color:#ff5555; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <i class="fas fa-sign-out-alt"></i> Sair
             </a>
         </nav>
 
@@ -192,7 +207,8 @@
                 <div class="hero-content">
                     <h2 class="hero-title">Automatize sua rotina.</h2>
                     <p class="hero-desc">Precisa de algo rápido? Use nossa IA pura para tarefas gerais.</p>
-                    <a href="chatcomIA.html?agent=ia_pura" class="hero-btn"><i class="fas fa-sparkles"></i> Chat Genérico (IA)</a>
+                    <a href="chatcomIA.html?agent=ia_pura" class="hero-btn"><i class="fas fa-sparkles"></i> Chat
+                        Genérico (IA)</a>
                 </div>
             </div>
 
@@ -200,10 +216,11 @@
                 <div class="cat-tab" onclick="filterApps('meus', this)">
                     <i class="fas fa-user-astronaut" style="margin-right:5px;"></i> Meus Agentes
                 </div>
-                
+
                 <div class="cat-tab active" onclick="filterApps('all', this)">Todos</div>
                 <div class="cat-tab" onclick="filterApps('tech', this)">Tecnologia</div>
-                <div class="cat-tab" onclick="filterApps('operacional', this)">Operacional</div> <div class="cat-tab" onclick="filterApps('juridico', this)">Jurídico</div>
+                <div class="cat-tab" onclick="filterApps('operacional', this)">Operacional</div>
+                <div class="cat-tab" onclick="filterApps('juridico', this)">Jurídico</div>
                 <div class="cat-tab" onclick="filterApps('saude', this)">Saúde</div>
                 <div class="cat-tab" onclick="filterApps('engenharia', this)">Engenharia</div>
                 <div class="cat-tab" onclick="filterApps('negocios', this)">Negócios</div>
@@ -211,22 +228,23 @@
                 <div class="cat-tab" onclick="filterApps('criativo', this)">Criatividade</div>
             </div>
 
-            <div style="font-size: 1.1rem; color: white; margin-bottom: 20px; font-weight: 600;">Catálogo de Agentes</div>
-            
+            <div style="font-size: 1.1rem; color: white; margin-bottom: 20px; font-weight: 600;">Catálogo de Agentes
+            </div>
+
             <div class="card-grid" id="appsGrid">
-                </div>
+            </div>
         </main>
     </div>
 
-    <script src="config.js"></script> 
-    <script src="constants.js"></script> 
+    <script src="config.js"></script>
+    <script src="constants.js"></script>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="script.js"></script>
-    
+
     <script>
         // Configuração inicial
-        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : ''; 
-        
+        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : '';
+
         // 1. MAPEAMENTO DE CATEGORIAS (IGUAL AO ESCOLHER AGENTE)
         // Converte o que vem do banco ("tecnologia") para o CSS ("tech")
         const categoryMap = {
@@ -277,20 +295,20 @@
             if (area === 'educacao') return 'fa-graduation-cap';
             if (area === 'criativo') return 'fa-wand-magic-sparkles';
             if (area === 'operacional') return 'fa-cogs';
-            
+
             return 'fa-robot';
         }
 
         // 3. CARREGAMENTO DOS AGENTES (COM CORREÇÃO DE COR)
         async function renderCards() {
             const grid = document.getElementById('appsGrid');
-            if (!grid) return; 
-            
+            if (!grid) return;
+
             grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888;"><i class="fas fa-circle-notch fa-spin"></i> Carregando agentes...</div>';
 
             try {
                 const token = localStorage.getItem('token');
-                
+
                 const response = await fetch(`${baseUrl}/api/agents`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -313,7 +331,7 @@
 
                     agentes.forEach((agent, index) => {
                         const isMyAgent = (agent.userId && agent.userId > 0);
-                        
+
                         // Normaliza a especialidade vinda do banco (ex: "Tecnologia" -> "tecnologia")
                         let rawArea = agent.specialty ? agent.specialty.toLowerCase() : 'geral';
                         if (rawArea === 'personalizado') rawArea = 'meus';
@@ -321,26 +339,26 @@
                         // Mapeia para a categoria correta (ex: "tecnologia" vira "tech")
                         // Isso garante que o filtro e a cor funcionem juntos
                         let categoryForFilter = isMyAgent ? 'meus' : (categoryMap[rawArea] || 'negocios');
-                        
+
                         // A classe visual usa o nome mapeado ("tech"), não o cru ("tecnologia")
                         const visualClass = isMyAgent ? 'meus' : categoryForFilter;
-                        
+
                         const iconName = getCreativeIcon(agent.name, agent.icon, rawArea);
 
                         const card = document.createElement('a');
                         // Passa visualClass na URL também para o chat manter a cor
-                        card.href = `chatcomIA.html?agent=${encodeURIComponent(agent.name)}&area=${visualClass}&icon=${iconName}`; 
+                        card.href = `chatcomIA.html?agent=${encodeURIComponent(agent.name)}&area=${visualClass}&icon=${iconName}`;
                         card.className = 'app-card fade-in';
                         card.style.animationDelay = `${index * 0.05}s`;
                         card.setAttribute('data-category', categoryForFilter);
-                        
-                        if(isMyAgent) card.classList.add('my-agent-card');
+
+                        if (isMyAgent) card.classList.add('my-agent-card');
 
                         let desc = agent.description;
-                        if(!desc) {
-                            if(isMyAgent) desc = "Agente personalizado.";
-                            else if(visualClass === 'tech') desc = "Tecnologia e Desenvolvimento.";
-                            else if(visualClass === 'operacional') desc = "Logística e Serviços Gerais.";
+                        if (!desc) {
+                            if (isMyAgent) desc = "Agente personalizado.";
+                            else if (visualClass === 'tech') desc = "Tecnologia e Desenvolvimento.";
+                            else if (visualClass === 'operacional') desc = "Logística e Serviços Gerais.";
                             else desc = "Assistente especializado.";
                         }
 
@@ -370,11 +388,11 @@
             const buttons = document.querySelectorAll('.cat-tab');
             buttons.forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
-            
+
             const cards = document.querySelectorAll('.app-card');
             cards.forEach(card => {
                 const cardCat = card.getAttribute('data-category');
-                
+
                 let shouldShow = false;
                 if (category === 'all') shouldShow = true;
                 else if (category === cardCat) shouldShow = true;
@@ -400,7 +418,7 @@
                 updateUI(localData.name, localData.email, localData.plan);
 
                 const token = localStorage.getItem('token');
-                if(!token) return;
+                if (!token) return;
 
                 const response = await fetch(`${baseUrl}/api/user/profile`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -409,17 +427,17 @@
                 if (response.ok) {
                     const user = await response.json();
                     updateUI(user.name, user.email, user.plan, user.profilePicture);
-                    
+
                     if (user.role === 'admin') {
                         const adminArea = document.getElementById('adminArea');
-                        if(adminArea) adminArea.style.display = 'flex';
+                        if (adminArea) adminArea.style.display = 'flex';
                     }
                     localStorage.setItem('userData', JSON.stringify(user));
                 }
             } catch (e) { console.error("Erro perfil:", e); }
-            
+
             const dateEl = document.getElementById('dateDisplay');
-            if(dateEl) {
+            if (dateEl) {
                 const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                 dateEl.innerText = new Date().toLocaleDateString('pt-BR', options);
             }
@@ -429,13 +447,13 @@
             const finalName = name || "Usuário";
             const initial = finalName.charAt(0).toUpperCase();
             const sidebarName = document.getElementById('sidebarUserName');
-            if(sidebarName) sidebarName.innerText = finalName;
-            
+            if (sidebarName) sidebarName.innerText = finalName;
+
             const planBadge = document.getElementById('planBadge');
             const planName = document.getElementById('planName');
             const dashboardPlanCard = document.getElementById('dashboardPlanCard');
             const upgradeSection = document.getElementById('upgradeSection');
-            
+
             // Read from local storage specifically if userPlan was explicitly set during success.html or planos.html
             const localStoredPlan = localStorage.getItem('userPlan');
             const activePlan = localStoredPlan || plan || 'Iniciante';
@@ -448,14 +466,14 @@
                 planName.style.background = "none";
                 planName.style.webkitTextFillColor = "white";
                 planName.style.color = "white";
-                
+
                 if (activePlan.toLowerCase() === 'iniciante' || activePlan.toLowerCase() === 'free') {
                     planBadge.innerText = 'INICIANTE';
                     planBadge.style.background = '#00ff88';
                     planBadge.style.color = 'black';
                     planName.innerText = 'Iniciante';
-                    if(upgradeSection) upgradeSection.style.display = 'block';
-                } 
+                    if (upgradeSection) upgradeSection.style.display = 'block';
+                }
                 else if (activePlan.toLowerCase() === 'plus') {
                     planBadge.innerText = 'PLUS';
                     planBadge.style.background = '#00ff88';
@@ -464,30 +482,30 @@
                     planName.style.color = '#00ff88';
                     dashboardPlanCard.style.border = "1px solid rgba(0,255,136,0.3)";
                     dashboardPlanCard.style.boxShadow = "0 0 15px rgba(0, 255, 136, 0.1)";
-                    if(upgradeSection) upgradeSection.style.display = 'block'; // Can upgrade to Pro
+                    if (upgradeSection) upgradeSection.style.display = 'block'; // Can upgrade to Pro
                 }
                 else if (activePlan.toLowerCase() === 'pro') {
                     planBadge.innerText = 'PRO';
                     planBadge.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
                     planBadge.style.color = 'black';
                     planBadge.innerHTML = '<i class="fas fa-crown"></i> PRO';
-                    
+
                     planName.innerText = 'Pro (Premium)';
                     planName.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
                     planName.style.webkitBackgroundClip = 'text';
                     planName.style.webkitTextFillColor = 'transparent';
-                    
+
                     dashboardPlanCard.style.background = "linear-gradient(135deg, #1f1c08 0%, #16213e 100%)";
                     dashboardPlanCard.style.border = "1px solid rgba(255, 215, 0, 0.4)";
                     dashboardPlanCard.style.boxShadow = "0 0 20px rgba(255, 215, 0, 0.15)";
-                    
-                    if(upgradeSection) upgradeSection.style.display = 'none'; // Max level
+
+                    if (upgradeSection) upgradeSection.style.display = 'none'; // Max level
                 }
             }
 
             const avatarEls = [document.getElementById('sidebarAvatar'), document.getElementById('mobileAvatar')];
             avatarEls.forEach(el => {
-                if(el) {
+                if (el) {
                     el.innerText = "";
                     el.style.backgroundImage = "none";
                     if (profilePicture) {
@@ -513,4 +531,5 @@
         });
     </script>
 </body>
+
 </html>

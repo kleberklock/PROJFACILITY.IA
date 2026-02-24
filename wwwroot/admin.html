@@ -1,39 +1,41 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" type="image/jpeg" href="/favicon.png">
     <title>Admin Console | Facility.IA</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <script>
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
-        
+
         // Verificação de segurança (JWT Decode)
         try {
             const base64Url = token.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
             const payload = JSON.parse(window.atob(base64));
-            
+
             // Verifica os dois formatos possíveis de Claim de Role
-            const role = payload["role"] || 
-                         payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-                         
+            const role = payload["role"] ||
+                payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
             if (role !== 'admin') {
                 console.error("Acesso negado: Role de administrador não encontrada.", role);
                 window.location.href = 'dashboard.html';
             }
-        } catch (e) { 
+        } catch (e) {
             console.error("Erro ao validar token:", e);
-            window.location.href = 'login.html'; 
+            window.location.href = 'login.html';
         }
     </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style-master.css">
 </head>
+
 <body>
 
     <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
@@ -48,30 +50,67 @@
     <div class="layout">
         <nav class="sidebar" id="sidebar">
             <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
+
             <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
-            <a href="chatcomIA.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
-            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Meus Prompts</a>
+            <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
+            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Prompts/Agentes</a>
             <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
+            <a href="prompts.html" class="nav-btn"><i class="fas fa-lightbulb"></i> Como Funciona</a>
             <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
 
-            <div id="adminArea" style="display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
-                <div style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">Administração</div>
-                
+            <div id="adminArea"
+                style="display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
+                <div
+                    style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
+                    Administração</div>
+
                 <a href="treinamento.html" class="nav-btn"><i class="fas fa-brain"></i> Treinamento</a>
-                
-                <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i> Agentes</a>
-                
-                <a href="admin.html" class="nav-btn active" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel Admin</a>
+                <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i>
+                    Agentes</a>
+                <a href="admin.html" class="nav-btn" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel
+                    Admin</a>
             </div>
 
             <div class="spacer"></div>
-            <a href="#" onclick="fazerLogout()" class="nav-btn" style="color:#ff5555; margin-top:20px;">
+
+            <div id="dashboardPlanCard" class="card-plan-status"
+                style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px; transition: all 0.3s ease;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0; font-size:0.9rem; color:#aaa; font-weight:600;">SEU PLANO</h3>
+                    <span id="planBadge"
+                        style="background:#00ff88; color:black; padding:3px 10px; border-radius:12px; font-weight:bold; font-size:0.7rem;">INICIANTE</span>
+                </div>
+                <div style="margin-top:10px;">
+                    <h2 id="planName" style="margin:0; font-size:1.4rem;">Iniciante</h2>
+                </div>
+                <div style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;"
+                    id="upgradeSection">
+                    <a href="planos.html"
+                        style="color:#00ff88; text-decoration:none; font-size:0.85rem; font-weight:bold; display:flex; align-items:center; gap:5px;">
+                        <i class="fas fa-arrow-up"></i> Fazer Upgrade
+                    </a>
+                </div>
+            </div>
+
+            <a href="perfil.html" class="user-mini">
+                <div class="avatar" id="sidebarAvatar">U</div>
+                <div style="font-size:0.85rem; color:#ccc; overflow:hidden;">
+                    <div id="sidebarUserName"
+                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">Usuário
+                    </div>
+                    <div style="color:#666; font-size:0.75rem;">Ver Perfil</div>
+                </div>
+            </a>
+
+            <a href="#" onclick="fazerLogout()" class="nav-btn"
+                style="color:#ff5555; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
                 <i class="fas fa-sign-out-alt"></i> Sair
             </a>
         </nav>
 
         <main class="content">
-            <div class="hero-banner" style="background: linear-gradient(135deg, #2c1a06 0%, #1a1a1a 100%); border-color: rgba(255, 204, 0, 0.2);">
+            <div class="hero-banner"
+                style="background: linear-gradient(135deg, #2c1a06 0%, #1a1a1a 100%); border-color: rgba(255, 204, 0, 0.2);">
                 <div class="hero-content">
                     <h2 class="hero-title" style="color: #ffcc00;">Painel de Controle</h2>
                     <p class="hero-desc">Gerencie usuários, planos e métricas do sistema.</p>
@@ -81,9 +120,11 @@
             <div class="table-container">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3 style="margin:0; color:white;">Usuários Cadastrados</h3>
-                    <button onclick="loadData()" style="background: rgba(255,255,255,0.1); border:none; color:white; padding: 8px 15px; border-radius: 8px; cursor: pointer;"><i class="fas fa-sync"></i> Atualizar</button>
+                    <button onclick="loadData()"
+                        style="background: rgba(255,255,255,0.1); border:none; color:white; padding: 8px 15px; border-radius: 8px; cursor: pointer;"><i
+                            class="fas fa-sync"></i> Atualizar</button>
                 </div>
-                
+
                 <div style="overflow-x: auto;">
                     <table class="admin-table">
                         <thead>
@@ -96,7 +137,9 @@
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
-                            <tr><td colspan="5" style="text-align:center; padding: 30px;">Iniciando sistema...</td></tr>
+                            <tr>
+                                <td colspan="5" style="text-align:center; padding: 30px;">Iniciando sistema...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -108,7 +151,7 @@
         <div class="modal-content">
             <h3 style="color:white; margin-top:0;">Editar Usuário</h3>
             <input type="hidden" id="editEmail">
-            
+
             <label style="color:#888; font-size:0.8rem;">Novo Plano</label>
             <select id="editPlan" class="modal-input">
                 <option value="Free">Iniciante (Free)</option>
@@ -130,8 +173,10 @@
             </div>
 
             <div style="display:flex; gap:10px;">
-                <button onclick="closeModal()" style="flex:1; padding:10px; background:transparent; border:1px solid #555; color:white; border-radius:8px; cursor:pointer;">Cancelar</button>
-                <button id="btnSave" onclick="saveChanges()" style="flex:1; padding:10px; background:#ffcc00; border:none; color:black; font-weight:bold; border-radius:8px; cursor:pointer;">Salvar</button>
+                <button onclick="closeModal()"
+                    style="flex:1; padding:10px; background:transparent; border:1px solid #555; color:white; border-radius:8px; cursor:pointer;">Cancelar</button>
+                <button id="btnSave" onclick="saveChanges()"
+                    style="flex:1; padding:10px; background:#ffcc00; border:none; color:black; font-weight:bold; border-radius:8px; cursor:pointer;">Salvar</button>
             </div>
         </div>
     </div>
@@ -163,9 +208,9 @@
                 if (!token) throw new Error("Token não encontrado");
 
                 console.log("Buscando usuários em:", `${API_URL}/users`);
-                
+
                 const response = await fetch(`${API_URL}/users`, {
-                    headers: { 
+                    headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
@@ -182,7 +227,7 @@
 
                 const users = await response.json();
                 tbody.innerHTML = "";
-                
+
                 if (!users || users.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum usuário encontrado.</td></tr>';
                     return;
@@ -267,7 +312,7 @@
         async function saveChanges() {
             const btn = document.getElementById('btnSave');
             if (!currentEditingUserId) return;
-            
+
             btn.disabled = true;
             btn.innerText = "Salvando...";
 
@@ -292,23 +337,24 @@
                     const err = await response.json();
                     alert('Erro: ' + (err.message || 'Falha ao atualizar'));
                 }
-            } catch (error) { 
-                alert('Erro: ' + error.message); 
-            } finally { 
-                btn.disabled = false; 
-                btn.innerText = "Salvar"; 
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Salvar";
             }
         }
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
-            if(sidebar) sidebar.classList.toggle('active');
+            if (sidebar) sidebar.classList.toggle('active');
             const overlay = document.querySelector('.overlay');
-            if(overlay) overlay.classList.toggle('active');
+            if (overlay) overlay.classList.toggle('active');
         }
 
         // Inicia o carregamento assim que o DOM estiver pronto
         document.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
+
 </html>

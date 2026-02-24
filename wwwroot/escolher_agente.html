@@ -1,5 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,10 +11,10 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
     </script>
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style-master.css">
-    
+
     <style>
         .page-header {
             text-align: center;
@@ -53,28 +54,35 @@
             transform: translateY(-50%);
             color: #888;
         }
-        
+
         /* --- ABAS DE NAVEGAÇÃO --- */
-        .agent-tabs-wrapper { /* Corrigido: Removido o ponto duplo inicial */
+        .agent-tabs-wrapper {
+            /* Corrigido: Removido o ponto duplo inicial */
             overflow-x: auto;
-            overflow-y: hidden; /* Garante que o container limite apenas o eixo Y corretamente */
+            overflow-y: hidden;
+            /* Garante que o container limite apenas o eixo Y corretamente */
             margin-bottom: 20px;
-            scrollbar-width: none; 
+            scrollbar-width: none;
             -ms-overflow-style: none;
-            padding-top: 5px; /* Um respiro extra direto no wrapper */
+            padding-top: 5px;
+            /* Um respiro extra direto no wrapper */
         }
-        .agent-tabs-wrapper::-webkit-scrollbar { display: none; }
+
+        .agent-tabs-wrapper::-webkit-scrollbar {
+            display: none;
+        }
 
         .agent-tabs {
             display: flex;
-            justify-content: center; /* No mobile, o JS ou flex pode precisar de flex-start dependendo do número de abas */
+            justify-content: center;
+            /* No mobile, o JS ou flex pode precisar de flex-start dependendo do número de abas */
             gap: 10px;
             min-width: max-content;
             /* MAGIA ATUALIZADA: 15px em cima para o pulo + brilho da sombra não cortarem! */
-            padding: 15px 20px 25px 20px; 
+            padding: 15px 20px 25px 20px;
         }
-        .agent-tab-btn 
-        {
+
+        .agent-tab-btn {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
             color: #aaa;
@@ -90,20 +98,23 @@
             white-space: nowrap;
         }
 
-        .agent-tab-btn:hover, .agent-tab-btn.active {
-            background: var(--primary); 
+        .agent-tab-btn:hover,
+        .agent-tab-btn.active {
+            background: var(--primary);
             color: white;
-            border-color: #00F3FF; 
+            border-color: #00F3FF;
             transform: translateY(-2px);
             box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
         }
-        
+
         .agent-tab-btn.active {
-             background: rgba(255, 255, 255, 0.15);
-             border-color: #00F3FF;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #00F3FF;
         }
 
-        .agent-tab-btn i { font-size: 0.85rem; }
+        .agent-tab-btn i {
+            font-size: 0.85rem;
+        }
 
         /* Grid de Cards */
         .card-grid {
@@ -114,7 +125,10 @@
         }
 
         /* --- ESTILOS DE ÍCONES E GRADIENTES --- */
-        .card-icon i { color: white !important; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        .card-icon i {
+            color: white !important;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
 
         /* MEUS AGENTES (VIP) */
         .icon-meus {
@@ -176,14 +190,25 @@
             background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%) !important;
         }
 
-        .fade-in { animation: fadeIn 0.4s ease forwards; opacity: 0; }
-        @keyframes fadeIn { to { opacity: 1; } }
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
 
         @media(max-width: 768px) {
-            .agent-tabs { justify-content: flex-start; }
+            .agent-tabs {
+                justify-content: flex-start;
+            }
         }
     </style>
 </head>
+
 <body>
     <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
 
@@ -197,25 +222,66 @@
     <div class="layout">
         <nav class="sidebar" id="sidebar">
             <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
-            <a href="dashboard.html" class="nav-btn active"><i class="fas fa-th-large"></i> Início</a>
+
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
             <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
-            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i>Prompts/Agentes</a>
+            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Prompts/Agentes</a>
             <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
             <a href="prompts.html" class="nav-btn"><i class="fas fa-lightbulb"></i> Como Funciona</a>
             <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
-            
-            <div id="adminArea" style="display: none; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
-                <div style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">Administração</div>
-                <a href="treinamento.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-brain"></i> Treinamento</a>
-                <a href="admin.html" class="nav-btn" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel Admin</a>
+
+            <div id="adminArea"
+                style="display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
+                <div
+                    style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
+                    Administração</div>
+
+                <a href="treinamento.html" class="nav-btn"><i class="fas fa-brain"></i> Treinamento</a>
+                <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i>
+                    Agentes</a>
+                <a href="admin.html" class="nav-btn" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel
+                    Admin</a>
             </div>
 
             <div class="spacer"></div>
-            <a href="#" onclick="fazerLogout()" class="nav-btn" style="color:#ff5555;"><i class="fas fa-sign-out-alt"></i> Sair</a>
+
+            <div id="dashboardPlanCard" class="card-plan-status"
+                style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px; transition: all 0.3s ease;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0; font-size:0.9rem; color:#aaa; font-weight:600;">SEU PLANO</h3>
+                    <span id="planBadge"
+                        style="background:#00ff88; color:black; padding:3px 10px; border-radius:12px; font-weight:bold; font-size:0.7rem;">INICIANTE</span>
+                </div>
+                <div style="margin-top:10px;">
+                    <h2 id="planName" style="margin:0; font-size:1.4rem;">Iniciante</h2>
+                </div>
+                <div style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;"
+                    id="upgradeSection">
+                    <a href="planos.html"
+                        style="color:#00ff88; text-decoration:none; font-size:0.85rem; font-weight:bold; display:flex; align-items:center; gap:5px;">
+                        <i class="fas fa-arrow-up"></i> Fazer Upgrade
+                    </a>
+                </div>
+            </div>
+
+            <a href="perfil.html" class="user-mini">
+                <div class="avatar" id="sidebarAvatar">U</div>
+                <div style="font-size:0.85rem; color:#ccc; overflow:hidden;">
+                    <div id="sidebarUserName"
+                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">Usuário
+                    </div>
+                    <div style="color:#666; font-size:0.75rem;">Ver Perfil</div>
+                </div>
+            </a>
+
+            <a href="#" onclick="fazerLogout()" class="nav-btn"
+                style="color:#ff5555; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
         </nav>
 
         <main class="content">
-            
+
             <div class="page-header">
                 <h2>Catálogo de Inteligência</h2>
                 <p style="color:#888;">Encontre o especialista ideal para sua tarefa.</p>
@@ -223,7 +289,8 @@
 
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" id="inputBusca" class="search-input" placeholder="Busque por nome, profissão ou área..." oninput="executarBusca()">
+                <input type="text" id="inputBusca" class="search-input"
+                    placeholder="Busque por nome, profissão ou área..." oninput="executarBusca()">
             </div>
 
             <div class="agent-tabs-wrapper">
@@ -277,7 +344,7 @@
     <script src="script.js"></script>
 
     <script>
-        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : ''; 
+        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : '';
         let todosAgentes = [];
 
         // Mesma lógica de categorias do Dashboard
@@ -309,21 +376,21 @@
             if (n.includes('professor') || n.includes('educa')) return 'fa-chalkboard-user';
             if (n.includes('gestor') || n.includes('adm')) return 'fa-user-tie';
             if (n.includes('marketing') || n.includes('social')) return 'fa-bullhorn';
-            
+
             // Fallback seguro
             if (area === 'tech') return 'fa-microchip';
             if (area === 'juridico') return 'fa-book-open';
             if (area === 'saude') return 'fa-heart-pulse';
             if (area === 'educacao') return 'fa-graduation-cap';
             if (area === 'criativo') return 'fa-wand-magic-sparkles';
-            
+
             return 'fa-robot';
         }
 
         async function carregarTudo() {
             todosAgentes = [];
             const grid = document.getElementById('gridAgentes');
-            
+
             // Spinner
             grid.innerHTML = `
                 <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">
@@ -339,7 +406,7 @@
 
                 if (response.ok) {
                     const apiAgents = await response.json();
-                    
+
                     // Ordena
                     apiAgents.sort((a, b) => {
                         const myA = (a.userId && a.userId > 0) ? 1 : 0;
@@ -350,14 +417,14 @@
                     // Processa
                     todosAgentes = apiAgents.map(a => {
                         const isMyAgent = (a.userId && a.userId > 0);
-                        
+
                         // Garante que specialty nunca seja null
                         let rawArea = a.specialty ? a.specialty.toLowerCase() : 'geral';
                         if (rawArea === 'personalizado') rawArea = 'meus';
 
                         // Lógica de Filtro igual ao Dashboard
                         let filterCategory = isMyAgent ? 'meus' : (categoryMap[rawArea] || 'negocios');
-                        
+
                         // Classe Visual
                         const visualClass = isMyAgent ? 'meus' : filterCategory;
                         const displayIcon = getCreativeIcon(a.name, a.icon, rawArea);
@@ -368,7 +435,7 @@
                             description: a.description,
                             originalIcon: a.icon,
                             displayIcon: displayIcon,
-                            visualClass: visualClass, 
+                            visualClass: visualClass,
                             filterCategory: filterCategory,
                             isCustom: isMyAgent
                         };
@@ -383,7 +450,7 @@
 
             } catch (error) {
                 console.error("Erro ao carregar:", error);
-                
+
                 // Exibe erro na tela em vez de loop infinito
                 grid.innerHTML = `
                     <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #ff5555;">
@@ -394,17 +461,17 @@
                         <button onclick="carregarTudo()" class="btn-primary" style="margin-top:10px">Tentar Novamente</button>
                     </div>`;
             }
-            
+
             // Verifica se é admin (Feature extra)
             try {
                 const resProfile = await fetch(`${baseUrl}/api/user/profile`, {
-                     headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
-                if(resProfile.ok) {
+                if (resProfile.ok) {
                     const user = await resProfile.json();
-                    if(user.role === 'admin') document.getElementById('adminArea').style.display = 'flex';
+                    if (user.role === 'admin') document.getElementById('adminArea').style.display = 'flex';
                 }
-            } catch(e) {}
+            } catch (e) { }
         }
 
         function renderizar(lista) {
@@ -421,11 +488,11 @@
                 card.href = `chatcomIA.html?agent=${encodeURIComponent(agent.name)}&icon=${agent.displayIcon}&area=${agent.visualClass}`;
                 card.className = `app-card fade-in`;
                 card.style.animationDelay = `${index * 0.05}s`;
-                
+
                 let desc = agent.description;
-                if(!desc) {
-                    if(agent.isCustom) desc = "Agente personalizado.";
-                    else if(agent.visualClass === 'tech') desc = "Tecnologia e Desenvolvimento.";
+                if (!desc) {
+                    if (agent.isCustom) desc = "Agente personalizado.";
+                    else if (agent.visualClass === 'tech') desc = "Tecnologia e Desenvolvimento.";
                     else desc = "Assistente especializado.";
                 }
 
@@ -444,7 +511,7 @@
 
         function filtrarAba(categoria, btn) {
             document.getElementById('inputBusca').value = '';
-            if(btn) {
+            if (btn) {
                 document.querySelectorAll('.agent-tab-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             }
@@ -458,7 +525,7 @@
                 renderizar(todosAgentes);
                 return;
             }
-            const filtrados = todosAgentes.filter(a => 
+            const filtrados = todosAgentes.filter(a =>
                 a.name.toLowerCase().includes(termo)
             );
             renderizar(filtrados);
@@ -472,4 +539,5 @@
         document.addEventListener('DOMContentLoaded', carregarTudo);
     </script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -27,6 +28,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
@@ -41,24 +43,67 @@
     <div class="layout">
         <nav class="sidebar" id="sidebar">
             <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
+
             <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
-            <a href="chatcomIA.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
-            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Meus Prompts</a>
+            <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
+            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Prompts/Agentes</a>
             <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
+            <a href="prompts.html" class="nav-btn"><i class="fas fa-lightbulb"></i> Como Funciona</a>
             <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
 
-            <div id="adminArea" style="display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
-                <div style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">Administração</div>
-                <a href="treinamento.html" class="nav-btn active" style="color: #00F3FF;"><i class="fas fa-brain"></i> Treinamento</a>
-                <a href="admin.html" class="nav-btn" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel Admin</a>
+            <div id="adminArea"
+                style="display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
+                <div
+                    style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
+                    Administração</div>
+
+                <a href="treinamento.html" class="nav-btn"><i class="fas fa-brain"></i> Treinamento</a>
+                <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i>
+                    Agentes</a>
+                <a href="admin.html" class="nav-btn" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel
+                    Admin</a>
             </div>
 
             <div class="spacer"></div>
-            <a href="#" onclick="fazerLogout()" class="nav-btn" style="color:#ff5555; margin-top:20px;"><i class="fas fa-sign-out-alt"></i> Sair</a>
+
+            <div id="dashboardPlanCard" class="card-plan-status"
+                style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px; transition: all 0.3s ease;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0; font-size:0.9rem; color:#aaa; font-weight:600;">SEU PLANO</h3>
+                    <span id="planBadge"
+                        style="background:#00ff88; color:black; padding:3px 10px; border-radius:12px; font-weight:bold; font-size:0.7rem;">INICIANTE</span>
+                </div>
+                <div style="margin-top:10px;">
+                    <h2 id="planName" style="margin:0; font-size:1.4rem;">Iniciante</h2>
+                </div>
+                <div style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;"
+                    id="upgradeSection">
+                    <a href="planos.html"
+                        style="color:#00ff88; text-decoration:none; font-size:0.85rem; font-weight:bold; display:flex; align-items:center; gap:5px;">
+                        <i class="fas fa-arrow-up"></i> Fazer Upgrade
+                    </a>
+                </div>
+            </div>
+
+            <a href="perfil.html" class="user-mini">
+                <div class="avatar" id="sidebarAvatar">U</div>
+                <div style="font-size:0.85rem; color:#ccc; overflow:hidden;">
+                    <div id="sidebarUserName"
+                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">Usuário
+                    </div>
+                    <div style="color:#666; font-size:0.75rem;">Ver Perfil</div>
+                </div>
+            </a>
+
+            <a href="#" onclick="fazerLogout()" class="nav-btn"
+                style="color:#ff5555; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
         </nav>
 
         <main class="content">
-            <div class="hero-banner" style="background: linear-gradient(135deg, #062c2c 0%, #1a1a1a 100%); border-color: rgba(0, 243, 255, 0.2);">
+            <div class="hero-banner"
+                style="background: linear-gradient(135deg, #062c2c 0%, #1a1a1a 100%); border-color: rgba(0, 243, 255, 0.2);">
                 <div class="hero-content">
                     <h2 class="hero-title" style="color: #00F3FF;">Laboratório de Treinamento</h2>
                     <p class="hero-desc">Faça upload de manuais para que um Agente específico aprenda sobre eles.</p>
@@ -66,9 +111,10 @@
             </div>
 
             <div class="table-container" style="max-width: 800px; margin: 0 auto; text-align: center;">
-                
+
                 <div id="dropZone" class="drop-zone">
-                    <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #00F3FF; margin-bottom: 20px;"></i>
+                    <i class="fas fa-cloud-upload-alt"
+                        style="font-size: 3rem; color: #00F3FF; margin-bottom: 20px;"></i>
                     <h3 style="margin: 0 0 10px 0; color: white;">Selecione o Documento</h3>
                     <p style="color: #666; font-size: 0.9rem;">PDF ou TXT com o conhecimento técnico</p>
                     <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(this)">
@@ -77,12 +123,14 @@
                 <div id="fileInfo" style="display: none;">
                     <div class="file-info-badge">
                         <i class="fas fa-file-alt"></i> <span id="fileName">arquivo.pdf</span>
-                        <i class="fas fa-times" style="cursor: pointer; color: #ff5555; margin-left: 10px;" onclick="resetForm()"></i>
+                        <i class="fas fa-times" style="cursor: pointer; color: #ff5555; margin-left: 10px;"
+                            onclick="resetForm()"></i>
                     </div>
                 </div>
 
                 <div style="margin-top: 30px; text-align: left;">
-                    <label style="color: #00F3FF; font-size: 0.9rem; font-weight: bold;">Qual Agente deve aprender isso?</label>
+                    <label style="color: #00F3FF; font-size: 0.9rem; font-weight: bold;">Qual Agente deve aprender
+                        isso?</label>
                     <select id="agentSelect" class="modal-input" onchange="checkButtonState()" style="cursor: pointer;">
                         <option value="">Carregando lista de agentes...</option>
                     </select>
@@ -91,13 +139,15 @@
                     </p>
                 </div>
 
-                <button id="uploadBtn" onclick="uploadFile()" disabled style="width: 100%; margin-top: 30px; padding: 15px; background: rgba(255,255,255,0.1); color: #666; font-weight: bold; border: none; border-radius: 10px; cursor: not-allowed; transition: 0.3s;">
+                <button id="uploadBtn" onclick="uploadFile()" disabled
+                    style="width: 100%; margin-top: 30px; padding: 15px; background: rgba(255,255,255,0.1); color: #666; font-weight: bold; border: none; border-radius: 10px; cursor: not-allowed; transition: 0.3s;">
                     <i class="fas fa-microchip"></i> INICIAR TREINAMENTO
                 </button>
 
                 <div id="progressContainer" style="margin-top: 30px; display: none;">
                     <div style="background: rgba(255,255,255,0.1); height: 10px; border-radius: 5px; overflow: hidden;">
-                        <div id="progressBar" style="width: 0%; height: 100%; background: #00F3FF; transition: width 0.3s;"></div>
+                        <div id="progressBar"
+                            style="width: 0%; height: 100%; background: #00F3FF; transition: width 0.3s;"></div>
                     </div>
                     <p id="statusText" style="color: #888; font-size: 0.8rem; margin-top: 10px;">Iniciando...</p>
                 </div>
@@ -113,8 +163,8 @@
         // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
             loadAgents(); // Carrega a lista do banco
-            
-            if(typeof particlesJS !== 'undefined') {
+
+            if (typeof particlesJS !== 'undefined') {
                 particlesJS("particles-js", {
                     "particles": { "number": { "value": 20 }, "color": { "value": "#00F3FF" }, "opacity": { "value": 0.1 }, "size": { "value": 2 }, "move": { "enable": true, "speed": 0.5 } }
                 });
@@ -126,14 +176,14 @@
             const select = document.getElementById('agentSelect');
             try {
                 // Chama a API de Agentes que você já tem
-                const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : ''; 
+                const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
                 const res = await fetch(`${baseUrl}/api/agents`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
+
                 if (res.ok) {
                     const agents = await res.json();
-                    
+
                     // Ordena alfabeticamente para facilitar
                     agents.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -154,9 +204,9 @@
         // 2. LÓGICA DE UI
         const dropZone = document.getElementById('dropZone');
         const fileInput = document.getElementById('fileInput');
-        
+
         dropZone.addEventListener('click', () => fileInput.click());
-        
+
         function handleFileSelect(input) {
             if (input.files && input.files[0]) {
                 document.getElementById('fileName').innerText = input.files[0].name;
@@ -169,8 +219,8 @@
             const hasFile = document.getElementById('fileInput').files.length > 0;
             const hasAgent = document.getElementById('agentSelect').value !== "";
             const btn = document.getElementById('uploadBtn');
-            
-            if(hasFile && hasAgent) {
+
+            if (hasFile && hasAgent) {
                 btn.disabled = false;
                 btn.style.background = '#00F3FF';
                 btn.style.color = 'black';
@@ -206,12 +256,12 @@
             try {
                 const formData = new FormData();
                 formData.append('file', file);
-                
+
                 // MÁGICA AQUI: Enviamos o Nome do Agente como 'profession'
                 // O KnowledgeService salva isso na tag do Pinecone
                 formData.append('profession', agentName);
 
-                const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : ''; 
+                const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
                 const res = await fetch(`${baseUrl}/api/knowledge/upload`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
@@ -265,4 +315,5 @@
         }
     </script>
 </body>
+
 </html>
