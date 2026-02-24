@@ -301,6 +301,7 @@
             border: 1px solid rgba(255, 255, 255, 0.03);
             display: -webkit-box;
             -webkit-line-clamp: 3;
+            line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -792,7 +793,9 @@
 
                 if (response.ok) {
                     const todos = await response.json();
-                    const meus = todos.filter(a => a.userId !== null);
+                    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                    const myId = userData.id || userData.Id;
+                    const meus = todos.filter(a => a.userId == myId);
 
                     grid.innerHTML = '';
                     if (meus.length === 0) {
@@ -917,7 +920,7 @@
             const fileInput = document.getElementById('fileInputForm');
 
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-            const creatorId = userData.id || 0;
+            const creatorId = userData.id || userData.Id || 0;
 
             if (!name || !prompt) return showToast('Preencha Nome e Instruções', 'warning');
 
@@ -933,7 +936,7 @@
                 const response = await fetch(url, {
                     method: method,
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ name, prompt, creatorId: creatorId })
+                    body: JSON.stringify({ name, prompt, creatorId: creatorId, isGlobal: false })
                 });
 
                 if (response.ok) {
@@ -1095,11 +1098,16 @@
                         const div = document.createElement('div');
                         div.className = 'item-card';
 
-                        // Tratamento para evitar quebras no JS
-                        const safeTitle = p.title ? p.title.replace(/"/g, '&quot;').replace(/'/g, "\\'") : '';
-                        const safeContent = p.content ? p.content.replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, '\\n') : '';
+                        // Tratamento para evitar quebras no JS (Suporta camelCase ou PascalCase)
+                        const rawTitle = p.title || p.Title || 'Sem Título';
+                        const rawContent = p.content || p.Content || '';
 
-                        const preview = p.content.length > 80 ? p.content.substring(0, 80) + '...' : p.content;
+                        const promptId = p.id || p.Id;
+
+                        const safeTitle = rawTitle.replace(/"/g, '&quot;').replace(/'/g, "\\'");
+                        const safeContent = rawContent.replace(/"/g, '&quot;').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+
+                        const preview = rawContent.length > 80 ? rawContent.substring(0, 80) + '...' : rawContent;
 
                         div.innerHTML = `
                             <div class="card-header">
@@ -1107,13 +1115,13 @@
                                     <div class="agent-icon-box" style="background: rgba(16, 185, 129, 0.1); color: var(--primary);">
                                         <i class="fas fa-bolt"></i>
                                     </div>
-                                    <div class="agent-name">${p.title}</div>
+                                    <div class="agent-name">${rawTitle}</div>
                                 </div>
                                 <div>
-                                    <button onclick="editarPrompt(${p.id}, '${safeTitle}', '${safeContent}')" style="background:transparent; border:none; color:#bbb; cursor:pointer; margin-right:10px;" title="Editar">
+                                    <button onclick="editarPrompt(${promptId}, '${safeTitle}', '${safeContent}')" style="background:transparent; border:none; color:#bbb; cursor:pointer; margin-right:10px;" title="Editar">
                                         <i class="fas fa-pencil-alt"></i>
                                     </button>
-                                    <button onclick="excluirPrompt(${p.id})" style="background:transparent; border:none; color:#ff5555; cursor:pointer;" title="Excluir">
+                                    <button onclick="excluirPrompt(${promptId})" style="background:transparent; border:none; color:#ff5555; cursor:pointer;" title="Excluir">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -1124,7 +1132,7 @@
                             </div>
 
                             <div style="margin-top: auto;">
-                                <button onclick="usarPromptNoChat('${safeContent}')" class="action-fab" style="width:100%; justify-content:center;">
+                                <button onclick="usarPromptNoChat('[${safeTitle}]\\n${safeContent}')" class="action-fab" style="width:100%; justify-content:center;">
                                     Usar no Chat <i class="fas fa-arrow-right" style="margin-left:5px;"></i>
                                 </button>
                             </div>

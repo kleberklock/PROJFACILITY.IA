@@ -139,9 +139,9 @@ namespace PROJFACILITY.IA.Controllers
 
             if (isAdmin)
             {
-                // Configuração para Agente Global (Admin)
-                finalUserId = null; // Sem dono específico (Global)
-                finalIsPublic = true;
+                // Configuração para Agente Global ou Pessoal (Admin)
+                finalUserId = request.IsGlobal ? null : (int?)userId;
+                finalIsPublic = request.IsGlobal;
 
                 if (!string.IsNullOrEmpty(request.Specialty) && request.Specialty != "automatico")
                 {
@@ -265,6 +265,7 @@ namespace PROJFACILITY.IA.Controllers
             public int CreatorId { get; set; }
             public string Icon { get; set; } = "fa-robot";
             public string Specialty { get; set; } = string.Empty; 
+            public bool IsGlobal { get; set; } = false;
         }
     }
 }

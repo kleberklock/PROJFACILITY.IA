@@ -40,6 +40,7 @@ namespace PROJFACILITY.IA.Controllers
 
                 return Ok(new 
                 { 
+                    user.Id,
                     user.Name, 
                     user.Email, 
                     user.Plan, 
@@ -72,7 +73,7 @@ namespace PROJFACILITY.IA.Controllers
                 user.Name = request.Name;
                 await _context.SaveChangesAsync();
 
-                return Ok(new { message = "Perfil atualizado com sucesso!", user = new { user.Name, user.Email } });
+                return Ok(new { message = "Perfil atualizado com sucesso!", user = new { user.Id, user.Name, user.Email } });
             }
             catch
             {
