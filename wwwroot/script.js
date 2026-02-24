@@ -1,12 +1,13 @@
 /* FACILITY.IA - Core Script Limpo */
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // 1. Inicializa Partículas
     initParticles();
-    
+
     // 2. Verifica Login e Carrega Dados (Foto/Nome)
     verificarLogin();
-    
+    loadUserData();
+
     // 3. Animações
     runPageAnimations();
 
@@ -24,8 +25,8 @@ document.addEventListener('DOMContentLoaded', function() {
 function initActiveSidebar() {
     // Pega apenas o nome do ficheiro (ex: chatcomIA.html), ignorando tudo o que vem depois do '?'
     let fullPath = window.location.pathname.split("/").pop();
-    let currentPage = fullPath.split("?")[0]; 
-    
+    let currentPage = fullPath.split("?")[0];
+
     if (!currentPage || currentPage === "") {
         currentPage = "dashboard.html";
     }
@@ -45,9 +46,9 @@ function initActiveSidebar() {
 
         if (destinationBase.includes(currentPage)) {
             item.classList.add('active');
-            
+
             // Tratamento especial se o link for dentro de um <li> (adiciona active ao pai)
-            if(item.tagName.toLowerCase() === 'a' && item.parentElement.tagName.toLowerCase() === 'li') {
+            if (item.tagName.toLowerCase() === 'a' && item.parentElement.tagName.toLowerCase() === 'li') {
                 item.parentElement.classList.add('active');
             }
         }
@@ -62,7 +63,7 @@ function runPageAnimations() {
         el.classList.add('animate-slide-up');
         el.style.animationDelay = `${index * 0.08}s`;
     });
-    
+
     // Inputs Focus Effect
     document.querySelectorAll('input, textarea').forEach(input => {
         input.addEventListener('focus', () => input.parentElement.classList.add('focused'));
@@ -79,40 +80,40 @@ function initMobileSystem() {
     const overlay = document.querySelector('.overlay'); // Overlay interno
 
     // Se não achar elementos internos, para (estamos na Home pública)
-    if (!sidebar) return; 
+    if (!sidebar) return;
 
     const closeMenu = () => {
         sidebar.classList.remove('active');
-        if(overlay) overlay.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
         document.body.style.overflow = '';
     };
 
     const openMenu = () => {
         sidebar.classList.add('active');
-        if(overlay) overlay.classList.add('active');
+        if (overlay) overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
     };
 
     // Click no botão interno
-    if(trigger) {
+    if (trigger) {
         trigger.onclick = (e) => {
             e.stopPropagation();
             sidebar.classList.contains('active') ? closeMenu() : openMenu();
         };
     }
-    
+
     // Click no overlay fecha
-    if(overlay) overlay.onclick = closeMenu;
+    if (overlay) overlay.onclick = closeMenu;
 
     // Links fecham o menu
     sidebar.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
 
     // Gestos (Swipe)
     let touchStartX = 0;
-    document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, {passive: true});
+    document.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, { passive: true });
     document.addEventListener('touchend', e => {
         if (touchStartX - e.changedTouches[0].screenX > 50) closeMenu(); // Deslizar para esquerda fecha
-    }, {passive: true});
+    }, { passive: true });
 }
 
 /* --- PARTICULAS --- */
@@ -140,14 +141,14 @@ async function verificarLogin() {
 
     try {
         const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:5217';
-        
+
         const response = await fetch(`${baseUrl}/api/user/profile`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (response.ok) {
             const user = await response.json();
-            
+
             const nomeDisplay = document.getElementById('nomeUsuarioDisplay');
             if (nomeDisplay) nomeDisplay.textContent = user.name;
 
@@ -178,14 +179,139 @@ function fixMobileVh() {
     });
 }
 
-window.fazerLogout = function() {
+window.fazerLogout = function () {
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
     window.location.href = 'index.html';
 }
 
+/* --- SIDEBAR & USER DATA MANAGEMENT --- */
+async function loadUserData() {
+    try {
+        // Otimização de Performance: Atualiza UI com dados em cache (Instantâneo)
+        const localData = JSON.parse(localStorage.getItem('userData') || '{}');
+        if (localData && Object.keys(localData).length > 0) {
+            updateUI(localData.name, localData.email, localData.plan, localData.profilePicture);
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        // URL base vinda do config.js
+        const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:5217';
+
+        const response = await fetch(`${baseUrl}/api/user/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+            const user = await response.json();
+            // Atualiza UI com dados frescos
+            updateUI(user.name, user.email, user.plan, user.profilePicture);
+
+            if (user.role === 'admin') {
+                const adminArea = document.getElementById('adminArea');
+                if (adminArea) adminArea.style.display = 'flex';
+            }
+            // Guarda dados frescos
+            localStorage.setItem('userData', JSON.stringify(user));
+        }
+    } catch (e) {
+        console.error("Erro ao carregar perfil de utilizador:", e);
+    }
+
+    const dateEl = document.getElementById('dateDisplay');
+    if (dateEl) {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateEl.innerText = new Date().toLocaleDateString('pt-BR', options);
+    }
+}
+
+function updateUI(name, email, plan, profilePicture) {
+    const finalName = name || "Usuário";
+    const initial = finalName.charAt(0).toUpperCase();
+
+    // Safeguards for updating DOM elements
+    const sidebarName = document.getElementById('sidebarUserName');
+    if (sidebarName) sidebarName.innerText = finalName;
+
+    const planBadge = document.getElementById('planBadge');
+    const planName = document.getElementById('planName');
+    const dashboardPlanCard = document.getElementById('dashboardPlanCard');
+    const upgradeSection = document.getElementById('upgradeSection');
+
+    // Read plan from localStorage, or use API value, or default to Free
+    const localStoredPlan = localStorage.getItem('userPlan');
+    const activePlan = localStoredPlan || plan || 'Iniciante';
+
+    if (planBadge && planName && dashboardPlanCard) {
+        // Reset card styles first
+        dashboardPlanCard.style.background = "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)";
+        dashboardPlanCard.style.border = "1px solid rgba(255,255,255,0.1)";
+        dashboardPlanCard.style.boxShadow = "none";
+        planName.style.background = "none";
+        planName.style.webkitTextFillColor = "white";
+        planName.style.color = "white";
+
+        if (activePlan.toLowerCase() === 'iniciante' || activePlan.toLowerCase() === 'free') {
+            planBadge.innerText = 'INICIANTE';
+            planBadge.style.background = '#00ff88';
+            planBadge.style.color = 'black';
+            planName.innerText = 'Iniciante';
+            if (upgradeSection) upgradeSection.style.display = 'block';
+        }
+        else if (activePlan.toLowerCase() === 'plus') {
+            planBadge.innerText = 'PLUS';
+            planBadge.style.background = '#00ff88';
+            planBadge.style.color = 'black';
+            planName.innerText = 'Plus';
+            planName.style.color = '#00ff88';
+            dashboardPlanCard.style.border = "1px solid rgba(0,255,136,0.3)";
+            dashboardPlanCard.style.boxShadow = "0 0 15px rgba(0, 255, 136, 0.1)";
+            if (upgradeSection) upgradeSection.style.display = 'block'; // Can upgrade to Pro
+        }
+        else if (activePlan.toLowerCase() === 'pro') {
+            planBadge.innerText = 'PRO';
+            planBadge.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
+            planBadge.style.color = 'black';
+            planBadge.innerHTML = '<i class="fas fa-crown"></i> PRO';
+
+            planName.innerText = 'Pro (Premium)';
+            planName.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
+            planName.style.webkitBackgroundClip = 'text';
+            planName.style.webkitTextFillColor = 'transparent';
+
+            dashboardPlanCard.style.background = "linear-gradient(135deg, #1f1c08 0%, #16213e 100%)";
+            dashboardPlanCard.style.border = "1px solid rgba(255, 215, 0, 0.4)";
+            dashboardPlanCard.style.boxShadow = "0 0 20px rgba(255, 215, 0, 0.15)";
+
+            if (upgradeSection) upgradeSection.style.display = 'none'; // Max level
+        }
+    }
+
+    // Update avatar based on API or config
+    const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:5217';
+    const avatarEls = [document.getElementById('sidebarAvatar'), document.getElementById('mobileAvatar')];
+    avatarEls.forEach(el => {
+        if (el) {
+            el.innerText = "";
+            el.style.backgroundImage = "none";
+            if (profilePicture) {
+                // Remove trailing slashes and normalize URLs
+                const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+                const normalizedPictureUrl = profilePicture.startsWith('/') ? profilePicture : '/' + profilePicture;
+                el.style.backgroundImage = `url('${normalizedBaseUrl}${normalizedPictureUrl}')`;
+                el.style.backgroundSize = "cover";
+                el.style.backgroundPosition = "center";
+            } else {
+                el.innerText = initial;
+            }
+        }
+    });
+}
+
 /* --- TOAST NOTIFICATIONS --- */
-window.showToast = function(msg, type = 'success') {
+window.showToast = function (msg, type = 'success') {
     if (typeof Swal !== 'undefined') {
         const Toast = Swal.mixin({
             toast: true,
@@ -207,7 +333,7 @@ window.showToast = function(msg, type = 'success') {
         });
     } else {
         console.warn("SweetAlert2 não carregado. Usando alert nativo.");
-        alert(msg); 
+        alert(msg);
     }
 }
 
@@ -215,18 +341,18 @@ function getCategoryColor(area) {
     const key = (area || 'outros').toLowerCase().trim();
 
     const colors = {
-        'tecnologia': '#00F3FF', 
-        'tech': '#00F3FF',       
-        'juridico': '#FFD700',   
-        'saude': '#00FF88',      
-        'engenharia': '#FF9900', 
-        'criativos': '#FF3366',  
+        'tecnologia': '#00F3FF',
+        'tech': '#00F3FF',
+        'juridico': '#FFD700',
+        'saude': '#00FF88',
+        'engenharia': '#FF9900',
+        'criativos': '#FF3366',
         'criativo': '#FF3366',
-        'negocios': '#0099FF',   
-        'educacao': '#9933FF',   
+        'negocios': '#0099FF',
+        'educacao': '#9933FF',
         'operacional': '#888888',
-        'meus': '#7c3aed',       
-        'outros': '#FFFFFF'      
+        'meus': '#7c3aed',
+        'outros': '#FFFFFF'
     };
 
     return colors[key] || colors['outros'];
@@ -239,10 +365,10 @@ let cachedUserPrompts = null;
 
 function abrirMeusPromptsChat() {
     const attachMenu = document.getElementById('attachMenu');
-    if(attachMenu) attachMenu.style.display = 'none';
-    
+    if (attachMenu) attachMenu.style.display = 'none';
+
     const modal = document.getElementById('modalPromptsChat');
-    if(modal) {
+    if (modal) {
         modal.style.display = 'flex';
         switchModalTab('system');
     }
@@ -250,13 +376,13 @@ function abrirMeusPromptsChat() {
 
 function fecharModalPromptsChat() {
     const modal = document.getElementById('modalPromptsChat');
-    if(modal) modal.style.display = 'none';
+    if (modal) modal.style.display = 'none';
 }
 
 function switchModalTab(tabName) {
     document.getElementById('tabBtnSystem').classList.remove('active');
     document.getElementById('tabBtnUser').classList.remove('active');
-    
+
     document.getElementById('tabContentSystem').style.display = 'none';
     document.getElementById('tabContentUser').style.display = 'none';
 
@@ -274,20 +400,20 @@ function switchModalTab(tabName) {
 async function loadSystemPrompts() {
     const container = document.getElementById('systemPromptsContainer');
     const loader = document.getElementById('systemPromptsLoader');
-    
+
     if (cachedSystemPrompts) {
         renderSystemPrompts(cachedSystemPrompts);
-        if(loader) loader.style.display = 'none';
+        if (loader) loader.style.display = 'none';
         return;
     }
 
-    if(loader) loader.style.display = 'block';
-    if(container) container.innerHTML = '';
+    if (loader) loader.style.display = 'block';
+    if (container) container.innerHTML = '';
 
     try {
         const token = localStorage.getItem('token');
         const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
-        
+
         const res = await fetch(`${apiUrl}/api/prompts/system`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -296,23 +422,23 @@ async function loadSystemPrompts() {
             cachedSystemPrompts = await res.json();
             renderSystemPrompts(cachedSystemPrompts);
         } else {
-            if(container) container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro ao carregar prompts do sistema.</div>';
+            if (container) container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro ao carregar prompts do sistema.</div>';
         }
     } catch (e) {
         console.error(e);
-        if(container) container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro de conexão.</div>';
+        if (container) container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro de conexão.</div>';
     } finally {
-        if(loader) loader.style.display = 'none';
+        if (loader) loader.style.display = 'none';
     }
 }
 
 function renderSystemPrompts(prompts) {
     const container = document.getElementById('systemPromptsContainer');
-    if(!container) return;
-    
+    if (!container) return;
+
     container.innerHTML = '';
-    
-    if(!prompts || prompts.length === 0) {
+
+    if (!prompts || prompts.length === 0) {
         container.innerHTML = '<p style="padding:20px; color:#999;">Nenhum prompt de sistema encontrado.</p>';
         return;
     }
@@ -326,15 +452,15 @@ function renderSystemPrompts(prompts) {
     for (const [area, items] of Object.entries(groups)) {
         const accItem = document.createElement('div');
         accItem.className = 'accordion-item';
-        
+
         const header = document.createElement('div');
         header.className = 'accordion-header';
-        
-        let iconColor = '#10b981'; 
-        if(area.includes('Juridico')) iconColor = '#eab308'; 
-        if(area.includes('Tech')) iconColor = '#3b82f6'; 
-        if(area.includes('Saude')) iconColor = '#ef4444'; 
-        
+
+        let iconColor = '#10b981';
+        if (area.includes('Juridico')) iconColor = '#eab308';
+        if (area.includes('Tech')) iconColor = '#3b82f6';
+        if (area.includes('Saude')) iconColor = '#ef4444';
+
         header.innerHTML = `
             <span style="display:flex; align-items:center;">
                 <i class="fas fa-layer-group" style="margin-right:10px; color:${iconColor}"></i> 
@@ -342,20 +468,20 @@ function renderSystemPrompts(prompts) {
             </span> 
             <i class="fas fa-chevron-down" style="transition: transform 0.3s;"></i>
         `;
-        
+
         header.onclick = () => {
             const isActive = accItem.classList.contains('active');
-            if(isActive) accItem.classList.remove('active');
+            if (isActive) accItem.classList.remove('active');
             else accItem.classList.add('active');
         };
-        
+
         const body = document.createElement('div');
         body.className = 'accordion-body';
-        
+
         items.forEach(p => {
             const card = document.createElement('div');
             card.className = 'system-prompt-card';
-            
+
             // Garantir que passamos o título e o conteúdo
             const titulo = p.buttonTitle || p.ButtonTitle || p.profession || p.Profession || 'Sistema';
             const conteudo = p.content || p.Content || '';
@@ -377,15 +503,15 @@ function renderSystemPrompts(prompts) {
 async function loadUserPrompts() {
     const container = document.getElementById('listaPromptsChatContent');
     const loader = document.getElementById('userPromptsLoader');
-    
+
     if (cachedUserPrompts) {
         renderUserPrompts(cachedUserPrompts);
-        if(loader) loader.style.display = 'none';
+        if (loader) loader.style.display = 'none';
         return;
     }
-    
-    if(loader) loader.style.display = 'block';
-    if(container) container.innerHTML = '';
+
+    if (loader) loader.style.display = 'block';
+    if (container) container.innerHTML = '';
 
     try {
         const token = localStorage.getItem('token');
@@ -399,19 +525,19 @@ async function loadUserPrompts() {
             cachedUserPrompts = await res.json();
             renderUserPrompts(cachedUserPrompts);
         } else {
-            if(container) container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro ao carregar seus prompts.</div>';
+            if (container) container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro ao carregar seus prompts.</div>';
         }
     } catch (e) {
         console.error(e);
-        if(container) container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro de conexão.</div>';
+        if (container) container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro de conexão.</div>';
     } finally {
-        if(loader) loader.style.display = 'none';
+        if (loader) loader.style.display = 'none';
     }
 }
 
 function renderUserPrompts(prompts) {
     const container = document.getElementById('listaPromptsChatContent');
-    if(!container) return;
+    if (!container) return;
 
     container.innerHTML = '';
 
@@ -431,10 +557,10 @@ function renderUserPrompts(prompts) {
         item.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
         item.style.cursor = 'pointer';
         item.style.transition = 'background 0.2s';
-        
+
         item.onmouseover = () => { item.style.backgroundColor = 'rgba(255,255,255,0.03)'; };
         item.onmouseout = () => { item.style.backgroundColor = 'transparent'; };
-        
+
         const titulo = p.title || p.Title || 'Meu Prompt';
         const conteudo = p.content || p.Content || '...';
 
@@ -451,20 +577,20 @@ function renderUserPrompts(prompts) {
 function selecionarPromptChat(tituloEncoded, conteudoEncoded) {
     const titulo = decodeURIComponent(tituloEncoded);
     const conteudo = decodeURIComponent(conteudoEncoded);
-    
+
     // Cria um ID único para este contexto
     const id = 'ctx_' + Date.now();
-    
+
     // Guarda o contexto em memória
     if (typeof activeContexts !== 'undefined') {
         activeContexts.add({ id: id, label: titulo, content: conteudo });
     }
-    
+
     // Atualiza a visualização no topo do chat
     if (typeof updateActiveBadges === 'function') {
         updateActiveBadges();
     }
-    
+
     if (typeof showToast === 'function') {
         showToast(`Contexto "${titulo}" ativado com sucesso!`);
     }
@@ -476,15 +602,15 @@ function selecionarPromptChat(tituloEncoded, conteudoEncoded) {
    ========================================================================== */
 
 // Função do Menu Mobile (Abre e Fecha a Gaveta)
-window.togglePublicMenu = function() {
+window.togglePublicMenu = function () {
     const nav = document.getElementById('publicNav');
     const overlay = document.querySelector('.mobile-nav-overlay');
-    
+
     if (nav) {
         // Alterna a gaveta e o overlay
         const isActive = nav.classList.toggle('active');
         if (overlay) overlay.classList.toggle('active');
-        
+
         // Bloqueia o scroll do fundo (página) quando o menu está aberto
         document.body.style.overflow = isActive ? 'hidden' : '';
     }

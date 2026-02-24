@@ -412,112 +412,6 @@
             document.querySelector('.overlay').classList.toggle('active');
         }
 
-        async function loadUserData() {
-            try {
-                const localData = JSON.parse(localStorage.getItem('userData') || '{}');
-                updateUI(localData.name, localData.email, localData.plan);
-
-                const token = localStorage.getItem('token');
-                if (!token) return;
-
-                const response = await fetch(`${baseUrl}/api/user/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (response.ok) {
-                    const user = await response.json();
-                    updateUI(user.name, user.email, user.plan, user.profilePicture);
-
-                    if (user.role === 'admin') {
-                        const adminArea = document.getElementById('adminArea');
-                        if (adminArea) adminArea.style.display = 'flex';
-                    }
-                    localStorage.setItem('userData', JSON.stringify(user));
-                }
-            } catch (e) { console.error("Erro perfil:", e); }
-
-            const dateEl = document.getElementById('dateDisplay');
-            if (dateEl) {
-                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                dateEl.innerText = new Date().toLocaleDateString('pt-BR', options);
-            }
-        }
-
-        function updateUI(name, email, plan, profilePicture) {
-            const finalName = name || "Usuário";
-            const initial = finalName.charAt(0).toUpperCase();
-            const sidebarName = document.getElementById('sidebarUserName');
-            if (sidebarName) sidebarName.innerText = finalName;
-
-            const planBadge = document.getElementById('planBadge');
-            const planName = document.getElementById('planName');
-            const dashboardPlanCard = document.getElementById('dashboardPlanCard');
-            const upgradeSection = document.getElementById('upgradeSection');
-
-            // Read from local storage specifically if userPlan was explicitly set during success.html or planos.html
-            const localStoredPlan = localStorage.getItem('userPlan');
-            const activePlan = localStoredPlan || plan || 'Iniciante';
-
-            if (planBadge && planName && dashboardPlanCard) {
-                // Reset card styles first
-                dashboardPlanCard.style.background = "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)";
-                dashboardPlanCard.style.border = "1px solid rgba(255,255,255,0.1)";
-                dashboardPlanCard.style.boxShadow = "none";
-                planName.style.background = "none";
-                planName.style.webkitTextFillColor = "white";
-                planName.style.color = "white";
-
-                if (activePlan.toLowerCase() === 'iniciante' || activePlan.toLowerCase() === 'free') {
-                    planBadge.innerText = 'INICIANTE';
-                    planBadge.style.background = '#00ff88';
-                    planBadge.style.color = 'black';
-                    planName.innerText = 'Iniciante';
-                    if (upgradeSection) upgradeSection.style.display = 'block';
-                }
-                else if (activePlan.toLowerCase() === 'plus') {
-                    planBadge.innerText = 'PLUS';
-                    planBadge.style.background = '#00ff88';
-                    planBadge.style.color = 'black';
-                    planName.innerText = 'Plus';
-                    planName.style.color = '#00ff88';
-                    dashboardPlanCard.style.border = "1px solid rgba(0,255,136,0.3)";
-                    dashboardPlanCard.style.boxShadow = "0 0 15px rgba(0, 255, 136, 0.1)";
-                    if (upgradeSection) upgradeSection.style.display = 'block'; // Can upgrade to Pro
-                }
-                else if (activePlan.toLowerCase() === 'pro') {
-                    planBadge.innerText = 'PRO';
-                    planBadge.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
-                    planBadge.style.color = 'black';
-                    planBadge.innerHTML = '<i class="fas fa-crown"></i> PRO';
-
-                    planName.innerText = 'Pro (Premium)';
-                    planName.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
-                    planName.style.webkitBackgroundClip = 'text';
-                    planName.style.webkitTextFillColor = 'transparent';
-
-                    dashboardPlanCard.style.background = "linear-gradient(135deg, #1f1c08 0%, #16213e 100%)";
-                    dashboardPlanCard.style.border = "1px solid rgba(255, 215, 0, 0.4)";
-                    dashboardPlanCard.style.boxShadow = "0 0 20px rgba(255, 215, 0, 0.15)";
-
-                    if (upgradeSection) upgradeSection.style.display = 'none'; // Max level
-                }
-            }
-
-            const avatarEls = [document.getElementById('sidebarAvatar'), document.getElementById('mobileAvatar')];
-            avatarEls.forEach(el => {
-                if (el) {
-                    el.innerText = "";
-                    el.style.backgroundImage = "none";
-                    if (profilePicture) {
-                        el.style.backgroundImage = `url('${baseUrl}${profilePicture}')`;
-                        el.style.backgroundSize = "cover";
-                        el.style.backgroundPosition = "center";
-                    } else {
-                        el.innerText = initial;
-                    }
-                }
-            });
-        }
 
         function fazerLogout() {
             localStorage.removeItem('token');
@@ -527,7 +421,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             renderCards();
-            loadUserData();
         });
     </script>
 </body>
