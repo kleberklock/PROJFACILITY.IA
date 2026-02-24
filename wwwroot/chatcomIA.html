@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <link rel="icon" type="image/jpeg" href="/favicon.png">
     <title>Facility.IA - Workstation</title>
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style-master.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
-    
-    <script src="config.js"></script> 
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+
+    <script src="config.js"></script>
     <script src="script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -28,10 +31,12 @@
             position: relative;
             overflow: hidden;
         }
+
         code {
             font-family: 'Consolas', 'Monaco', monospace;
             font-size: 0.9rem;
         }
+
         .code-header {
             display: flex;
             justify-content: space-between;
@@ -42,6 +47,7 @@
             color: #abb2bf;
             border-bottom: 1px solid #3e4451;
         }
+
         .copy-code-btn {
             background: none;
             border: none;
@@ -49,7 +55,10 @@
             cursor: pointer;
             transition: color 0.2s;
         }
-        .copy-code-btn:hover { color: var(--primary); }
+
+        .copy-code-btn:hover {
+            color: var(--primary);
+        }
 
         /* Slash Commands Menu */
         .slash-menu {
@@ -60,11 +69,12 @@
             background: #1e1e1e;
             border: 1px solid #333;
             border-radius: 8px;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
             display: none;
             z-index: 1000;
             overflow: hidden;
         }
+
         .slash-item {
             padding: 10px 15px;
             cursor: pointer;
@@ -74,11 +84,17 @@
             color: #ccc;
             border-bottom: 1px solid #2a2a2a;
         }
-        .slash-item:hover, .slash-item.active {
+
+        .slash-item:hover,
+        .slash-item.active {
             background: var(--primary);
             color: #000;
         }
-        .slash-item i { width: 20px; text-align: center; }
+
+        .slash-item i {
+            width: 20px;
+            text-align: center;
+        }
 
         /* Edit User Message */
         .edit-msg-btn {
@@ -89,33 +105,45 @@
             color: #888;
             font-size: 0.8rem;
         }
-        .user-message:hover .edit-msg-btn { opacity: 1; }
-        .edit-msg-btn:hover { color: var(--primary); }
+
+        .user-message:hover .edit-msg-btn {
+            opacity: 1;
+        }
+
+        .edit-msg-btn:hover {
+            color: var(--primary);
+        }
 
         /* Rich Attachment Preview */
         .rich-preview {
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             padding: 8px;
             border-radius: 6px;
             margin-bottom: 5px;
             border: 1px solid var(--primary);
         }
+
         .preview-thumb {
             width: 40px;
             height: 40px;
             object-fit: cover;
             border-radius: 4px;
         }
+
         .file-info {
             display: flex;
             flex-direction: column;
             font-size: 0.8rem;
             color: #fff;
         }
-        .file-meta { font-size: 0.7rem; color: #aaa; }
+
+        .file-meta {
+            font-size: 0.7rem;
+            color: #aaa;
+        }
 
         /* History Group Headers */
         .history-date-header {
@@ -133,6 +161,7 @@
             gap: 10px;
             margin-left: auto;
         }
+
         .export-btn {
             background: transparent;
             border: 1px solid #444;
@@ -142,7 +171,10 @@
             cursor: pointer;
             font-size: 0.8rem;
         }
-        .export-btn:hover { background: rgba(255,255,255,0.1); }
+
+        .export-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
 
         /* Stop Button State */
         .stop-btn {
@@ -150,10 +182,19 @@
             color: white !important;
             animation: pulse-red 2s infinite;
         }
+
         @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 68, 68, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 68, 68, 0);
+            }
         }
 
         /* Adjust Markdown Elements */
@@ -184,42 +225,97 @@
             overflow-x: auto;
             max-width: 100%;
         }
-        .message-bubble h1, .message-bubble h2, .message-bubble h3 { margin-top: 10px; margin-bottom: 5px; color: #fff; }
-        .message-bubble ul, .message-bubble ol { margin-left: 20px; margin-bottom: 10px; }
-        .message-bubble blockquote { border-left: 3px solid var(--primary); padding-left: 10px; color: #aaa; font-style: italic; }
-        .message-bubble table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 0.9rem; }
-        .message-bubble th, .message-bubble td { border: 1px solid #444; padding: 6px; text-align: left; }
-        .message-bubble th { background: #333; }
-        .message-bubble p { margin-bottom: 10px; }
+
+        .message-bubble h1,
+        .message-bubble h2,
+        .message-bubble h3 {
+            margin-top: 10px;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .message-bubble ul,
+        .message-bubble ol {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+
+        .message-bubble blockquote {
+            border-left: 3px solid var(--primary);
+            padding-left: 10px;
+            color: #aaa;
+            font-style: italic;
+        }
+
+        .message-bubble table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+
+        .message-bubble th,
+        .message-bubble td {
+            border: 1px solid #444;
+            padding: 6px;
+            text-align: left;
+        }
+
+        .message-bubble th {
+            background: #333;
+        }
+
+        .message-bubble p {
+            margin-bottom: 10px;
+        }
 
         /* --- ESTILOS DO MODAL (ATUALIZADO PARA ABAS) --- */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(0, 0, 0, 0.8);
             z-index: 3000;
-            display: none; justify-content: center; align-items: center;
+            display: none;
+            justify-content: center;
+            align-items: center;
             backdrop-filter: blur(5px);
         }
-        
+
         .modal-content {
             background: #161b22;
-            width: 90%; max-width: 900px; height: 85vh;
+            width: 90%;
+            max-width: 900px;
+            height: 85vh;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
             animation: fadeIn 0.3s ease;
-            display: flex; flex-direction: column; padding: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
             border-radius: 12px;
             overflow: hidden;
         }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
 
         /* --- Tabs Styles --- */
         .modal-tabs {
             display: flex;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            background-color: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 0, 0, 0.2);
         }
+
         .modal-tab {
             flex: 1;
             background: transparent;
@@ -232,7 +328,12 @@
             font-weight: 600;
             font-size: 0.9rem;
         }
-        .modal-tab:hover { background: rgba(255,255,255,0.02); color: #ccc; }
+
+        .modal-tab:hover {
+            background: rgba(255, 255, 255, 0.02);
+            color: #ccc;
+        }
+
         .modal-tab.active {
             color: var(--primary);
             border-bottom: 2px solid var(--primary);
@@ -241,37 +342,48 @@
 
         /* --- Accordion Styles (System Prompts) --- */
         .accordion-item {
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             margin-bottom: 10px;
             overflow: hidden;
-            background: rgba(255,255,255,0.02);
+            background: rgba(255, 255, 255, 0.02);
         }
+
         .accordion-header {
             padding: 15px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(255,255,255,0.03);
+            background: rgba(255, 255, 255, 0.03);
             font-weight: bold;
             color: #eee;
             transition: background 0.2s;
         }
-        .accordion-header:hover { background: rgba(255,255,255,0.05); }
-        
+
+        .accordion-header:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
         .accordion-body {
             display: none;
             padding: 15px;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 10px;
         }
-        .accordion-item.active .accordion-body { display: grid; }
-        .accordion-item.active .fa-chevron-down { transform: rotate(180deg); }
+
+        .accordion-item.active .accordion-body {
+            display: grid;
+        }
+
+        .accordion-item.active .fa-chevron-down {
+            transform: rotate(180deg);
+        }
 
         /* --- Cards Styles --- */
-        .prompt-list-item, .system-prompt-card {
+        .prompt-list-item,
+        .system-prompt-card {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 12px;
@@ -284,13 +396,15 @@
             justify-content: center;
         }
 
-        .prompt-list-item:hover, .system-prompt-card:hover {
+        .prompt-list-item:hover,
+        .system-prompt-card:hover {
             background: rgba(16, 185, 129, 0.1);
             border-color: var(--primary);
             transform: translateY(-2px);
         }
 
-        .prompt-list-item strong, .sp-title {
+        .prompt-list-item strong,
+        .sp-title {
             display: block;
             color: #fff;
             font-size: 0.9rem;
@@ -302,29 +416,47 @@
             color: #888;
             font-size: 0.8rem;
             margin: 0;
-            white-space: nowrap; 
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        
-        .sp-prof { 
-            font-size: 0.7rem; 
-            color: #aaa; 
-            text-transform: uppercase; 
-            margin-bottom: 5px; 
+
+        .sp-prof {
+            font-size: 0.7rem;
+            color: #aaa;
+            text-transform: uppercase;
+            margin-bottom: 5px;
             letter-spacing: 0.5px;
         }
     </style>
 </head>
+
 <body class="chat-mode">
     <input type="file" id="realFileInput" style="display: none;">
 
     <div class="chat-layout">
         <aside class="sidebar" id="mainSidebar">
-            <div class="logo" style="margin-bottom: 30px;"><a href="dashboard.html" style="text-decoration:none; color:inherit;"><h1>FACILITY<span>.IA</span></h1></a></div>
-            <div class="new-chat-btn" onclick="window.location.href='escolher_agente.html'"><i class="fas fa-arrow-left"></i> Trocar Agente</div>
-            
-            <div class="history-list" id="historyList"></div>
+            <div class="logo" style="margin-bottom: 30px;"><a href="dashboard.html"
+                    style="text-decoration:none; color:inherit;">
+                    <h1>FACILITY<span>.IA</span></h1>
+                </a></div>
+            <div class="new-chat-btn" onclick="window.location.href='escolher_agente.html'"><i
+                    class="fas fa-arrow-left"></i> Trocar Agente</div>
+
+            <a href="perfil.html" class="user-mini"
+                style="margin-top: 20px; text-decoration: none; display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; transition: background 0.3s;">
+                <div class="avatar" id="sidebarAvatar"
+                    style="width: 35px; height: 35px; border-radius: 50%; background: #333; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem; flex-shrink: 0;">
+                    U</div>
+                <div style="font-size:0.85rem; color:#ccc; overflow:hidden;">
+                    <div id="sidebarUserName"
+                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px; font-weight: bold;">
+                        Usuário</div>
+                    <div style="color:#666; font-size:0.75rem;">Ver Perfil</div>
+                </div>
+            </a>
+
+            <div class="history-list" id="historyList" style="margin-top: 20px;"></div>
         </aside>
 
         <main style="position: relative; width: 100%; height: 100%; overflow: hidden;">
@@ -338,13 +470,17 @@
                                 <div style="font-size:0.7rem; color:#666;">● ONLINE</div>
                             </div>
                         </div>
-                        
+
                         <div class="header-actions">
-                            <button class="export-btn" onclick="exportChat('txt')"><i class="fas fa-file-alt"></i> TXT</button>
-                            <button class="export-btn" onclick="exportChat('pdf')"><i class="fas fa-file-pdf"></i> PDF</button>
+                            <button class="export-btn" onclick="exportChat('txt')"><i class="fas fa-file-alt"></i>
+                                TXT</button>
+                            <button class="export-btn" onclick="exportChat('pdf')"><i class="fas fa-file-pdf"></i>
+                                PDF</button>
                         </div>
 
-                        <i class="fas fa-bars mobile-only" style="color:#666; cursor:pointer; font-size:1.2rem; display:none; margin-left: 15px;" onclick="toggleSidebarMobile()"></i>
+                        <i class="fas fa-bars mobile-only"
+                            style="color:#666; cursor:pointer; font-size:1.2rem; display:none; margin-left: 15px;"
+                            onclick="toggleSidebarMobile()"></i>
                     </div>
                     <div class="active-modules-container" id="activeModulesArea"></div>
                 </header>
@@ -353,18 +489,25 @@
 
                 <div class="input-wrapper">
                     <div id="slashMenu" class="slash-menu">
-                        <div class="slash-item" onclick="insertSlash('/resumir')"><i class="fas fa-compress-alt"></i> /resumir <span style="font-size:0.7rem; color:#666; margin-left:auto;">Resumir texto</span></div>
-                        <div class="slash-item" onclick="insertSlash('/codigo')"><i class="fas fa-code"></i> /codigo <span style="font-size:0.7rem; color:#666; margin-left:auto;">Gerar código</span></div>
-                        <div class="slash-item" onclick="insertSlash('/email')"><i class="fas fa-envelope"></i> /email <span style="font-size:0.7rem; color:#666; margin-left:auto;">Criar e-mail</span></div>
-                        <div class="slash-item" onclick="insertSlash('/corrigir')"><i class="fas fa-check-double"></i> /corrigir <span style="font-size:0.7rem; color:#666; margin-left:auto;">Revisar texto</span></div>
+                        <div class="slash-item" onclick="insertSlash('/resumir')"><i class="fas fa-compress-alt"></i>
+                            /resumir <span style="font-size:0.7rem; color:#666; margin-left:auto;">Resumir texto</span>
+                        </div>
+                        <div class="slash-item" onclick="insertSlash('/codigo')"><i class="fas fa-code"></i> /codigo
+                            <span style="font-size:0.7rem; color:#666; margin-left:auto;">Gerar código</span></div>
+                        <div class="slash-item" onclick="insertSlash('/email')"><i class="fas fa-envelope"></i> /email
+                            <span style="font-size:0.7rem; color:#666; margin-left:auto;">Criar e-mail</span></div>
+                        <div class="slash-item" onclick="insertSlash('/corrigir')"><i class="fas fa-check-double"></i>
+                            /corrigir <span style="font-size:0.7rem; color:#666; margin-left:auto;">Revisar texto</span>
+                        </div>
                     </div>
 
                     <div class="input-box-styled">
                         <div class="attachments-preview" id="attachmentsPreview"></div>
                         <div class="input-container">
                             <div style="position:relative;">
-                                <div class="action-icon" onclick="toggleMenu('attachMenu')"><i class="fas fa-paperclip"></i></div>
-                                
+                                <div class="action-icon" onclick="toggleMenu('attachMenu')"><i
+                                        class="fas fa-paperclip"></i></div>
+
                                 <div class="floating-menu" id="attachMenu">
                                     <div class="menu-option" onclick="triggerFileUpload('application/pdf')">
                                         <i class="far fa-file-pdf"></i> PDF
@@ -376,19 +519,23 @@
                             </div>
 
                             <div style="position:relative;">
-                                <div class="action-icon prompts" onclick="abrirMeusPromptsChat()"><i class="fas fa-wand-magic-sparkles" style="color:var(--primary)"></i></div>
-                                
+                                <div class="action-icon prompts" onclick="abrirMeusPromptsChat()"><i
+                                        class="fas fa-wand-magic-sparkles" style="color:var(--primary)"></i></div>
+
                                 <div class="floating-panel" id="promptsPanel" style="display:none;">
                                     <div class="panel-header"><span>Módulos de Contexto</span></div>
                                     <div id="switchesContainer" style="padding:10px;"></div>
                                 </div>
                             </div>
 
-                            <div class="action-icon" id="micBtn" onclick="toggleRecording()"><i class="fas fa-microphone"></i></div>
-                            
-                            <textarea id="userInput" placeholder="Digite sua instrução ou use / para comandos..." rows="1"></textarea>
-                            
-                            <button id="sendBtn" onclick="handleSendMessage()" style="background:var(--primary); border:none; width:40px; height:40px; border-radius:10px; cursor:pointer; color:black; transition: all 0.3s;">
+                            <div class="action-icon" id="micBtn" onclick="toggleRecording()"><i
+                                    class="fas fa-microphone"></i></div>
+
+                            <textarea id="userInput" placeholder="Digite sua instrução ou use / para comandos..."
+                                rows="1"></textarea>
+
+                            <button id="sendBtn" onclick="handleSendMessage()"
+                                style="background:var(--primary); border:none; width:40px; height:40px; border-radius:10px; cursor:pointer; color:black; transition: all 0.3s;">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </div>
@@ -398,363 +545,363 @@
         </main>
     </div>
 
-   <script>
-    // 1. Verificação de Segurança
-    (function() {
-        const token = localStorage.getItem('token');
-        if (!token) window.location.href = "login.html";
-    })();
+    <script>
+        // 1. Verificação de Segurança
+        (function () {
+            const token = localStorage.getItem('token');
+            if (!token) window.location.href = "login.html";
+        })();
 
-    // 2. Configurações Markdown e Highlight
-    marked.setOptions({
-    highlight: function(code, lang) {
-        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
-        return hljs.highlight(code, { language }).value;
-    },
-    langPrefix: 'hljs language-',
-    breaks: true
-});
-
-    // 3. Base de Conhecimento Estática
-    const knowledgeBase = {
-            juridico: [ { label: "REVISAR CONTRATO", desc: "Analisar cláusulas abusivas." }, { label: "REDIGIR PETIÇÃO", desc: "Estrutura formal jurídica." } ],
-            saude: [ { label: "INTERAÇÃO MEDICAMENTOSA", desc: "Verificar conflitos." }, { label: "EXPLICAÇÃO DE EXAME", desc: "Traduzir laudos técnicos." } ],
-            tech: [ { label: "DEBUG CODE", desc: "Encontrar erros no código." }, { label: "DOCUMENTAR API", desc: "Gerar Swagger/OpenAPI." } ],
-            geral: [ { label: "RESUMIR TEXTO", desc: "Criar síntese executiva." }, { label: "MELHORAR ESCRITA", desc: "Corrigir gramática e tom." } ]
-    };
-
-    // Variáveis de Estado
-    let activeContexts = new Set();
-    let currentAgentIcon = "";
-    let currentAgentName = "";
-    let currentAgentArea = "geral";
-    let currentFile = null; 
-    let currentSessionId = null;
-    let isGenerating = false;
-    let currentAbortController = null;
-    let recognition = null; // Speech API
-    
-    
-    // Elementos DOM
-    const userInput = document.getElementById('userInput');
-    const messagesArea = document.getElementById('messagesArea');
-    const sendBtn = document.getElementById('sendBtn');
-    const slashMenu = document.getElementById('slashMenu');
-
-    // Inicialização
-    document.addEventListener('DOMContentLoaded', async () => {
-        document.getElementById('realFileInput').addEventListener('change', handleFileSelected);
-        
-        // Setup Speech API
-        if ('webkitSpeechRecognition' in window) {
-            recognition = new webkitSpeechRecognition();
-            recognition.continuous = false;
-            recognition.lang = 'pt-BR';
-            recognition.onresult = (event) => {
-                const text = event.results[0][0].transcript;
-                userInput.value += (userInput.value ? ' ' : '') + text;
-                userInput.focus();
-                document.getElementById('micBtn').style.color = '';
-            };
-            recognition.onerror = () => { document.getElementById('micBtn').style.color = 'red'; };
-            recognition.onend = () => { document.getElementById('micBtn').style.color = ''; };
-        }
-
-        // Setup Slash Commands
-        userInput.addEventListener('input', function() {
-            if (this.value === '/') slashMenu.style.display = 'block';
-            else if (!this.value.startsWith('/')) slashMenu.style.display = 'none';
+        // 2. Configurações Markdown e Highlight
+        marked.setOptions({
+            highlight: function (code, lang) {
+                const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                return hljs.highlight(code, { language }).value;
+            },
+            langPrefix: 'hljs language-',
+            breaks: true
         });
 
-        // Params e Setup
-        const params = new URLSearchParams(window.location.search);
-        const agentName = params.get('name') || params.get('agent') || 'Assistente';
-        const agentIcon = params.get('icon') || 'fa-robot';
-        const agentArea = params.get('area') || 'geral';
+        // 3. Base de Conhecimento Estática
+        const knowledgeBase = {
+            juridico: [{ label: "REVISAR CONTRATO", desc: "Analisar cláusulas abusivas." }, { label: "REDIGIR PETIÇÃO", desc: "Estrutura formal jurídica." }],
+            saude: [{ label: "INTERAÇÃO MEDICAMENTOSA", desc: "Verificar conflitos." }, { label: "EXPLICAÇÃO DE EXAME", desc: "Traduzir laudos técnicos." }],
+            tech: [{ label: "DEBUG CODE", desc: "Encontrar erros no código." }, { label: "DOCUMENTAR API", desc: "Gerar Swagger/OpenAPI." }],
+            geral: [{ label: "RESUMIR TEXTO", desc: "Criar síntese executiva." }, { label: "MELHORAR ESCRITA", desc: "Corrigir gramática e tom." }]
+        };
 
-        setupChat(agentName, agentIcon, agentArea);
+        // Variáveis de Estado
+        let activeContexts = new Set();
+        let currentAgentIcon = "";
+        let currentAgentName = "";
+        let currentAgentArea = "geral";
+        let currentFile = null;
+        let currentSessionId = null;
+        let isGenerating = false;
+        let currentAbortController = null;
+        let recognition = null; // Speech API
 
-        if(window.innerWidth <= 768) {
-            const mobileMenu = document.querySelector('.mobile-only');
-            if(mobileMenu) mobileMenu.style.display = 'block';
-        }
 
-        // --- AUTO-PREENCHIMENTO DE PROMPT ---
-        const promptPendente = localStorage.getItem('prompt_pendente');
-        if (promptPendente) {
-            const campoInput = document.getElementById('userInput');
-            if (campoInput) {
-                campoInput.value = promptPendente;
-                campoInput.focus();
-                if(campoInput.style) {
-                    campoInput.style.height = 'auto';
-                    campoInput.style.height = campoInput.scrollHeight + 'px';
-                }
+        // Elementos DOM
+        const userInput = document.getElementById('userInput');
+        const messagesArea = document.getElementById('messagesArea');
+        const sendBtn = document.getElementById('sendBtn');
+        const slashMenu = document.getElementById('slashMenu');
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', async () => {
+            document.getElementById('realFileInput').addEventListener('change', handleFileSelected);
+
+            // Setup Speech API
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.lang = 'pt-BR';
+                recognition.onresult = (event) => {
+                    const text = event.results[0][0].transcript;
+                    userInput.value += (userInput.value ? ' ' : '') + text;
+                    userInput.focus();
+                    document.getElementById('micBtn').style.color = '';
+                };
+                recognition.onerror = () => { document.getElementById('micBtn').style.color = 'red'; };
+                recognition.onend = () => { document.getElementById('micBtn').style.color = ''; };
             }
-            localStorage.removeItem('prompt_pendente');
-        }
-    });
 
-    // --- SETUP DO CHAT ---
-    function setupChat(name, icon, area) {
-        if(name.includes('-')) name = name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            // Setup Slash Commands
+            userInput.addEventListener('input', function () {
+                if (this.value === '/') slashMenu.style.display = 'block';
+                else if (!this.value.startsWith('/')) slashMenu.style.display = 'none';
+            });
 
-        const params = new URLSearchParams(window.location.search);
-        currentSessionId = params.get('sessionId') || Date.now().toString(); 
-        
-        currentAgentName = name;
-        currentAgentIcon = icon.replace('fa-', ''); 
-        currentAgentArea = area;
+            // Params e Setup
+            const params = new URLSearchParams(window.location.search);
+            const agentName = params.get('name') || params.get('agent') || 'Assistente';
+            const agentIcon = params.get('icon') || 'fa-robot';
+            const agentArea = params.get('area') || 'geral';
 
-        document.getElementById('headerName').innerText = name;
-        document.getElementById('headerIcon').innerHTML = `<i class="fas fa-${currentAgentIcon}"></i>`;
-        
-        activeContexts.clear(); 
-        updateActiveBadges();
-        messagesArea.innerHTML = "";
-        loadSwitches(area);
+            setupChat(agentName, agentIcon, agentArea);
 
-        if (params.get('sessionId')) {
-            loadSessionMessages(currentSessionId);
-        } else {
-            addMessage('ai', `Olá! Sou seu ${name}. Como posso ajudar hoje?`, currentAgentIcon, false);
-        }
+            if (window.innerWidth <= 768) {
+                const mobileMenu = document.querySelector('.mobile-only');
+                if (mobileMenu) mobileMenu.style.display = 'block';
+            }
 
-        loadHistoryFromAPI();
-    }
-
-    // --- INTERAÇÃO UX ---
-    function copiarTexto(btn, texto) {
-        navigator.clipboard.writeText(texto).then(() => {
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-check"></i> Copiado';
-            btn.style.color = 'var(--neon-green)';
-            setTimeout(() => { btn.innerHTML = originalHTML; btn.style.color = ''; }, 2000);
+            // --- AUTO-PREENCHIMENTO DE PROMPT ---
+            const promptPendente = localStorage.getItem('prompt_pendente');
+            if (promptPendente) {
+                const campoInput = document.getElementById('userInput');
+                if (campoInput) {
+                    campoInput.value = promptPendente;
+                    campoInput.focus();
+                    if (campoInput.style) {
+                        campoInput.style.height = 'auto';
+                        campoInput.style.height = campoInput.scrollHeight + 'px';
+                    }
+                }
+                localStorage.removeItem('prompt_pendente');
+            }
         });
-    }
 
-    function toggleRecording() {
-        if(!recognition) return alert("Seu navegador não suporta reconhecimento de voz.");
-        recognition.start();
-        document.getElementById('micBtn').style.color = 'var(--neon-green)';
-    }
+        // --- SETUP DO CHAT ---
+        function setupChat(name, icon, area) {
+            if (name.includes('-')) name = name.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
-    function insertSlash(cmd) {
-        userInput.value = cmd + ' ';
-        slashMenu.style.display = 'none';
-        userInput.focus();
-    }
+            const params = new URLSearchParams(window.location.search);
+            currentSessionId = params.get('sessionId') || Date.now().toString();
 
-    function editUserMessage(text) {
-        userInput.value = text;
-        userInput.focus();
-    }
+            currentAgentName = name;
+            currentAgentIcon = icon.replace('fa-', '');
+            currentAgentArea = area;
 
-    // --- ENVIO DE MENSAGEM COM STOP REAL ---
-    async function handleSendMessage() {
-        if (isGenerating) {
-            if (currentAbortController) {
-                currentAbortController.abort(); 
-                currentAbortController = null;
-            }
-            isGenerating = false;
-            
-            const loadingMsg = messagesArea.querySelector('.ai-message:last-child .message-bubble');
-            if(loadingMsg) loadingMsg.innerHTML += " <br><i>[Interrompido pelo usuário]</i>";
-            
-            setSendButtonState('send');
-            return;
-        }
+            document.getElementById('headerName').innerText = name;
+            document.getElementById('headerIcon').innerHTML = `<i class="fas fa-${currentAgentIcon}"></i>`;
 
-        const text = userInput.value.trim();
-        if (!text && !currentFile) return;
+            activeContexts.clear();
+            updateActiveBadges();
+            messagesArea.innerHTML = "";
+            loadSwitches(area);
 
-        slashMenu.style.display = 'none';
-        if(text) addMessage("user", text);
-        
-        if(currentFile) {
-            const fileHTML = `<div class="rich-preview" style="background: rgba(255,255,255,0.1); display:inline-flex;">
-                <i class="fas fa-file" style="font-size:1.5rem; color:var(--primary)"></i>
-                <div class="file-info">
-                    <strong>${currentFile.name}</strong>
-                    <span class="file-meta">${(currentFile.size/1024).toFixed(1)} KB</span>
-                </div>
-            </div>`;
-            addMessage("user", fileHTML, null, false, true); 
-        }
-
-        const aiDiv = addMessage("ai", "", currentAgentIcon, true); 
-        userInput.value = ""; 
-        const fileToSend = currentFile;
-        clearAttachments();
-
-        isGenerating = true;
-        setSendButtonState('stop');
-        
-        currentAbortController = new AbortController();
-        const signal = currentAbortController.signal;
-
-        try {
-            const token = localStorage.getItem('token'); 
-            
-            // --- NOVA LÓGICA DE CONTEXTOS OCULTOS ---
-            let contextosSecretos = activeContexts.size > 0 
-                ? Array.from(activeContexts).map(c => `[Contexto Ativo - ${c.label}]:\n${c.content}`).join("\n\n") 
-                : "";
-            
-            let responseText = "";
-            
-            await new Promise(r => setTimeout(r, 500));
-
-            if (typeof CONFIG !== 'undefined' && CONFIG.API_URL) {
-                try {
-                    const formData = new FormData();
-                    formData.append('message', text); // Envia apenas a mensagem visível ao utilizador
-                    formData.append('agentId', currentAgentName); 
-                    formData.append('sessionId', currentSessionId); 
-                    formData.append('isHidden', 'false');
-                    
-                    if (contextosSecretos) {
-                        formData.append('activeContexts', contextosSecretos); 
-                    }
-                    if(fileToSend) formData.append('file', fileToSend);
-
-                    const res = await fetch(`${CONFIG.API_URL}/api/chat/enviar`, { 
-                        method: 'POST', 
-                        headers: { 'Authorization': `Bearer ${token}` },
-                        body: formData,
-                        signal: signal
-                    });
-
-                    if (res.ok) {
-                        const data = await res.json();
-                        responseText = data.reply;
-                    } else {
-                         if(res.status === 499) throw new Error("AbortError"); 
-                         throw new Error("Erro na API");
-                    }
-
-                } catch(e) { 
-                    if (e.name === 'AbortError' || e.message === 'AbortError') {
-                        throw new Error("Geração cancelada."); 
-                    }
-                    console.log("API offline ou erro, usando simulação.", e); 
-                    responseText = simulateAIResponse(text, currentAgentName);
-                }
+            if (params.get('sessionId')) {
+                loadSessionMessages(currentSessionId);
             } else {
-                 responseText = simulateAIResponse(text, currentAgentName);
+                addMessage('ai', `Olá! Sou seu ${name}. Como posso ajudar hoje?`, currentAgentIcon, false);
             }
 
-            const bubble = aiDiv.querySelector('.message-bubble');
-            bubble.classList.remove('typing-cursor');
-            bubble.innerHTML = ""; 
+            loadHistoryFromAPI();
+        }
 
-            let i = 0; 
-            const speed = 10; 
-            let currentMarkdown = "";
+        // --- INTERAÇÃO UX ---
+        function copiarTexto(btn, texto) {
+            navigator.clipboard.writeText(texto).then(() => {
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> Copiado';
+                btn.style.color = 'var(--neon-green)';
+                setTimeout(() => { btn.innerHTML = originalHTML; btn.style.color = ''; }, 2000);
+            });
+        }
 
-            const typeLoop = () => { 
-                if(!isGenerating) return; 
+        function toggleRecording() {
+            if (!recognition) return alert("Seu navegador não suporta reconhecimento de voz.");
+            recognition.start();
+            document.getElementById('micBtn').style.color = 'var(--neon-green)';
+        }
 
-                if(i < responseText.length) { 
-                    currentMarkdown += responseText.charAt(i);
-                    bubble.innerHTML = marked.parse(currentMarkdown); 
-                    i++; 
-                    smartScroll();
-                    setTimeout(typeLoop, speed); 
-                } else {
-                    finalizeMessage(aiDiv, currentMarkdown);
+        function insertSlash(cmd) {
+            userInput.value = cmd + ' ';
+            slashMenu.style.display = 'none';
+            userInput.focus();
+        }
+
+        function editUserMessage(text) {
+            userInput.value = text;
+            userInput.focus();
+        }
+
+        // --- ENVIO DE MENSAGEM COM STOP REAL ---
+        async function handleSendMessage() {
+            if (isGenerating) {
+                if (currentAbortController) {
+                    currentAbortController.abort();
+                    currentAbortController = null;
                 }
-            };
-            typeLoop();
-
-        } catch (e) {
-            if (e.message === "Geração cancelada." || e.name === 'AbortError') {
                 isGenerating = false;
+
+                const loadingMsg = messagesArea.querySelector('.ai-message:last-child .message-bubble');
+                if (loadingMsg) loadingMsg.innerHTML += " <br><i>[Interrompido pelo usuário]</i>";
+
                 setSendButtonState('send');
                 return;
             }
 
+            const text = userInput.value.trim();
+            if (!text && !currentFile) return;
+
+            slashMenu.style.display = 'none';
+            if (text) addMessage("user", text);
+
+            if (currentFile) {
+                const fileHTML = `<div class="rich-preview" style="background: rgba(255,255,255,0.1); display:inline-flex;">
+                <i class="fas fa-file" style="font-size:1.5rem; color:var(--primary)"></i>
+                <div class="file-info">
+                    <strong>${currentFile.name}</strong>
+                    <span class="file-meta">${(currentFile.size / 1024).toFixed(1)} KB</span>
+                </div>
+            </div>`;
+                addMessage("user", fileHTML, null, false, true);
+            }
+
+            const aiDiv = addMessage("ai", "", currentAgentIcon, true);
+            userInput.value = "";
+            const fileToSend = currentFile;
+            clearAttachments();
+
+            isGenerating = true;
+            setSendButtonState('stop');
+
+            currentAbortController = new AbortController();
+            const signal = currentAbortController.signal;
+
+            try {
+                const token = localStorage.getItem('token');
+
+                // --- NOVA LÓGICA DE CONTEXTOS OCULTOS ---
+                let contextosSecretos = activeContexts.size > 0
+                    ? Array.from(activeContexts).map(c => `[Contexto Ativo - ${c.label}]:\n${c.content}`).join("\n\n")
+                    : "";
+
+                let responseText = "";
+
+                await new Promise(r => setTimeout(r, 500));
+
+                if (typeof CONFIG !== 'undefined' && CONFIG.API_URL) {
+                    try {
+                        const formData = new FormData();
+                        formData.append('message', text); // Envia apenas a mensagem visível ao utilizador
+                        formData.append('agentId', currentAgentName);
+                        formData.append('sessionId', currentSessionId);
+                        formData.append('isHidden', 'false');
+
+                        if (contextosSecretos) {
+                            formData.append('activeContexts', contextosSecretos);
+                        }
+                        if (fileToSend) formData.append('file', fileToSend);
+
+                        const res = await fetch(`${CONFIG.API_URL}/api/chat/enviar`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}` },
+                            body: formData,
+                            signal: signal
+                        });
+
+                        if (res.ok) {
+                            const data = await res.json();
+                            responseText = data.reply;
+                        } else {
+                            if (res.status === 499) throw new Error("AbortError");
+                            throw new Error("Erro na API");
+                        }
+
+                    } catch (e) {
+                        if (e.name === 'AbortError' || e.message === 'AbortError') {
+                            throw new Error("Geração cancelada.");
+                        }
+                        console.log("API offline ou erro, usando simulação.", e);
+                        responseText = simulateAIResponse(text, currentAgentName);
+                    }
+                } else {
+                    responseText = simulateAIResponse(text, currentAgentName);
+                }
+
+                const bubble = aiDiv.querySelector('.message-bubble');
+                bubble.classList.remove('typing-cursor');
+                bubble.innerHTML = "";
+
+                let i = 0;
+                const speed = 10;
+                let currentMarkdown = "";
+
+                const typeLoop = () => {
+                    if (!isGenerating) return;
+
+                    if (i < responseText.length) {
+                        currentMarkdown += responseText.charAt(i);
+                        bubble.innerHTML = marked.parse(currentMarkdown);
+                        i++;
+                        smartScroll();
+                        setTimeout(typeLoop, speed);
+                    } else {
+                        finalizeMessage(aiDiv, currentMarkdown);
+                    }
+                };
+                typeLoop();
+
+            } catch (e) {
+                if (e.message === "Geração cancelada." || e.name === 'AbortError') {
+                    isGenerating = false;
+                    setSendButtonState('send');
+                    return;
+                }
+
+                const bubble = aiDiv.querySelector('.message-bubble');
+                bubble.innerText = "Erro: " + e.message;
+                bubble.style.color = "#ff6b6b";
+                isGenerating = false;
+                setSendButtonState('send');
+            } finally {
+                currentAbortController = null;
+            }
+        }
+
+        function finalizeMessage(aiDiv, text) {
             const bubble = aiDiv.querySelector('.message-bubble');
-            bubble.innerText = "Erro: " + e.message;
-            bubble.style.color = "#ff6b6b";
+            bubble.innerHTML = marked.parse(text);
+
+            bubble.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightElement(block);
+                const pre = block.parentElement;
+                const lang = block.className.replace('hljs language-', '') || 'Code';
+                if (!pre.querySelector('.code-header')) {
+                    const header = document.createElement('div');
+                    header.className = 'code-header';
+                    header.innerHTML = `<span>${lang}</span> <button class="copy-code-btn" onclick="copiarTexto(this, this.parentElement.nextElementSibling.innerText)"><i class="far fa-copy"></i> Copiar Código</button>`;
+                    pre.insertBefore(header, block);
+                }
+            });
+
             isGenerating = false;
             setSendButtonState('send');
-        } finally {
-            currentAbortController = null;
-        }
-    }
+            smartScroll();
 
-    function finalizeMessage(aiDiv, text) {
-        const bubble = aiDiv.querySelector('.message-bubble');
-        bubble.innerHTML = marked.parse(text);
-        
-        bubble.querySelectorAll('pre code').forEach((block) => {
-            hljs.highlightElement(block);
-            const pre = block.parentElement;
-            const lang = block.className.replace('hljs language-', '') || 'Code';
-            if (!pre.querySelector('.code-header')) { 
-                const header = document.createElement('div');
-                header.className = 'code-header';
-                header.innerHTML = `<span>${lang}</span> <button class="copy-code-btn" onclick="copiarTexto(this, this.parentElement.nextElementSibling.innerText)"><i class="far fa-copy"></i> Copiar Código</button>`;
-                pre.insertBefore(header, block);
-            }
-        });
-
-        isGenerating = false;
-        setSendButtonState('send');
-        smartScroll();
-
-        const contentWrapper = aiDiv.querySelector('.message-content-wrapper');
-        if (!contentWrapper.querySelector('.action-row')) {
-            const actionsDiv = document.createElement('div');
-            actionsDiv.className = 'action-row';
-            actionsDiv.innerHTML = `
+            const contentWrapper = aiDiv.querySelector('.message-content-wrapper');
+            if (!contentWrapper.querySelector('.action-row')) {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'action-row';
+                actionsDiv.innerHTML = `
                 <button class="icon-btn" onclick="copiarTexto(this, decodeURIComponent('${encodeURIComponent(text)}'))" title="Copiar Resposta"><i class="far fa-copy"></i></button>
                 <button class="icon-btn" title="Regerar resposta"><i class="fas fa-redo"></i></button>
             `;
-            contentWrapper.appendChild(actionsDiv);
+                contentWrapper.appendChild(actionsDiv);
+            }
         }
-    }
 
-    function setSendButtonState(state) {
-        if (state === 'stop') {
-            sendBtn.innerHTML = '<i class="fas fa-stop"></i>';
-            sendBtn.classList.add('stop-btn');
-        } else {
-            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
-            sendBtn.classList.remove('stop-btn');
+        function setSendButtonState(state) {
+            if (state === 'stop') {
+                sendBtn.innerHTML = '<i class="fas fa-stop"></i>';
+                sendBtn.classList.add('stop-btn');
+            } else {
+                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+                sendBtn.classList.remove('stop-btn');
+            }
         }
-    }
 
-    function smartScroll() {
-        const threshold = 100; 
-        const position = messagesArea.scrollTop + messagesArea.offsetHeight;
-        const height = messagesArea.scrollHeight;
-        
-        if (height - position < threshold || isGenerating) {
-            messagesArea.scrollTop = height;
+        function smartScroll() {
+            const threshold = 100;
+            const position = messagesArea.scrollTop + messagesArea.offsetHeight;
+            const height = messagesArea.scrollHeight;
+
+            if (height - position < threshold || isGenerating) {
+                messagesArea.scrollTop = height;
+            }
         }
-    }
 
-    function simulateAIResponse(input, role) {
-        const lower = input.toLowerCase();
-        if (lower.includes("/codigo") || lower.includes("html")) return "Aqui está o exemplo solicitado:\n\n```html\n<div class='container'>\n  <h1>Exemplo</h1>\n  <p>Teste de código.</p>\n</div>\n```";
-        
-        return `Compreendi sua solicitação sobre **${input.substring(0, 20)}...**. \n\nComo ${role}, aqui está minha análise:\n\n1. **Contexto**: Identifiquei a necessidade técnica.\n2. **Solução**: Recomendo seguir os padrões de desenvolvimento.\n\nSe precisar de mais detalhes ou código específico, utilize os comandos como \`/codigo\`.`;
-    }
+        function simulateAIResponse(input, role) {
+            const lower = input.toLowerCase();
+            if (lower.includes("/codigo") || lower.includes("html")) return "Aqui está o exemplo solicitado:\n\n```html\n<div class='container'>\n  <h1>Exemplo</h1>\n  <p>Teste de código.</p>\n</div>\n```";
 
-    function addMessage(sender, text, icon, typing = false, isHTML = false) {
-        const d = document.createElement('div');
-        const isAI = sender === 'ai';
-        d.className = `message-row ${isAI ? 'ai-message' : 'user-message'}`;
+            return `Compreendi sua solicitação sobre **${input.substring(0, 20)}...**. \n\nComo ${role}, aqui está minha análise:\n\n1. **Contexto**: Identifiquei a necessidade técnica.\n2. **Solução**: Recomendo seguir os padrões de desenvolvimento.\n\nSe precisar de mais detalhes ou código específico, utilize os comandos como \`/codigo\`.`;
+        }
 
-        const avatarHTML = isAI ? `<div class="ai-avatar"><i class="fas fa-${icon || 'robot'}"></i></div>` : '';
-        let content = typing ? '<i class="fas fa-circle-notch fa-spin"></i> Processando...' : (isHTML ? text : text.replace(/\n/g, '<br>')); 
+        function addMessage(sender, text, icon, typing = false, isHTML = false) {
+            const d = document.createElement('div');
+            const isAI = sender === 'ai';
+            d.className = `message-row ${isAI ? 'ai-message' : 'user-message'}`;
 
-        const editBtn = (!isAI && !typing) ? `<i class="fas fa-pencil-alt edit-msg-btn" onclick="editUserMessage('${text.replace(/'/g, "\\'")}')" title="Editar e reenviar"></i>` : '';
+            const avatarHTML = isAI ? `<div class="ai-avatar"><i class="fas fa-${icon || 'robot'}"></i></div>` : '';
+            let content = typing ? '<i class="fas fa-circle-notch fa-spin"></i> Processando...' : (isHTML ? text : text.replace(/\n/g, '<br>'));
 
-        d.innerHTML = `
+            const editBtn = (!isAI && !typing) ? `<i class="fas fa-pencil-alt edit-msg-btn" onclick="editUserMessage('${text.replace(/'/g, "\\'")}')" title="Editar e reenviar"></i>` : '';
+
+            d.innerHTML = `
             ${avatarHTML}
             <div class="message-content-wrapper">
                 <div class="message-bubble ${typing ? 'typing-cursor' : ''}">${content}</div>
@@ -762,298 +909,298 @@
             </div>
         `;
 
-        messagesArea.appendChild(d);
-        smartScroll();
-        return d;
-    }
-
-    function triggerFileUpload(accept) { toggleMenu('attachMenu'); const i = document.getElementById('realFileInput'); i.accept = accept; i.click(); }
-    
-    function handleFileSelected(e) { 
-        const f = e.target.files[0]; if(!f) return; currentFile = f;
-        
-        let previewHTML = `<div class="attachment-chip"><i class="fas fa-file"></i> ${f.name} <i class="fas fa-times" onclick="clearAttachments()"></i></div>`;
-        
-        if (f.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const imgThumb = `<div class="attachment-chip" style="padding:0; overflow:hidden;"><img src="${e.target.result}" style="height:30px; border-radius:15px; margin-right:5px;"> ${f.name} <i class="fas fa-times" onclick="clearAttachments()" style="margin-left:5px; margin-right:10px;"></i></div>`;
-                document.getElementById('attachmentsPreview').innerHTML = imgThumb;
-            };
-            reader.readAsDataURL(f);
-        } else {
-            document.getElementById('attachmentsPreview').innerHTML = previewHTML;
+            messagesArea.appendChild(d);
+            smartScroll();
+            return d;
         }
-    }
-    
-    function clearAttachments() { currentFile = null; document.getElementById('realFileInput').value=""; document.getElementById('attachmentsPreview').innerHTML=""; }
 
-    // --- HISTÓRICO ---
-    async function loadHistoryFromAPI() {
-        const list = document.getElementById('historyList');
-        list.innerHTML = '<div style="padding:10px; color:#666; font-size:0.8rem;">Carregando...</div>';
+        function triggerFileUpload(accept) { toggleMenu('attachMenu'); const i = document.getElementById('realFileInput'); i.accept = accept; i.click(); }
 
-        try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${CONFIG.API_URL}/api/chat/sessions`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+        function handleFileSelected(e) {
+            const f = e.target.files[0]; if (!f) return; currentFile = f;
+
+            let previewHTML = `<div class="attachment-chip"><i class="fas fa-file"></i> ${f.name} <i class="fas fa-times" onclick="clearAttachments()"></i></div>`;
+
+            if (f.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const imgThumb = `<div class="attachment-chip" style="padding:0; overflow:hidden;"><img src="${e.target.result}" style="height:30px; border-radius:15px; margin-right:5px;"> ${f.name} <i class="fas fa-times" onclick="clearAttachments()" style="margin-left:5px; margin-right:10px;"></i></div>`;
+                    document.getElementById('attachmentsPreview').innerHTML = imgThumb;
+                };
+                reader.readAsDataURL(f);
+            } else {
+                document.getElementById('attachmentsPreview').innerHTML = previewHTML;
+            }
+        }
+
+        function clearAttachments() { currentFile = null; document.getElementById('realFileInput').value = ""; document.getElementById('attachmentsPreview').innerHTML = ""; }
+
+        // --- HISTÓRICO ---
+        async function loadHistoryFromAPI() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = '<div style="padding:10px; color:#666; font-size:0.8rem;">Carregando...</div>';
+
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${CONFIG.API_URL}/api/chat/sessions`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!res.ok) throw new Error("Falha ao carregar histórico");
+
+                const history = await res.json();
+                renderHistoryList(history);
+            } catch (e) {
+                console.error(e);
+                list.innerHTML = '<div style="padding:10px; color:#666;">Histórico vazio.</div>';
+            }
+        }
+
+        function renderHistoryList(history) {
+            const list = document.getElementById('historyList');
+            list.innerHTML = "";
+
+            const groups = { 'Hoje': [], 'Ontem': [], 'Antigos': [] };
+            const now = new Date();
+            const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
+
+            history.forEach(h => {
+                const dateStr = h.timestamp || h.Timestamp;
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) return;
+
+                if (date.toDateString() === now.toDateString()) groups['Hoje'].push(h);
+                else if (date.toDateString() === yesterday.toDateString()) groups['Ontem'].push(h);
+                else groups['Antigos'].push(h);
             });
-            
-            if (!res.ok) throw new Error("Falha ao carregar histórico");
-            
-            const history = await res.json();
-            renderHistoryList(history);
-        } catch (e) {
-            console.error(e);
-            list.innerHTML = '<div style="padding:10px; color:#666;">Histórico vazio.</div>';
-        }
-    }
 
-    function renderHistoryList(history) {
-        const list = document.getElementById('historyList');
-        list.innerHTML = "";
-        
-        const groups = { 'Hoje': [], 'Ontem': [], 'Antigos': [] };
-        const now = new Date();
-        const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
+            for (const [label, items] of Object.entries(groups)) {
+                if (items.length > 0) {
+                    list.innerHTML += `<div class="history-date-header">${label}</div>`;
+                    items.forEach(h => {
+                        const sessId = h.id || h.Id;
+                        const title = (h.title || h.Title || "Conversa sem título").substring(0, 30);
+                        const agent = h.agentId || h.AgentId || currentAgentName;
 
-        history.forEach(h => {
-            const dateStr = h.timestamp || h.Timestamp;
-            const date = new Date(dateStr);
-            if(isNaN(date.getTime())) return;
-
-            if(date.toDateString() === now.toDateString()) groups['Hoje'].push(h);
-            else if(date.toDateString() === yesterday.toDateString()) groups['Ontem'].push(h);
-            else groups['Antigos'].push(h);
-        });
-
-        for (const [label, items] of Object.entries(groups)) {
-            if(items.length > 0) {
-                list.innerHTML += `<div class="history-date-header">${label}</div>`;
-                items.forEach(h => {
-                    const sessId = h.id || h.Id; 
-                    const title = (h.title || h.Title || "Conversa sem título").substring(0, 30);
-                    const agent = h.agentId || h.AgentId || currentAgentName;
-                    
-                    list.innerHTML += `
+                        list.innerHTML += `
                         <div class="history-item" onclick="window.location.href='chatcomIA.html?name=${agent}&sessionId=${sessId}'">
                             <i class="fas fa-comment"></i>
                             <div style="flex:1; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">${title}</div>
                         </div>`;
-                });
+                    });
+                }
             }
         }
-    }
 
-    async function loadSessionMessages(sessionId) {
-        try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${CONFIG.API_URL}/api/chat/history/${sessionId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const msgs = await res.json();
-            messagesArea.innerHTML = ""; 
-            
-            msgs.forEach(m => {
-                const senderBackend = m.sender || m.Sender; 
-                const sender = (senderBackend && senderBackend.toLowerCase() === 'user') ? 'user' : 'ai';
-                const text = m.text || m.Text;
-                addMessage(sender, text, currentAgentIcon, false, false); 
-            });
-            smartScroll();
-        } catch (e) {
-            addMessage('ai', 'Erro ao carregar o histórico desta conversa.', 'exclamation-triangle', false);
+        async function loadSessionMessages(sessionId) {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${CONFIG.API_URL}/api/chat/history/${sessionId}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const msgs = await res.json();
+                messagesArea.innerHTML = "";
+
+                msgs.forEach(m => {
+                    const senderBackend = m.sender || m.Sender;
+                    const sender = (senderBackend && senderBackend.toLowerCase() === 'user') ? 'user' : 'ai';
+                    const text = m.text || m.Text;
+                    addMessage(sender, text, currentAgentIcon, false, false);
+                });
+                smartScroll();
+            } catch (e) {
+                addMessage('ai', 'Erro ao carregar o histórico desta conversa.', 'exclamation-triangle', false);
+            }
         }
-    }
 
-    function exportChat(format) {
-        if(format === 'pdf') {
-            const element = document.getElementById('messagesArea');
-            const opt = { margin: 1, filename: `chat-${currentAgentName}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
-            html2pdf().set(opt).from(element).save();
-        } else {
-            let text = "";
-            const messages = document.querySelectorAll('.message-row');
-            messages.forEach(row => {
-                const isUser = row.classList.contains('user-message');
-                const sender = isUser ? "USUÁRIO" : currentAgentName.toUpperCase();
-                const content = row.querySelector('.message-bubble').innerText; 
-                text += `[${sender}]: ${content}\n----------------\n`;
-            });
-            const blob = new Blob([text], { type: "text/plain" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `chat-${currentAgentName}.txt`;
-            a.click();
+        function exportChat(format) {
+            if (format === 'pdf') {
+                const element = document.getElementById('messagesArea');
+                const opt = { margin: 1, filename: `chat-${currentAgentName}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
+                html2pdf().set(opt).from(element).save();
+            } else {
+                let text = "";
+                const messages = document.querySelectorAll('.message-row');
+                messages.forEach(row => {
+                    const isUser = row.classList.contains('user-message');
+                    const sender = isUser ? "USUÁRIO" : currentAgentName.toUpperCase();
+                    const content = row.querySelector('.message-bubble').innerText;
+                    text += `[${sender}]: ${content}\n----------------\n`;
+                });
+                const blob = new Blob([text], { type: "text/plain" });
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = `chat-${currentAgentName}.txt`;
+                a.click();
+            }
         }
-    }
 
-    // --- NOVA LÓGICA DE CONTEXTOS (BADGES OCULTOS) ---
-    function loadSwitches(area) {
-        let key = 'geral';
-        if (area.includes('jur')) key = 'juridico';
-        else if (area.includes('sau') || area.includes('med')) key = 'saude';
-        else if (area.includes('tech') || area.includes('dev')) key = 'tech';
+        // --- NOVA LÓGICA DE CONTEXTOS (BADGES OCULTOS) ---
+        function loadSwitches(area) {
+            let key = 'geral';
+            if (area.includes('jur')) key = 'juridico';
+            else if (area.includes('sau') || area.includes('med')) key = 'saude';
+            else if (area.includes('tech') || area.includes('dev')) key = 'tech';
 
-        const list = knowledgeBase[key] || knowledgeBase['geral'];
-        const container = document.getElementById('switchesContainer');
-        if(!container) return;
-        container.innerHTML = "";
-        list.forEach((p, i) => {
-             const id = `p_${i}`;
-             container.innerHTML += `<div class="prompt-switch-item"><div><div style="font-weight:bold; font-size:0.85rem; color:#eee;">${p.label}</div><div style="font-size:0.75rem; color:#888;">${p.desc}</div></div><label class="mini-switch"><input type="checkbox" onchange="toggleContext('${id}', '${p.label}', this.checked, '${p.desc}')"><span class="mini-slider"></span></label></div>`;
-        });
-    }
-    
-    function toggleContext(id, label, checked, desc) { 
-        if(checked) activeContexts.add({id: id, label: label, content: desc}); 
-        else activeContexts.forEach(i => { if(i.id === id) activeContexts.delete(i); }); 
-        updateActiveBadges(); 
-    }
+            const list = knowledgeBase[key] || knowledgeBase['geral'];
+            const container = document.getElementById('switchesContainer');
+            if (!container) return;
+            container.innerHTML = "";
+            list.forEach((p, i) => {
+                const id = `p_${i}`;
+                container.innerHTML += `<div class="prompt-switch-item"><div><div style="font-weight:bold; font-size:0.85rem; color:#eee;">${p.label}</div><div style="font-size:0.75rem; color:#888;">${p.desc}</div></div><label class="mini-switch"><input type="checkbox" onchange="toggleContext('${id}', '${p.label}', this.checked, '${p.desc}')"><span class="mini-slider"></span></label></div>`;
+            });
+        }
 
-    function updateActiveBadges() { 
-        document.getElementById('activeModulesArea').innerHTML = Array.from(activeContexts).map(c => 
-            `<div class="module-badge" style="display:inline-flex; align-items:center; gap:5px; background:rgba(16, 185, 129, 0.2); border:1px solid var(--primary); padding:3px 10px; border-radius:12px; font-size:0.75rem; color:#fff; margin-right:5px;">
+        function toggleContext(id, label, checked, desc) {
+            if (checked) activeContexts.add({ id: id, label: label, content: desc });
+            else activeContexts.forEach(i => { if (i.id === id) activeContexts.delete(i); });
+            updateActiveBadges();
+        }
+
+        function updateActiveBadges() {
+            document.getElementById('activeModulesArea').innerHTML = Array.from(activeContexts).map(c =>
+                `<div class="module-badge" style="display:inline-flex; align-items:center; gap:5px; background:rgba(16, 185, 129, 0.2); border:1px solid var(--primary); padding:3px 10px; border-radius:12px; font-size:0.75rem; color:#fff; margin-right:5px;">
                 <i class="fas fa-bolt" style="color:var(--primary)"></i> ${c.label}
                 <i class="fas fa-times" style="cursor:pointer; margin-left:5px; color:#ff4444;" onclick="removerContexto('${c.id}')"></i>
             </div>`
-        ).join(''); 
-    }
-
-    window.removerContexto = function(id) {
-        activeContexts.forEach(c => { if(c.id === id) activeContexts.delete(c); });
-        updateActiveBadges();
-        const checkbox = document.querySelector(`input[onchange*="${id}"]`);
-        if(checkbox) checkbox.checked = false;
-    };
-    
-    // --- FUNÇÃO PARA ADICIONAR PROMPT PELO MODAL ---
-    function selecionarPromptChat(tituloEncoded, conteudoEncoded) {
-        const titulo = decodeURIComponent(tituloEncoded);
-        const conteudo = decodeURIComponent(conteudoEncoded);
-        
-        const id = 'ctx_' + Date.now();
-        activeContexts.add({ id: id, label: titulo, content: conteudo });
-        updateActiveBadges();
-        
-        if (typeof showToast === 'function') {
-            showToast(`Contexto "${titulo}" ativado com sucesso!`);
-        }
-        
-        fecharModalPromptsChat();
-    }
-
-    function toggleMenu(id) { const m = document.getElementById(id); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
-    function toggleSidebarMobile() { document.getElementById('mainSidebar').classList.toggle('active'); }
-
-    document.addEventListener('click', (e) => {
-        if(!e.target.closest('.action-icon') && !e.target.closest('.floating-menu')) document.querySelectorAll('.floating-menu').forEach(m => m.style.display = 'none');
-        if(!e.target.closest('.prompts') && !e.target.closest('.floating-panel')) {
-             const panel = document.getElementById('promptsPanel');
-             if(panel) panel.style.display = 'none';
-        }
-    });
-
-    userInput.addEventListener('keydown', (e) => {
-        if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
-    });
-
-    /* --- LÓGICA DO MODAL DE PROMPTS (SISTEMA E USUÁRIO) --- */
-
-    function abrirMeusPromptsChat() {
-        document.getElementById('attachMenu').style.display = 'none';
-        const modal = document.getElementById('modalPromptsChat');
-        if(modal) {
-            modal.style.display = 'flex';
-            switchModalTab('system'); 
-        }
-    }
-
-    function fecharModalPromptsChat() {
-        document.getElementById('modalPromptsChat').style.display = 'none';
-    }
-
-    function switchModalTab(tabName) {
-        document.getElementById('tabBtnSystem').classList.remove('active');
-        document.getElementById('tabBtnUser').classList.remove('active');
-        
-        document.getElementById('tabContentSystem').style.display = 'none';
-        document.getElementById('tabContentUser').style.display = 'none';
-
-        if (tabName === 'system') {
-            document.getElementById('tabBtnSystem').classList.add('active');
-            document.getElementById('tabContentSystem').style.display = 'block';
-            loadSystemPrompts();
-        } else {
-            document.getElementById('tabBtnUser').classList.add('active');
-            document.getElementById('tabContentUser').style.display = 'block';
-            loadUserPrompts();
-        }
-    }
-
-    async function loadSystemPrompts() {
-        const container = document.getElementById('systemPromptsContainer');
-        const loader = document.getElementById('systemPromptsLoader');
-        
-        if (cachedSystemPrompts) {
-            renderSystemPrompts(cachedSystemPrompts);
-            if(loader) loader.style.display = 'none';
-            return;
+            ).join('');
         }
 
-        if(loader) loader.style.display = 'block';
-        
-        try {
-            const token = localStorage.getItem('token');
-            const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
-            
-            const res = await fetch(`${apiUrl}/api/prompts/system`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
+        window.removerContexto = function (id) {
+            activeContexts.forEach(c => { if (c.id === id) activeContexts.delete(c); });
+            updateActiveBadges();
+            const checkbox = document.querySelector(`input[onchange*="${id}"]`);
+            if (checkbox) checkbox.checked = false;
+        };
 
-            if (res.ok) {
-                cachedSystemPrompts = await res.json();
-                renderSystemPrompts(cachedSystemPrompts);
-            } else {
-                container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro ao carregar prompts do sistema.</div>';
+        // --- FUNÇÃO PARA ADICIONAR PROMPT PELO MODAL ---
+        function selecionarPromptChat(tituloEncoded, conteudoEncoded) {
+            const titulo = decodeURIComponent(tituloEncoded);
+            const conteudo = decodeURIComponent(conteudoEncoded);
+
+            const id = 'ctx_' + Date.now();
+            activeContexts.add({ id: id, label: titulo, content: conteudo });
+            updateActiveBadges();
+
+            if (typeof showToast === 'function') {
+                showToast(`Contexto "${titulo}" ativado com sucesso!`);
             }
-        } catch (e) {
-            console.error(e);
-            container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro de conexão.</div>';
-        } finally {
-            if(loader) loader.style.display = 'none';
-        }
-    }
 
-    function renderSystemPrompts(prompts) {
-        const container = document.getElementById('systemPromptsContainer');
-        container.innerHTML = '';
-        
-        if(!prompts || prompts.length === 0) {
-            container.innerHTML = '<p style="padding:20px; color:#999;">Nenhum prompt de sistema encontrado.</p>';
-            return;
+            fecharModalPromptsChat();
         }
 
-        const groups = {};
-        prompts.forEach(p => {
-            if (!groups[p.area]) groups[p.area] = [];
-            groups[p.area].push(p);
+        function toggleMenu(id) { const m = document.getElementById(id); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
+        function toggleSidebarMobile() { document.getElementById('mainSidebar').classList.toggle('active'); }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.action-icon') && !e.target.closest('.floating-menu')) document.querySelectorAll('.floating-menu').forEach(m => m.style.display = 'none');
+            if (!e.target.closest('.prompts') && !e.target.closest('.floating-panel')) {
+                const panel = document.getElementById('promptsPanel');
+                if (panel) panel.style.display = 'none';
+            }
         });
 
-        const sortedAreas = Object.keys(groups).sort();
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
+        });
 
-        for (const area of sortedAreas) {
-            const items = groups[area];
-            const accItem = document.createElement('div');
-            accItem.className = 'accordion-item';
-            
-            let iconClass = 'fa-layer-group';
-            if(area.toLowerCase().includes('juridico')) iconClass = 'fa-scale-balanced';
-            if(area.toLowerCase().includes('tech')) iconClass = 'fa-laptop-code';
-            if(area.toLowerCase().includes('saude')) iconClass = 'fa-heart-pulse';
-            if(area.toLowerCase().includes('negocios')) iconClass = 'fa-briefcase';
-            
-            accItem.innerHTML = `
+        /* --- LÓGICA DO MODAL DE PROMPTS (SISTEMA E USUÁRIO) --- */
+
+        function abrirMeusPromptsChat() {
+            document.getElementById('attachMenu').style.display = 'none';
+            const modal = document.getElementById('modalPromptsChat');
+            if (modal) {
+                modal.style.display = 'flex';
+                switchModalTab('system');
+            }
+        }
+
+        function fecharModalPromptsChat() {
+            document.getElementById('modalPromptsChat').style.display = 'none';
+        }
+
+        function switchModalTab(tabName) {
+            document.getElementById('tabBtnSystem').classList.remove('active');
+            document.getElementById('tabBtnUser').classList.remove('active');
+
+            document.getElementById('tabContentSystem').style.display = 'none';
+            document.getElementById('tabContentUser').style.display = 'none';
+
+            if (tabName === 'system') {
+                document.getElementById('tabBtnSystem').classList.add('active');
+                document.getElementById('tabContentSystem').style.display = 'block';
+                loadSystemPrompts();
+            } else {
+                document.getElementById('tabBtnUser').classList.add('active');
+                document.getElementById('tabContentUser').style.display = 'block';
+                loadUserPrompts();
+            }
+        }
+
+        async function loadSystemPrompts() {
+            const container = document.getElementById('systemPromptsContainer');
+            const loader = document.getElementById('systemPromptsLoader');
+
+            if (cachedSystemPrompts) {
+                renderSystemPrompts(cachedSystemPrompts);
+                if (loader) loader.style.display = 'none';
+                return;
+            }
+
+            if (loader) loader.style.display = 'block';
+
+            try {
+                const token = localStorage.getItem('token');
+                const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
+
+                const res = await fetch(`${apiUrl}/api/prompts/system`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    cachedSystemPrompts = await res.json();
+                    renderSystemPrompts(cachedSystemPrompts);
+                } else {
+                    container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro ao carregar prompts do sistema.</div>';
+                }
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro de conexão.</div>';
+            } finally {
+                if (loader) loader.style.display = 'none';
+            }
+        }
+
+        function renderSystemPrompts(prompts) {
+            const container = document.getElementById('systemPromptsContainer');
+            container.innerHTML = '';
+
+            if (!prompts || prompts.length === 0) {
+                container.innerHTML = '<p style="padding:20px; color:#999;">Nenhum prompt de sistema encontrado.</p>';
+                return;
+            }
+
+            const groups = {};
+            prompts.forEach(p => {
+                if (!groups[p.area]) groups[p.area] = [];
+                groups[p.area].push(p);
+            });
+
+            const sortedAreas = Object.keys(groups).sort();
+
+            for (const area of sortedAreas) {
+                const items = groups[area];
+                const accItem = document.createElement('div');
+                accItem.className = 'accordion-item';
+
+                let iconClass = 'fa-layer-group';
+                if (area.toLowerCase().includes('juridico')) iconClass = 'fa-scale-balanced';
+                if (area.toLowerCase().includes('tech')) iconClass = 'fa-laptop-code';
+                if (area.toLowerCase().includes('saude')) iconClass = 'fa-heart-pulse';
+                if (area.toLowerCase().includes('negocios')) iconClass = 'fa-briefcase';
+
+                accItem.innerHTML = `
                 <div class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
                     <span style="display:flex; align-items:center;">
                         <i class="fas ${iconClass}" style="margin-right:10px; width:20px;"></i> 
@@ -1063,132 +1210,138 @@
                 </div>
                 <div class="accordion-body"></div>
             `;
-            
-            const body = accItem.querySelector('.accordion-body');
-            
-            items.forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'system-prompt-card';
-                
-                // Correção de Casing para C# API
-                const titulo = p.buttonTitle || p.ButtonTitle || p.profession || p.Profession || 'Sistema';
-                const conteudo = p.content || p.Content || '';
 
-                card.onclick = () => selecionarPromptChat(encodeURIComponent(titulo), encodeURIComponent(conteudo));
-                
-                card.innerHTML = `
+                const body = accItem.querySelector('.accordion-body');
+
+                items.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'system-prompt-card';
+
+                    // Correção de Casing para C# API
+                    const titulo = p.buttonTitle || p.ButtonTitle || p.profession || p.Profession || 'Sistema';
+                    const conteudo = p.content || p.Content || '';
+
+                    card.onclick = () => selecionarPromptChat(encodeURIComponent(titulo), encodeURIComponent(conteudo));
+
+                    card.innerHTML = `
                     <div class="sp-prof">${p.profession || p.Profession || ''}</div>
                     <div class="sp-title">${p.buttonTitle || p.ButtonTitle || ''}</div>
                 `;
-                body.appendChild(card);
-            });
+                    body.appendChild(card);
+                });
 
-            container.appendChild(accItem);
-        }
-    }
-
-    async function loadUserPrompts() {
-        const container = document.getElementById('listaPromptsChatContent');
-        const loader = document.getElementById('userPromptsLoader');
-        
-        if (cachedUserPrompts) {
-            renderUserPrompts(cachedUserPrompts);
-            if(loader) loader.style.display = 'none';
-            return;
-        }
-
-        if(loader) loader.style.display = 'block';
-
-        try {
-            const token = localStorage.getItem('token');
-            const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
-
-            const res = await fetch(`${apiUrl}/api/prompts`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (res.ok) {
-                cachedUserPrompts = await res.json();
-                renderUserPrompts(cachedUserPrompts);
-            } else {
-                container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro ao carregar prompts.</div>';
+                container.appendChild(accItem);
             }
-        } catch (e) {
-            console.error(e);
-            container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro de conexão.</div>';
-        } finally {
-            if(loader) loader.style.display = 'none';
         }
-    }
 
-    function renderUserPrompts(prompts) {
-        const container = document.getElementById('listaPromptsChatContent');
-        container.innerHTML = '';
+        async function loadUserPrompts() {
+            const container = document.getElementById('listaPromptsChatContent');
+            const loader = document.getElementById('userPromptsLoader');
 
-        if (!prompts || prompts.length === 0) {
-            container.innerHTML = `
+            if (cachedUserPrompts) {
+                renderUserPrompts(cachedUserPrompts);
+                if (loader) loader.style.display = 'none';
+                return;
+            }
+
+            if (loader) loader.style.display = 'block';
+
+            try {
+                const token = localStorage.getItem('token');
+                const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
+
+                const res = await fetch(`${apiUrl}/api/prompts`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    cachedUserPrompts = await res.json();
+                    renderUserPrompts(cachedUserPrompts);
+                } else {
+                    container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro ao carregar prompts.</div>';
+                }
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro de conexão.</div>';
+            } finally {
+                if (loader) loader.style.display = 'none';
+            }
+        }
+
+        function renderUserPrompts(prompts) {
+            const container = document.getElementById('listaPromptsChatContent');
+            container.innerHTML = '';
+
+            if (!prompts || prompts.length === 0) {
+                container.innerHTML = `
                 <div style="text-align:center; color:#888; padding:30px;">
                     <i class="fas fa-folder-open" style="font-size:2rem; margin-bottom:10px;"></i><br>
                     Você não tem prompts salvos.<br>
                     <a href="meus_prompts.html" style="color:var(--primary); text-decoration:none; font-size:0.9rem;">Criar prompts</a>
                 </div>`;
-            return;
-        }
+                return;
+            }
 
-        prompts.forEach(p => {
-            const item = document.createElement('div');
-            item.className = 'prompt-list-item';
-            
-            // --- A SOLUÇÃO: À prova de falhas para maiúsculas/minúsculas vindas do C# ---
-            const titulo = p.title || p.Title || 'Meu Prompt';
-            const conteudo = p.content || p.Content || '...';
+            prompts.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'prompt-list-item';
 
-            item.onclick = () => selecionarPromptChat(encodeURIComponent(titulo), encodeURIComponent(conteudo));
-            
-            item.innerHTML = `
+                // --- A SOLUÇÃO: À prova de falhas para maiúsculas/minúsculas vindas do C# ---
+                const titulo = p.title || p.Title || 'Meu Prompt';
+                const conteudo = p.content || p.Content || '...';
+
+                item.onclick = () => selecionarPromptChat(encodeURIComponent(titulo), encodeURIComponent(conteudo));
+
+                item.innerHTML = `
                 <strong>${titulo}</strong>
                 <p>${conteudo}</p>
             `;
-            container.appendChild(item);
-        });
-    }
-
-    window.addEventListener('click', function(e) {
-        const modal = document.getElementById('modalPromptsChat');
-        if (e.target == modal) {
-            fecharModalPromptsChat();
+                container.appendChild(item);
+            });
         }
-    });
-   </script>
 
-   <div id="modalPromptsChat" class="modal-overlay" style="z-index: 3000;">
-    <div class="modal-content">
-        <div style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center; background-color: rgba(0,0,0,0.2);">
-            <h3 style="margin:0; color: var(--primary);"><i class="fas fa-magic"></i> Biblioteca de Prompts</h3>
-            <button onclick="fecharModalPromptsChat()" style="background:none; border:none; color:#999; cursor:pointer; font-size:1.2rem;">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
+        window.addEventListener('click', function (e) {
+            const modal = document.getElementById('modalPromptsChat');
+            if (e.target == modal) {
+                fecharModalPromptsChat();
+            }
+        });
+    </script>
 
-        <div class="modal-tabs">
-            <button class="modal-tab active" id="tabBtnSystem" onclick="switchModalTab('system')">
-                <i class="fas fa-globe"></i> Prompts do Sistema
-            </button>
-            <button class="modal-tab" id="tabBtnUser" onclick="switchModalTab('user')">
-                <i class="fas fa-user"></i> Meus Prompts
-            </button>
-        </div>
-        
-        <div id="tabContentSystem" class="tab-content active" style="overflow-y: auto; flex: 1; padding: 20px;">
-            <div id="systemPromptsLoader" style="text-align:center; color:#666; margin-top: 20px;"><i class="fas fa-spinner fa-spin"></i> Carregando biblioteca...</div>
-            <div id="systemPromptsContainer"></div>
-        </div>
+    <div id="modalPromptsChat" class="modal-overlay" style="z-index: 3000;">
+        <div class="modal-content">
+            <div
+                style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center; background-color: rgba(0,0,0,0.2);">
+                <h3 style="margin:0; color: var(--primary);"><i class="fas fa-magic"></i> Biblioteca de Prompts</h3>
+                <button onclick="fecharModalPromptsChat()"
+                    style="background:none; border:none; color:#999; cursor:pointer; font-size:1.2rem;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
 
-        <div id="tabContentUser" class="tab-content" style="overflow-y: auto; flex: 1; padding: 20px; display:none;">
-            <div id="userPromptsLoader" style="text-align:center; color:#666; margin-top: 20px;"><i class="fas fa-spinner fa-spin"></i> Buscando seus prompts...</div>
-            <div id="listaPromptsChatContent"></div>
+            <div class="modal-tabs">
+                <button class="modal-tab active" id="tabBtnSystem" onclick="switchModalTab('system')">
+                    <i class="fas fa-globe"></i> Prompts do Sistema
+                </button>
+                <button class="modal-tab" id="tabBtnUser" onclick="switchModalTab('user')">
+                    <i class="fas fa-user"></i> Meus Prompts
+                </button>
+            </div>
+
+            <div id="tabContentSystem" class="tab-content active" style="overflow-y: auto; flex: 1; padding: 20px;">
+                <div id="systemPromptsLoader" style="text-align:center; color:#666; margin-top: 20px;"><i
+                        class="fas fa-spinner fa-spin"></i> Carregando biblioteca...</div>
+                <div id="systemPromptsContainer"></div>
+            </div>
+
+            <div id="tabContentUser" class="tab-content"
+                style="overflow-y: auto; flex: 1; padding: 20px; display:none;">
+                <div id="userPromptsLoader" style="text-align:center; color:#666; margin-top: 20px;"><i
+                        class="fas fa-spinner fa-spin"></i> Buscando seus prompts...</div>
+                <div id="listaPromptsChatContent"></div>
+            </div>
         </div>
     </div>
-   </div>
 </body>
+
 </html>

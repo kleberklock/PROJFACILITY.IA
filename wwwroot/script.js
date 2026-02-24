@@ -217,49 +217,65 @@ function updateUI(name, email, plan, profilePicture) {
     const localStoredPlan = localStorage.getItem('userPlan');
     const activePlan = localStoredPlan || plan || 'Iniciante';
 
-    if (planBadge && planName && dashboardPlanCard) {
-        // Reset card styles first
+    // Garante atualizações mesmo se um dos elementos não existir na tela
+    if (dashboardPlanCard) {
         dashboardPlanCard.style.background = "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)";
         dashboardPlanCard.style.border = "1px solid rgba(255,255,255,0.1)";
         dashboardPlanCard.style.boxShadow = "none";
+    }
+
+    if (planName) {
         planName.style.background = "none";
         planName.style.webkitTextFillColor = "white";
         planName.style.color = "white";
+    }
 
-        if (activePlan.toLowerCase() === 'iniciante' || activePlan.toLowerCase() === 'free') {
+    if (activePlan.toLowerCase() === 'iniciante' || activePlan.toLowerCase() === 'free') {
+        if (planBadge) {
             planBadge.innerText = 'INICIANTE';
             planBadge.style.background = '#00ff88';
+            // Garante override de innerHTML caso precise (e.g. quando volta do pro)
+            planBadge.innerHTML = 'INICIANTE';
             planBadge.style.color = 'black';
-            planName.innerText = 'Iniciante';
-            if (upgradeSection) upgradeSection.style.display = 'block';
         }
-        else if (activePlan.toLowerCase() === 'plus') {
+        if (planName) planName.innerText = 'Iniciante';
+        if (upgradeSection) upgradeSection.style.display = 'block';
+    }
+    else if (activePlan.toLowerCase() === 'plus') {
+        if (planBadge) {
             planBadge.innerText = 'PLUS';
+            planBadge.innerHTML = 'PLUS';
             planBadge.style.background = '#00ff88';
             planBadge.style.color = 'black';
+        }
+        if (planName) {
             planName.innerText = 'Plus';
             planName.style.color = '#00ff88';
+        }
+        if (dashboardPlanCard) {
             dashboardPlanCard.style.border = "1px solid rgba(0,255,136,0.3)";
             dashboardPlanCard.style.boxShadow = "0 0 15px rgba(0, 255, 136, 0.1)";
-            if (upgradeSection) upgradeSection.style.display = 'block'; // Can upgrade to Pro
         }
-        else if (activePlan.toLowerCase() === 'pro') {
-            planBadge.innerText = 'PRO';
+        if (upgradeSection) upgradeSection.style.display = 'block'; // Can upgrade to Pro
+    }
+    else if (activePlan.toLowerCase() === 'pro') {
+        if (planBadge) {
             planBadge.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
             planBadge.style.color = 'black';
             planBadge.innerHTML = '<i class="fas fa-crown"></i> PRO';
-
+        }
+        if (planName) {
             planName.innerText = 'Pro (Premium)';
             planName.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
             planName.style.webkitBackgroundClip = 'text';
             planName.style.webkitTextFillColor = 'transparent';
-
+        }
+        if (dashboardPlanCard) {
             dashboardPlanCard.style.background = "linear-gradient(135deg, #1f1c08 0%, #16213e 100%)";
             dashboardPlanCard.style.border = "1px solid rgba(255, 215, 0, 0.4)";
             dashboardPlanCard.style.boxShadow = "0 0 20px rgba(255, 215, 0, 0.15)";
-
-            if (upgradeSection) upgradeSection.style.display = 'none'; // Max level
         }
+        if (upgradeSection) upgradeSection.style.display = 'none'; // Max level
     }
 
     // --- Lógica Específica para perfil.html ---

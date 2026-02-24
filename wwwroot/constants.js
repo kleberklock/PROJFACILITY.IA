@@ -125,10 +125,10 @@ function getCategoryColor(specialty) {
         'Tecnologia': '#00F3FF', // Ciano
         'Saúde': '#00ff88',      // Verde
         'Jurídico': '#ffcc00',   // Amarelo/Dourado
-        'Marketing': '#ff3366',  // Rosa/Vermelho
+        'Marketing': '#f77797',  // Rosa/Vermelho
         'Finanças': '#0099ff',   // Azul
         'Engenharia': '#ff9900', // Laranja
-        'Geral': '#888888',
+        'Geral': '#ff0000',
         'Personalizado': '#aa00ff' // Roxo
     };
     return map[specialty] || '#ffffff';
