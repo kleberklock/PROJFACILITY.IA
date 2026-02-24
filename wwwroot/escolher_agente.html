@@ -11,6 +11,40 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
     </script>
+    <script>
+        const token = localStorage.getItem('token');
+
+        // 1. Redireciona se não tiver token
+        if (!token) {
+            window.location.href = 'login.html';
+        } else {
+            try {
+                // 2. Decodifica o Token JWT para ler a Role
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const payload = JSON.parse(window.atob(base64));
+
+                // 3. Verifica se é Admin
+                const role = payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+
+                // 4. Aguarda o DOM carregar para exibir o menu
+                document.addEventListener("DOMContentLoaded", function () {
+                    const adminArea = document.getElementById('adminArea');
+                    if (adminArea) {
+                        if (role === 'admin') {
+                            adminArea.style.display = 'flex'; // MOSTRA SÓ SE FOR ADMIN
+                        } else {
+                            adminArea.remove(); // REMOVE DO HTML SE NÃO FOR ADMIN
+                        }
+                    }
+                });
+
+            } catch (e) {
+                console.error("Erro no token:", e);
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style-master.css">
@@ -231,7 +265,7 @@
             <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
 
             <div id="adminArea"
-                style="display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
+                style="display: none; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
                 <div
                     style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
                     Administração</div>
