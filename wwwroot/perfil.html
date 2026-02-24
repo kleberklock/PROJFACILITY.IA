@@ -178,7 +178,11 @@
                         // Atualiza a visualização com a URL retornada pelo servidor
                         const avatar = document.getElementById('mainAvatar');
                         avatar.innerText = "";
-                        avatar.style.backgroundImage = `url('${API_BASE_URL}${data.url}')`;
+
+                        // Normalização da URL
+                        const normalizedBaseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+                        const normalizedPictureUrl = data.url.startsWith('/') ? data.url : '/' + data.url;
+                        avatar.style.backgroundImage = `url('${normalizedBaseUrl}${normalizedPictureUrl}')`;
 
                         showToast('Foto atualizada com sucesso!', 'success');
                     } else {

@@ -5,6 +5,7 @@ using PROJFACILITY.IA.Data;
 using PROJFACILITY.IA.Models;
 using System.Security.Claims;
 using System.IO; // <--- ADICIONADO: Necessário para FileStream e Path
+using Microsoft.AspNetCore.Hosting;
 
 namespace PROJFACILITY.IA.Controllers
 {
@@ -13,10 +14,12 @@ namespace PROJFACILITY.IA.Controllers
     public class UserController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IWebHostEnvironment _environment;
 
-        public UserController(AppDbContext context)
+        public UserController(AppDbContext context, IWebHostEnvironment environment)
         {
             _context = context;
+            _environment = environment;
         }
 
         [Authorize]
@@ -84,7 +87,7 @@ namespace PROJFACILITY.IA.Controllers
 
             if (file == null || file.Length == 0) return BadRequest("Nenhuma imagem enviada.");
 
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
+            var path = Path.Combine(_environment.WebRootPath, "uploads", "profiles");
             if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
             var fileName = $"{userId}_{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
