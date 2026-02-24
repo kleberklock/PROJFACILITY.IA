@@ -6,6 +6,9 @@ using PROJFACILITY.IA.Models;
 using System.Security.Claims;
 using System.IO; // <--- ADICIONADO: Necessário para FileStream e Path
 using Microsoft.AspNetCore.Hosting;
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace PROJFACILITY.IA.Controllers
 {
@@ -81,28 +84,42 @@ namespace PROJFACILITY.IA.Controllers
         [Authorize]
         public async Task<IActionResult> UploadPhoto(IFormFile file)
         {
-            var userIdStr = User.Identity?.Name;
-            if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
-                return Unauthorized();
-
-            if (file == null || file.Length == 0) return BadRequest("Nenhuma imagem enviada.");
-
-            var path = Path.Combine(_environment.WebRootPath, "uploads", "profiles");
-            if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-
-            var fileName = $"{userId}_{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-            var fullPath = Path.Combine(path, fileName);
-
-            using (var stream = new FileStream(fullPath, FileMode.Create))
+            try
             {
-                await file.CopyToAsync(stream);
+                var userIdStr = User.Identity?.Name;
+                if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+                    return Unauthorized();
+
+                if (file == null || file.Length == 0) 
+                    return BadRequest(new { message = "Nenhuma imagem enviada." });
+
+                // Correção: Evita ArgumentNullException caso WebRootPath seja null
+                var webRoot = _environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+                var path = Path.Combine(webRoot, "uploads", "profiles");
+                
+                if (!Directory.Exists(path)) Directory.CreateDirectory(path);
+
+                var fileName = $"{userId}_{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                var fullPath = Path.Combine(path, fileName);
+
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null) return NotFound(new { message = "Usuário não encontrado." });
+
+                user.ProfilePicture = $"/uploads/profiles/{fileName}";
+                await _context.SaveChangesAsync();
+
+                return Ok(new { url = user.ProfilePicture });
             }
-
-            var user = await _context.Users.FindAsync(userId);
-            user.ProfilePicture = $"/uploads/profiles/{fileName}";
-            await _context.SaveChangesAsync();
-
-            return Ok(new { url = user.ProfilePicture });
+            catch (Exception ex)
+            {
+                // Garante que o frontend recebe um erro 500 legível em vez de uma quebra de conexão
+                return StatusCode(500, new { message = "Erro interno ao processar a imagem.", details = ex.Message });
+            }
         }
     }
 }
