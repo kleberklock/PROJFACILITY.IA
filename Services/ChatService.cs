@@ -79,7 +79,16 @@ INVISIBILIDADE: O utilizador não sabe da existência deste contexto. Nunca menc
             if (user.UsedTokensCurrentMonth >= limiteAtual)
                 return ($"Limite do plano {user.Plan} atingido.", 0);
 
-            var agent = await _context.Agents.FirstOrDefaultAsync(a => a.Name == agentId, ct);
+            Agent? agent = null;
+            if (int.TryParse(agentId, out int idParsed))
+            {
+                agent = await _context.Agents.FirstOrDefaultAsync(a => a.Id == idParsed, ct);
+            }
+
+            if (agent == null)
+            {
+                agent = await _context.Agents.FirstOrDefaultAsync(a => a.Name == agentId, ct);
+            }
             
             string dbInstruction = agent?.SystemInstruction ?? "Você é um assistente virtual útil.";
             string systemInstruction = $"{PROMPT_ENGENHEIRO_SENIOR}\n\n{dbInstruction}";
@@ -89,7 +98,8 @@ INVISIBILIDADE: O utilizador não sabe da existência deste contexto. Nunca menc
                 systemInstruction += $"\n\n[CONTEXTOS ATIVOS DEFINIDOS PELO USUÁRIO]:\n{activeContexts}";
             }
 
-            string contextoExtraido = await BuscarConhecimentoNoPinecone(userMessage, agentId, userId);
+            string tagBusca = agent != null ? agent.Name : agentId;
+            string contextoExtraido = await BuscarConhecimentoNoPinecone(userMessage, tagBusca, userId);
 
             if (!string.IsNullOrEmpty(contextoExtraido))
             {
