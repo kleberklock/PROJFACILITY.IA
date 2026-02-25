@@ -13,6 +13,7 @@
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style-master.css">
+    <link rel="stylesheet" href="responsive.css">
 
     <style>
         /* --- AJUSTE DE CORES (Suavizando o Verde) --- */
@@ -397,101 +398,6 @@
 
             to {
                 opacity: 1;
-            }
-        }
-
-        /* --- INTERATIVIDADE MOBILE --- */
-        @media (max-width: 768px) {
-
-            .mobile-header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 0 15px;
-                height: 60px;
-                background: #0d1117;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-                position: fixed;
-                top: 0;
-                width: 100%;
-                z-index: 999;
-            }
-
-            .mobile-header .menu-trigger-mobile {
-                width: 40px;
-                font-size: 1.2rem;
-                color: white;
-                cursor: pointer;
-            }
-
-            .mobile-header .mobile-title {
-                flex: 1;
-                text-align: center;
-                font-weight: bold;
-                letter-spacing: 1px;
-            }
-
-            .mobile-header .header-spacer {
-                width: 40px;
-            }
-
-            .studio-content {
-                padding: 20px 15px 90px 15px;
-            }
-
-            .items-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .item-card {
-                width: 100%;
-                margin-bottom: 10px;
-                background: rgba(255, 255, 255, 0.05);
-            }
-
-            .action-fab {
-                position: fixed;
-                bottom: 25px;
-                right: 25px;
-                z-index: 90;
-                /* Z-index menor que o menu */
-                width: 60px;
-                height: 60px;
-                border-radius: 50%;
-                padding: 0;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                gap: 0;
-                background: var(--primary);
-                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
-                font-size: 0;
-            }
-
-            .action-fab i {
-                font-size: 1.4rem;
-                margin: 0 !important;
-                margin-bottom: 2px !important;
-            }
-
-            .action-fab::after {
-                content: "Novo";
-                font-size: 0.6rem;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-            }
-
-            .studio-tabs {
-                width: 100%;
-                justify-content: center;
-                margin-bottom: 20px;
-            }
-
-            .tab-btn {
-                padding: 10px 20px;
-                font-size: 0.9rem;
             }
         }
     </style>

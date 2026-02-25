@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -8,7 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style-master.css">
-     <script>
+    <link rel="stylesheet" href="responsive.css">
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('token');
             const authBtn = document.getElementById('authBtn');
@@ -18,7 +20,7 @@
                 // USUÁRIO LOGADO: Botão vira Dashboard
                 authBtn.innerText = "Dashboard";
                 authBtn.href = "dashboard.html";
-                
+
                 // Estilo para destacar que está logado
                 authBtn.style.background = "#00ff88";
                 authBtn.style.color = "black";
@@ -39,43 +41,45 @@
         });
     </script>
 </head>
-<body class="page-prompts"> <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
+
+<body class="page-prompts">
+    <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
     <div class="scanline"></div>
 
     <header class="header-glass">
-    <div class="header-container">
-        <div class="logo">
-            <a href="index.html">
-                <h1>FACILITY<span>.IA</span> <span class="badge-beta">BETA</span></h1>
-            </a>
-        </div>
-        
-        <div class="mobile-menu-btn" onclick="togglePublicMenu()">
-            <i class="fas fa-bars"></i>
-        </div>
-
-        <nav class="nav-menu" id="publicNav">
-            <div class="mobile-menu-header">
-                <span>MENU</span>
-                <i class="fas fa-times close-btn" onclick="togglePublicMenu()"></i>
+        <div class="header-container">
+            <div class="logo">
+                <a href="index.html">
+                    <h1>FACILITY<span>.IA</span> <span class="badge-beta">BETA</span></h1>
+                </a>
             </div>
-            <ul>
-                <li><a href="index.html" onclick="togglePublicMenu()">Início</a></li>
-                <li><a href="prompts.html" onclick="togglePublicMenu()">Como funciona?</a></li>
-                <li><a href="planos.html" onclick="togglePublicMenu()">Planos</a></li>
-                <li><a href="index.html#universal" onclick="togglePublicMenu()">Profissões</a></li>
-                
-                <li>
-                    <a href="login.html" id="authBtn" class="cta-button">
-                        Entrar <i class="fas fa-arrow-right" style="margin-left:5px; font-size:0.8rem;"></i>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-        
-        <div class="mobile-nav-overlay" onclick="togglePublicMenu()"></div>
-    </div>
-</header>
+
+            <div class="mobile-menu-btn" onclick="togglePublicMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+
+            <nav class="nav-menu" id="publicNav">
+                <div class="mobile-menu-header">
+                    <span>MENU</span>
+                    <i class="fas fa-times close-btn" onclick="togglePublicMenu()"></i>
+                </div>
+                <ul>
+                    <li><a href="index.html" onclick="togglePublicMenu()">Início</a></li>
+                    <li><a href="prompts.html" onclick="togglePublicMenu()">Como funciona?</a></li>
+                    <li><a href="planos.html" onclick="togglePublicMenu()">Planos</a></li>
+                    <li><a href="index.html#universal" onclick="togglePublicMenu()">Profissões</a></li>
+
+                    <li>
+                        <a href="login.html" id="authBtn" class="cta-button">
+                            Entrar <i class="fas fa-arrow-right" style="margin-left:5px; font-size:0.8rem;"></i>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="mobile-nav-overlay" onclick="togglePublicMenu()"></div>
+        </div>
+    </header>
 
     <main>
         <div class="explainer-section">
@@ -86,7 +90,7 @@
                 Por trás de cada botão, existem centenas de instruções que nossa equipe já configurou para você.
                 Você não precisa "conversar" com a máquina. Você apenas diz o que quer, e nós entregamos pronto.
             </div>
-            
+
             <div class="steps-visual">
                 <div class="step-item">
                     <i class="fas fa-hand-pointer" style="color:white; font-size: 1.5rem;"></i>
@@ -115,51 +119,113 @@
         </div>
 
         <div id="tab-study" class="pipeline-container active">
-            
-            <div class="demo-block">
+
+            <div class="demo-block" id="block-s1">
                 <div class="block-header">
                     <i class="fas fa-book-open" style="color: #00ff88;"></i>
                     <span class="block-title">Resumir Matéria Técnica</span>
                     <span class="tag">Para Provas</span>
                 </div>
-                <div class="flow-grid">
-                    <div class="col-user">
-                        <span style="font-size:0.8rem; margin-bottom:5px; display:block;">Ativar</span>
-                        <label class="switch-demo"><input type="checkbox" onchange="toggleFlow(this, 's1')"><span class="slider-demo"></span></label>
-                    </div>
-                    <div class="col-process" id="proc-s1">
-                        <div class="process-visual">
-                            <span class="prompt-chip">Extrair Datas</span>
-                            <span class="prompt-chip">Preservar Fórmulas</span>
-                            <span class="prompt-chip">Criar Mnemônicos</span>
+
+                <div class="flow-pipeline">
+                    <!-- Stage 1: Ativação -->
+                    <div class="pipeline-stage stage-trigger">
+                        <div class="stage-icon-wrap">
+                            <i class="fas fa-power-off"></i>
                         </div>
+                        <label class="switch-demo"><input type="checkbox"
+                                onchange="toggleFlowEnhanced(this, 's1')"><span class="slider-demo"></span></label>
+                        <span class="stage-label" id="label-s1-trigger">Inativo</span>
                     </div>
-                    <div class="col-result" id="res-s1">
-                        <div class="doc-mini"><div class="check-badge"><i class="fas fa-check"></i></div></div>
+
+                    <!-- Connector 1 -->
+                    <div class="pipeline-connector">
+                        <div class="connector-line"></div>
+                        <div class="energy-pulse" id="pulse-s1-1"></div>
+                    </div>
+
+                    <!-- Stage 2: Processamento -->
+                    <div class="pipeline-stage stage-process" id="proc-s1">
+                        <div class="stage-icon-wrap process-icon">
+                            <i class="fas fa-microchip"></i>
+                        </div>
+                        <div class="process-visual">
+                            <span class="prompt-chip" style="--chip-delay: 0">Extrair Datas</span>
+                            <span class="prompt-chip" style="--chip-delay: 1">Preservar Fórmulas</span>
+                            <span class="prompt-chip" style="--chip-delay: 2">Criar Mnemônicos</span>
+                        </div>
+                        <span class="stage-label" id="label-s1-process">Aguardando</span>
+                    </div>
+
+                    <!-- Connector 2 -->
+                    <div class="pipeline-connector">
+                        <div class="connector-line"></div>
+                        <div class="energy-pulse" id="pulse-s1-2"></div>
+                    </div>
+
+                    <!-- Stage 3: Resultado -->
+                    <div class="pipeline-stage stage-result" id="res-s1">
+                        <div class="stage-icon-wrap result-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="doc-mini">
+                            <div class="check-badge"><i class="fas fa-check"></i></div>
+                        </div>
+                        <span class="stage-label" id="label-s1-result">—</span>
                     </div>
                 </div>
             </div>
 
-            <div class="demo-block">
+            <div class="demo-block" id="block-s2">
                 <div class="block-header">
                     <i class="fas fa-question-circle" style="color: #bd93f9;"></i>
                     <span class="block-title">Criar Simulado da Aula</span>
                     <span class="tag">Memorização</span>
                 </div>
-                <div class="flow-grid">
-                    <div class="col-user">
-                        <span style="font-size:0.8rem; margin-bottom:5px; display:block;">Ativar</span>
-                        <label class="switch-demo"><input type="checkbox" onchange="toggleFlow(this, 's2')"><span class="slider-demo"></span></label>
-                    </div>
-                    <div class="col-process" id="proc-s2">
-                        <div class="process-visual">
-                            <span class="prompt-chip" style="border-color:#bd93f9; color:#bd93f9">Nível Difícil</span>
-                            <span class="prompt-chip" style="border-color:#bd93f9; color:#bd93f9">4 Alternativas</span>
-                            <span class="prompt-chip" style="border-color:#bd93f9; color:#bd93f9">Gabarito Comentado</span>
+
+                <div class="flow-pipeline">
+                    <div class="pipeline-stage stage-trigger">
+                        <div class="stage-icon-wrap">
+                            <i class="fas fa-power-off"></i>
                         </div>
+                        <label class="switch-demo"><input type="checkbox"
+                                onchange="toggleFlowEnhanced(this, 's2')"><span class="slider-demo"></span></label>
+                        <span class="stage-label" id="label-s2-trigger">Inativo</span>
                     </div>
-                    <div class="col-result" id="res-s2">
-                        <div class="doc-mini"><div class="check-badge"><i class="fas fa-check"></i></div></div>
+
+                    <div class="pipeline-connector">
+                        <div class="connector-line"></div>
+                        <div class="energy-pulse" id="pulse-s2-1"></div>
+                    </div>
+
+                    <div class="pipeline-stage stage-process" id="proc-s2">
+                        <div class="stage-icon-wrap process-icon" style="--accent: #bd93f9;">
+                            <i class="fas fa-microchip"></i>
+                        </div>
+                        <div class="process-visual">
+                            <span class="prompt-chip" style="--chip-delay: 0; border-color:#bd93f9; color:#bd93f9">Nível
+                                Difícil</span>
+                            <span class="prompt-chip" style="--chip-delay: 1; border-color:#bd93f9; color:#bd93f9">4
+                                Alternativas</span>
+                            <span class="prompt-chip"
+                                style="--chip-delay: 2; border-color:#bd93f9; color:#bd93f9">Gabarito Comentado</span>
+                        </div>
+                        <span class="stage-label" id="label-s2-process">Aguardando</span>
+                    </div>
+
+                    <div class="pipeline-connector">
+                        <div class="connector-line"></div>
+                        <div class="energy-pulse" id="pulse-s2-2"></div>
+                    </div>
+
+                    <div class="pipeline-stage stage-result" id="res-s2">
+                        <div class="stage-icon-wrap result-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="doc-mini">
+                            <div class="check-badge"><i class="fas fa-check"></i></div>
+                        </div>
+                        <span class="stage-label" id="label-s2-result">—</span>
                     </div>
                 </div>
             </div>
@@ -167,51 +233,109 @@
         </div>
 
         <div id="tab-work" class="pipeline-container">
-            
-            <div class="demo-block">
+
+            <div class="demo-block" id="block-w1">
                 <div class="block-header">
                     <i class="fas fa-tooth" style="color: #00ff88;"></i>
                     <span class="block-title">Instruções Pós-Operatório</span>
                     <span class="tag">Odontologia</span>
                 </div>
-                <div class="flow-grid">
-                    <div class="col-user">
-                        <span style="font-size:0.8rem; margin-bottom:5px; display:block;">Ativar</span>
-                        <label class="switch-demo"><input type="checkbox" onchange="toggleFlow(this, 'w1')"><span class="slider-demo"></span></label>
-                    </div>
-                    <div class="col-process" id="proc-w1">
-                        <div class="process-visual">
-                            <span class="prompt-chip">Protocolo Cirúrgico</span>
-                            <span class="prompt-chip">Linguagem Empática</span>
-                            <span class="prompt-chip">Lista de Remédios</span>
+
+                <div class="flow-pipeline">
+                    <div class="pipeline-stage stage-trigger">
+                        <div class="stage-icon-wrap">
+                            <i class="fas fa-power-off"></i>
                         </div>
+                        <label class="switch-demo"><input type="checkbox"
+                                onchange="toggleFlowEnhanced(this, 'w1')"><span class="slider-demo"></span></label>
+                        <span class="stage-label" id="label-w1-trigger">Inativo</span>
                     </div>
-                    <div class="col-result" id="res-w1">
-                        <div class="doc-mini"><div class="check-badge"><i class="fas fa-check"></i></div></div>
+
+                    <div class="pipeline-connector">
+                        <div class="connector-line"></div>
+                        <div class="energy-pulse" id="pulse-w1-1"></div>
+                    </div>
+
+                    <div class="pipeline-stage stage-process" id="proc-w1">
+                        <div class="stage-icon-wrap process-icon">
+                            <i class="fas fa-microchip"></i>
+                        </div>
+                        <div class="process-visual">
+                            <span class="prompt-chip" style="--chip-delay: 0">Protocolo Cirúrgico</span>
+                            <span class="prompt-chip" style="--chip-delay: 1">Linguagem Empática</span>
+                            <span class="prompt-chip" style="--chip-delay: 2">Lista de Remédios</span>
+                        </div>
+                        <span class="stage-label" id="label-w1-process">Aguardando</span>
+                    </div>
+
+                    <div class="pipeline-connector">
+                        <div class="connector-line"></div>
+                        <div class="energy-pulse" id="pulse-w1-2"></div>
+                    </div>
+
+                    <div class="pipeline-stage stage-result" id="res-w1">
+                        <div class="stage-icon-wrap result-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="doc-mini">
+                            <div class="check-badge"><i class="fas fa-check"></i></div>
+                        </div>
+                        <span class="stage-label" id="label-w1-result">—</span>
                     </div>
                 </div>
             </div>
 
-            <div class="demo-block">
+            <div class="demo-block" id="block-w2">
                 <div class="block-header">
                     <i class="fas fa-gavel" style="color: #bd93f9;"></i>
                     <span class="block-title">Análise de Risco em Contrato</span>
                     <span class="tag">Jurídico</span>
                 </div>
-                <div class="flow-grid">
-                    <div class="col-user">
-                        <span style="font-size:0.8rem; margin-bottom:5px; display:block;">Ativar</span>
-                        <label class="switch-demo"><input type="checkbox" onchange="toggleFlow(this, 'w2')"><span class="slider-demo"></span></label>
-                    </div>
-                    <div class="col-process" id="proc-w2">
-                        <div class="process-visual">
-                            <span class="prompt-chip" style="border-color:#bd93f9; color:#bd93f9">Código Civil 2024</span>
-                            <span class="prompt-chip" style="border-color:#bd93f9; color:#bd93f9">Buscar 'Multa Abusiva'</span>
-                            <span class="prompt-chip" style="border-color:#bd93f9; color:#bd93f9">Resumo Executivo</span>
+
+                <div class="flow-pipeline">
+                    <div class="pipeline-stage stage-trigger">
+                        <div class="stage-icon-wrap">
+                            <i class="fas fa-power-off"></i>
                         </div>
+                        <label class="switch-demo"><input type="checkbox"
+                                onchange="toggleFlowEnhanced(this, 'w2')"><span class="slider-demo"></span></label>
+                        <span class="stage-label" id="label-w2-trigger">Inativo</span>
                     </div>
-                    <div class="col-result" id="res-w2">
-                        <div class="doc-mini"><div class="check-badge"><i class="fas fa-check"></i></div></div>
+
+                    <div class="pipeline-connector">
+                        <div class="connector-line"></div>
+                        <div class="energy-pulse" id="pulse-w2-1"></div>
+                    </div>
+
+                    <div class="pipeline-stage stage-process" id="proc-w2">
+                        <div class="stage-icon-wrap process-icon" style="--accent: #bd93f9;">
+                            <i class="fas fa-microchip"></i>
+                        </div>
+                        <div class="process-visual">
+                            <span class="prompt-chip"
+                                style="--chip-delay: 0; border-color:#bd93f9; color:#bd93f9">Código Civil 2024</span>
+                            <span class="prompt-chip"
+                                style="--chip-delay: 1; border-color:#bd93f9; color:#bd93f9">Buscar 'Multa
+                                Abusiva'</span>
+                            <span class="prompt-chip"
+                                style="--chip-delay: 2; border-color:#bd93f9; color:#bd93f9">Resumo Executivo</span>
+                        </div>
+                        <span class="stage-label" id="label-w2-process">Aguardando</span>
+                    </div>
+
+                    <div class="pipeline-connector">
+                        <div class="connector-line"></div>
+                        <div class="energy-pulse" id="pulse-w2-2"></div>
+                    </div>
+
+                    <div class="pipeline-stage stage-result" id="res-w2">
+                        <div class="stage-icon-wrap result-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="doc-mini">
+                            <div class="check-badge"><i class="fas fa-check"></i></div>
+                        </div>
+                        <span class="stage-label" id="label-w2-result">—</span>
                     </div>
                 </div>
             </div>
@@ -220,7 +344,8 @@
 
         <section class="agent-explainer-section">
             <div class="explainer-header">
-                <h2 style="font-size: 2rem; color: white;">E o que são os <span style="color:#00ff88;">Agentes de IA?</span></h2>
+                <h2 style="font-size: 2rem; color: white;">E o que são os <span style="color:#00ff88;">Agentes de
+                        IA?</span></h2>
                 <p style="color:#888;">
                     Se os Prompts são os comandos, o Agente é o <strong>especialista contratado</strong> para executar.
                 </p>
@@ -230,7 +355,8 @@
                 <div class="comparison-box generic">
                     <div style="font-size: 2rem; margin-bottom: 10px; opacity: 0.5;">🧠</div>
                     <h3 style="margin-bottom:10px; color:white;">IA Genérica (Padrão)</h3>
-                    <p style="color:#aaa; font-size:0.9rem;">Sabe "um pouco de tudo". Responde sobre culinária, poesia e leis na mesma conversa. É como um estagiário que tenta fazer tudo.</p>
+                    <p style="color:#aaa; font-size:0.9rem;">Sabe "um pouco de tudo". Responde sobre culinária, poesia e
+                        leis na mesma conversa. É como um estagiário que tenta fazer tudo.</p>
                     <ul class="comparison-list">
                         <li>❌ Conhecimento Raso</li>
                         <li>❌ Inventa informações (Alucinação)</li>
@@ -243,10 +369,13 @@
                 </div>
 
                 <div class="comparison-box specialized">
-                    <div style="font-size: 0.7rem; color: #00ff88; border: 1px solid #00ff88; display: inline-block; padding: 2px 8px; border-radius: 4px; margin-bottom: 5px;">Treinado na sua área</div>
+                    <div
+                        style="font-size: 0.7rem; color: #00ff88; border: 1px solid #00ff88; display: inline-block; padding: 2px 8px; border-radius: 4px; margin-bottom: 5px;">
+                        Treinado na sua área</div>
                     <div style="font-size: 2rem; margin-bottom: 10px;">🎓</div>
                     <h3 style="margin-bottom:10px; color:white;">Agente Facility (Expert)</h3>
-                    <p style="color:#aaa; font-size:0.9rem;">Uma IA isolada e "treinada" apenas com livros e manuais da sua profissão (atual ou futura).</p>
+                    <p style="color:#aaa; font-size:0.9rem;">Uma IA isolada e "treinada" apenas com livros e manuais da
+                        sua profissão (atual ou futura).</p>
                     <ul class="comparison-list">
                         <li>✅ Cita leis e normas reais (ABNT/ISO)</li>
                         <li>✅ Vocabulário Técnico Perfeito</li>
@@ -269,42 +398,89 @@
     </main>
 
     <footer>
-        <div class="footer-bottom" style="text-align: center; margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); padding: 20px;">
+        <div class="footer-bottom"
+            style="text-align: center; margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); padding: 20px;">
             <p style="color: #666;">&copy; 2025 FACILITY.IA INC.</p>
         </div>
     </footer>
 
-    <script src="config.js"></script> 
+    <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script src="script.js"></script>
-    
+
     <script>
-        /* Lógica das Abas e Animações */
+        /* Lógica das Abas */
         function switchTab(tabId, btn) {
             document.querySelectorAll('.pipeline-container').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.pill').forEach(el => el.classList.remove('active'));
-            
             document.getElementById(tabId).classList.add('active');
             btn.classList.add('active');
         }
 
-        function toggleFlow(checkbox, idSuffix) {
-            const processBox = document.getElementById('proc-' + idSuffix);
-            const resultBox = document.getElementById('res-' + idSuffix);
+        /* Toggle Flow Enhanced — Pipeline Animada */
+        function toggleFlowEnhanced(checkbox, id) {
+            const block = checkbox.closest('.demo-block');
+            const processBox = document.getElementById('proc-' + id);
+            const resultBox = document.getElementById('res-' + id);
+            const pulse1 = document.getElementById('pulse-' + id + '-1');
+            const pulse2 = document.getElementById('pulse-' + id + '-2');
+            const lblTrigger = document.getElementById('label-' + id + '-trigger');
+            const lblProcess = document.getElementById('label-' + id + '-process');
+            const lblResult = document.getElementById('label-' + id + '-result');
 
             if (checkbox.checked) {
-                processBox.classList.add('active');
+                // Stage 1: Trigger ativado
+                block.classList.add('active');
+                if (lblTrigger) { lblTrigger.textContent = 'Ativado'; lblTrigger.classList.add('label-active'); }
+
+                // Energy pulse 1 → processa
+                if (pulse1) pulse1.classList.add('active');
+
                 setTimeout(() => {
-                    resultBox.classList.add('active');
-                }, 600);
+                    // Stage 2: Processando
+                    processBox.classList.add('active');
+                    if (lblProcess) { lblProcess.textContent = 'Processando…'; lblProcess.classList.add('label-processing'); }
+
+                    // Reveal chips sequencialmente
+                    const chips = processBox.querySelectorAll('.prompt-chip');
+                    chips.forEach((chip, i) => {
+                        setTimeout(() => chip.classList.add('chip-visible'), i * 250);
+                    });
+
+                    // Energy pulse 2 → resultado
+                    setTimeout(() => {
+                        if (pulse2) pulse2.classList.add('active');
+                    }, chips.length * 250);
+
+                    // Stage 3: Resultado
+                    setTimeout(() => {
+                        resultBox.classList.add('active');
+                        if (lblProcess) { lblProcess.textContent = 'Concluído'; lblProcess.classList.remove('label-processing'); lblProcess.classList.add('label-done'); }
+                        if (lblResult) { lblResult.textContent = 'Pronto ✓'; lblResult.classList.add('label-done'); }
+                    }, chips.length * 250 + 500);
+
+                }, 400);
+
             } else {
+                // Reset tudo
+                block.classList.remove('active');
                 processBox.classList.remove('active');
                 resultBox.classList.remove('active');
+                if (pulse1) pulse1.classList.remove('active');
+                if (pulse2) pulse2.classList.remove('active');
+
+                // Reset labels
+                if (lblTrigger) { lblTrigger.textContent = 'Inativo'; lblTrigger.classList.remove('label-active'); }
+                if (lblProcess) { lblProcess.textContent = 'Aguardando'; lblProcess.classList.remove('label-processing', 'label-done'); }
+                if (lblResult) { lblResult.textContent = '—'; lblResult.classList.remove('label-done'); }
+
+                // Reset chips
+                processBox.querySelectorAll('.prompt-chip').forEach(c => c.classList.remove('chip-visible'));
             }
         }
 
-        // Partículas (mantidas conforme original)
-        if(typeof particlesJS !== 'undefined') {
+        // Partículas
+        if (typeof particlesJS !== 'undefined') {
             particlesJS("particles-js", {
                 "particles": { "number": { "value": 30 }, "color": { "value": "#ffffff" }, "opacity": { "value": 0.1 }, "size": { "value": 2 }, "move": { "enable": true, "speed": 0.5 } },
                 "interactivity": { "events": { "onhover": { "enable": false } } }
@@ -312,4 +488,5 @@
         }
     </script>
 </body>
+
 </html>

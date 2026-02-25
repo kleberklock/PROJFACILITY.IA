@@ -9,6 +9,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style-master.css">
+    <link rel="stylesheet" href="responsive.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* Ajustes Específicos da Página de Planos */
@@ -218,18 +219,106 @@
             transform: translateY(-2px);
         }
 
-        /* Responsividade (Apenas ajustes do Grid, sem tocar no menu) */
-        @media (max-width: 991px) {
-            .pricing-grid {
-                grid-template-columns: 1fr;
-                padding: 0 10px;
-                gap: 40px;
+        /* --- RESPONSIVIDADE MOBILE --- */
+        @media (max-width: 768px) {
+            .pricing-section {
+                padding: 100px 15px 60px;
             }
 
-            .pricing-card,
-            .pricing-card.featured {
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                max-width: 400px;
+                margin: 30px auto 0;
+            }
+
+            .pricing-card {
                 min-height: auto;
-                transform: none !important;
+                padding: 30px 22px;
+                order: 2;
+            }
+
+            .pricing-card:first-child {
+                order: 1;
+            }
+
+            .pricing-card:hover {
+                transform: none;
+            }
+
+            .pricing-card.featured {
+                transform: none;
+                min-height: auto;
+                order: 2;
+            }
+
+            .pricing-card:last-child {
+                order: 3;
+            }
+
+            .pricing-card.featured:hover {
+                transform: none;
+            }
+
+            .billing-cycle-container {
+                margin-bottom: 35px;
+            }
+
+            .toggle-option {
+                padding: 8px 16px;
+                font-size: 0.8rem;
+            }
+
+            .plan-desc {
+                min-height: auto;
+            }
+
+            .btn-card {
+                min-height: 48px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .pricing-section {
+                padding: 90px 12px 50px;
+            }
+
+            .pricing-grid {
+                max-width: 100%;
+                gap: 16px;
+            }
+
+            .pricing-card {
+                padding: 24px 18px;
+            }
+
+            .toggle-option {
+                padding: 7px 12px;
+                font-size: 0.75rem;
+            }
+
+            .price {
+                font-size: 2rem;
+            }
+
+            .discount-badge {
+                font-size: 0.55rem;
+                padding: 2px 4px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .toggle-option {
+                padding: 6px 10px;
+                font-size: 0.7rem;
+            }
+
+            .pricing-card {
+                padding: 20px 15px;
+            }
+
+            .price {
+                font-size: 1.8rem;
             }
         }
     </style>

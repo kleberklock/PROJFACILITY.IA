@@ -612,11 +612,15 @@ function selecionarPromptChat(tituloEncoded, conteudoEncoded) {
 window.togglePublicMenu = function () {
     const nav = document.getElementById('publicNav');
     const overlay = document.querySelector('.mobile-nav-overlay');
+    const hamburger = document.querySelector('.mobile-menu-btn');
 
     if (nav) {
         // Alterna a gaveta e o overlay
         const isActive = nav.classList.toggle('active');
         if (overlay) overlay.classList.toggle('active');
+
+        // Esconde o botão ☰ para não sobrepor o ✕
+        if (hamburger) hamburger.style.display = isActive ? 'none' : 'block';
 
         // Bloqueia o scroll do fundo (página) quando o menu está aberto
         document.body.style.overflow = isActive ? 'hidden' : '';

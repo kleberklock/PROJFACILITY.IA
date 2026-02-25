@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" type="image/jpeg" href="/favicon.png">
     <title>Criar Conta | Facility.IA</title>
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style-master.css">
+    <link rel="stylesheet" href="responsive.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
+
 <body>
 
     <div id="particles-js" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;"></div>
@@ -34,29 +37,29 @@
                 <div class="verification-badge">
                     <i class="fas fa-check-circle"></i> Código enviado para seu e-mail
                 </div>
-                
+
                 <div class="auth-input-group">
                     <label>Código de Verificação (6 dígitos)</label>
                     <input type="text" id="codigo" class="auth-input input-code" placeholder="123456" maxlength="6">
                 </div>
-                
+
                 <div class="auth-input-group">
                     <label>Seu Nome</label>
                     <i class="fas fa-user auth-icon"></i>
                     <input type="text" id="nome" class="auth-input" placeholder="Nome Completo">
                 </div>
-                
+
                 <div class="auth-input-group">
                     <label>Criar Senha</label>
                     <i class="fas fa-lock auth-icon"></i>
                     <input type="password" id="senha" class="auth-input" placeholder="••••••••">
                 </div>
-                
+
                 <button class="btn-auth" onclick="finalizarCadastro()" id="btnRegister">Confirmar e Entrar</button>
             </div>
 
             <p id="feedback" class="feedback-msg"></p>
-            
+
             <div class="auth-footer">
                 <a href="login.html" class="back-link">Já tem uma conta? Fazer Login</a>
             </div>
@@ -74,7 +77,7 @@
             const btn = document.getElementById('btnSend');
             const feedback = document.getElementById('feedback');
 
-            if(!emailInput.value.includes('@') || !emailInput.value.includes('.')) {
+            if (!emailInput.value.includes('@') || !emailInput.value.includes('.')) {
                 feedback.style.color = "#ff5555";
                 feedback.innerText = "Digite um e-mail válido.";
                 return;
@@ -102,7 +105,7 @@
                         const data = await response.json();
                         msg = data.message || msg;
                     } catch { msg = await response.text(); }
-                    
+
                     feedback.style.color = "#ff5555";
                     feedback.innerText = msg;
                     btn.disabled = false;
@@ -139,7 +142,7 @@
                 if (response.ok) {
                     const data = await response.json();
                     localStorage.setItem('token', data.token);
-                    if(data.user) localStorage.setItem('userData', JSON.stringify(data.user));
+                    if (data.user) localStorage.setItem('userData', JSON.stringify(data.user));
 
                     feedback.style.color = "#00ff88";
                     feedback.innerText = "Conta Criada! Redirecionando...";
@@ -147,8 +150,8 @@
                 } else {
                     let erroMsg = "Erro ao criar conta.";
                     try {
-                         const erroData = await response.json();
-                         erroMsg = erroData.message || erroData;
+                        const erroData = await response.json();
+                        erroMsg = erroData.message || erroData;
                     } catch { erroMsg = await response.text(); }
 
                     feedback.style.color = "#ff5555";
@@ -164,7 +167,7 @@
             }
         }
 
-        if(typeof particlesJS !== 'undefined') {
+        if (typeof particlesJS !== 'undefined') {
             particlesJS("particles-js", {
                 "particles": { "number": { "value": 30 }, "color": { "value": "#00ff88" }, "opacity": { "value": 0.2 }, "size": { "value": 3 }, "move": { "enable": true, "speed": 1 } },
                 "interactivity": { "events": { "onhover": { "enable": true, "mode": "grab" } } }
@@ -172,4 +175,5 @@
         }
     </script>
 </body>
+
 </html>

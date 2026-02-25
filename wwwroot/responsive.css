@@ -1,0 +1,1909 @@
+﻿/* ==========================================================================
+   RESPONSIVE.CSS - FACILITY.IA
+   Responsividade mobile para todo o site.
+   Breakpoints: 768px (tablet), 480px (mobile), 360px (mobile pequeno)
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1. MENU MOBILE - Estilos base (acessíveis em qualquer resolução)
+   ========================================================================== */
+
+/* Botão Hamburger - Escondido no desktop */
+.mobile-menu-btn {
+    display: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: #fff;
+    padding: 10px;
+    z-index: 1100;
+    transition: color 0.3s ease;
+}
+
+.mobile-menu-btn:hover {
+    color: var(--primary);
+}
+
+/* Overlay escuro atrás do menu */
+.mobile-nav-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1001;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-nav-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Header interno do menu mobile */
+.mobile-menu-header {
+    display: none;
+}
+
+/* WhatsApp Flutuante (base) */
+.whatsapp-float {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #25D366;
+    color: #fff;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+    z-index: 998;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.whatsapp-float:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(37, 211, 102, 0.6);
+}
+
+.whatsapp-float .tooltip-bala {
+    display: none;
+    position: absolute;
+    right: 70px;
+    background: #1a1a2e;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.whatsapp-float:hover .tooltip-bala {
+    display: block;
+}
+
+
+/* ==========================================================================
+   2. BREAKPOINT TABLET - 768px
+   ========================================================================== */
+@media (max-width: 768px) {
+
+    /* --- HEADER & MENU MOBILE --- */
+    .mobile-menu-btn {
+        display: block;
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 0;
+        right: -300px;
+        width: 280px;
+        height: 100vh;
+        background: rgba(10, 10, 14, 0.98);
+        backdrop-filter: blur(20px);
+        border-left: 1px solid rgba(255, 255, 255, 0.08);
+        z-index: 1002;
+        transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-y: auto;
+        box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .nav-menu.active {
+        right: 0;
+    }
+
+    .nav-menu ul {
+        flex-direction: column;
+        gap: 0;
+        padding: 10px 0;
+    }
+
+    .nav-menu ul li {
+        width: 100%;
+    }
+
+    .nav-menu a {
+        display: block;
+        padding: 16px 25px;
+        font-size: 1rem;
+        color: #ccc;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 0;
+        transition: all 0.2s ease;
+    }
+
+    .nav-menu a:hover {
+        background: rgba(0, 255, 136, 0.08);
+        color: var(--primary);
+        padding-left: 30px;
+    }
+
+    /* Header do Menu Mobile (Gaveta) */
+    .mobile-menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 25px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(0, 255, 136, 0.03);
+    }
+
+    .mobile-menu-header span {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        color: var(--primary);
+        text-transform: uppercase;
+    }
+
+    .close-btn {
+        font-size: 1.3rem;
+        color: #888;
+        cursor: pointer;
+        padding: 5px;
+        transition: all 0.2s ease;
+        z-index: 1100;
+    }
+
+    .close-btn:hover {
+        color: #ff5555;
+        transform: rotate(90deg);
+    }
+
+    /* Botão CTA dentro do menu mobile */
+    .nav-menu .cta-button {
+        margin: 15px 25px;
+        text-align: center;
+        display: block;
+        border-radius: 12px;
+        padding: 14px 20px;
+        font-size: 1rem;
+    }
+
+    /* --- HERO SECTION --- */
+    #hero {
+        padding: 40px 20px 30px;
+        min-height: auto;
+    }
+
+    .hero-content {
+        text-align: center;
+        width: 100%;
+    }
+
+    .hero-content h2 {
+        font-size: 2rem;
+        line-height: 1.2;
+    }
+
+    .hero-content p {
+        font-size: 0.95rem;
+        max-width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* --- STATS GRID --- */
+    .stats-grid {
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px 30px;
+        width: 100%;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-num {
+        font-size: 1.8rem;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+        letter-spacing: 1.5px;
+    }
+
+    /* --- CTA BUTTON --- */
+    .cta-button-primary {
+        font-size: 0.9rem;
+        padding: 12px 28px;
+        width: auto;
+    }
+
+    /* --- TEXTO CENTRALIZADO --- */
+    .texto-centralizado {
+        font-size: 1.2rem;
+        padding: 0 15px;
+    }
+
+    /* --- SWITCH GRID (Seção de Demonstração) --- */
+    .switch-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        padding: 0 15px;
+        max-width: 100%;
+    }
+
+    .switch-card {
+        padding: 20px;
+    }
+
+    .switch-info h4 {
+        font-size: 1rem;
+    }
+
+    /* --- CARDS CONTAINER (Processamentos em Destaque) --- */
+    .cards-container {
+        gap: 15px;
+        padding: 30px 15px;
+        justify-content: center;
+    }
+
+    .agente-card {
+        width: calc(50% - 10px);
+        min-width: 200px;
+    }
+
+    /* --- SEÇÃO DE PROFISSÕES --- */
+    #universal {
+        padding: 3rem 15px !important;
+    }
+
+    .universal-box h3 {
+        font-size: 1.3rem;
+    }
+
+    .tag-container {
+        gap: 8px;
+    }
+
+    .tag {
+        font-size: 0.78rem;
+        padding: 5px 12px;
+    }
+
+    .input-search-container {
+        max-width: 100%;
+        padding: 0 10px;
+    }
+
+    .input-profession {
+        padding: 15px 120px 15px 20px;
+        font-size: 0.9rem;
+    }
+
+    .btn-activate {
+        padding: 11px 20px;
+        font-size: 0.85rem;
+    }
+
+    /* --- FOOTER --- */
+    footer {
+        padding: 40px 20px;
+        margin-top: 50px;
+    }
+
+    .footer-grid {
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .footer-col {
+        text-align: center;
+    }
+
+    .footer-col h5 {
+        margin-bottom: 12px;
+    }
+
+    .footer-col ul {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .footer-bottom {
+        margin-top: 25px;
+        padding-top: 15px;
+    }
+
+    .footer-bottom p {
+        font-size: 0.75rem;
+    }
+
+    /* --- WHATSAPP FLOAT --- */
+    .whatsapp-float {
+        width: 52px;
+        height: 52px;
+        font-size: 1.5rem;
+        bottom: 20px;
+        right: 20px;
+    }
+
+    .whatsapp-float .tooltip-bala {
+        display: none !important;
+    }
+}
+
+
+/* ==========================================================================
+   3. BREAKPOINT MOBILE - 480px
+   ========================================================================== */
+@media (max-width: 480px) {
+
+    /* --- HEADER --- */
+    .header-container {
+        padding: 0 15px;
+    }
+
+    .logo h1 {
+        font-size: 1.2rem;
+    }
+
+    .badge-beta {
+        font-size: 0.5rem;
+        padding: 2px 6px;
+        margin-left: 6px;
+    }
+
+    /* --- HERO --- */
+    #hero {
+        padding: 30px 15px 20px;
+    }
+
+    .hero-content h2 {
+        font-size: 1.5rem;
+        line-height: 1.3;
+    }
+
+    .hero-content p {
+        font-size: 0.85rem;
+        max-width: 100%;
+        line-height: 1.5;
+    }
+
+    /* --- STATS --- */
+    .stats-grid {
+        padding: 16px 20px;
+        gap: 15px;
+        max-width: 260px;
+    }
+
+    .stat-num {
+        font-size: 1.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.65rem;
+        letter-spacing: 1px;
+    }
+
+    /* --- TEXTO --- */
+    .texto-centralizado {
+        font-size: 1rem;
+        padding: 0 10px;
+    }
+
+    /* --- SWITCH CARDS --- */
+    .switch-card {
+        padding: 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .switch-info h4 {
+        font-size: 0.95rem;
+    }
+
+    .switch-info p {
+        font-size: 0.8rem;
+    }
+
+    .switch {
+        align-self: flex-end;
+    }
+
+    /* --- CARDS --- */
+    .cards-container {
+        padding: 20px 10px;
+        gap: 12px;
+    }
+
+    .agente-card {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .agente-card .icon {
+        font-size: 2rem;
+    }
+
+    .agente-card h4 {
+        font-size: 0.95rem;
+    }
+
+    .agente-card p {
+        font-size: 0.82rem;
+    }
+
+    /* --- PROFISSÕES --- */
+    #universal {
+        padding: 2.5rem 10px !important;
+    }
+
+    .universal-box h3 {
+        font-size: 1.1rem;
+    }
+
+    .tag {
+        font-size: 0.72rem;
+        padding: 4px 10px;
+    }
+
+    .input-profession {
+        padding: 14px 110px 14px 16px;
+        font-size: 0.85rem;
+        border-radius: 40px;
+    }
+
+    .btn-activate {
+        padding: 10px 16px;
+        font-size: 0.8rem;
+        border-radius: 30px;
+    }
+
+    /* --- FOOTER --- */
+    footer {
+        padding: 30px 15px;
+        margin-top: 40px;
+    }
+
+    .footer-col h5 {
+        font-size: 0.9rem;
+    }
+
+    .footer-bottom p {
+        font-size: 0.7rem;
+    }
+
+    /* --- WHATSAPP --- */
+    .whatsapp-float {
+        width: 48px;
+        height: 48px;
+        font-size: 1.4rem;
+        bottom: 15px;
+        right: 15px;
+    }
+}
+
+
+/* ==========================================================================
+   4. BREAKPOINT MOBILE PEQUENO - 360px
+   ========================================================================== */
+@media (max-width: 360px) {
+
+    .logo h1 {
+        font-size: 1.05rem;
+    }
+
+    .badge-beta {
+        display: none;
+    }
+
+    .hero-content h2 {
+        font-size: 1.3rem;
+    }
+
+    .hero-content p {
+        font-size: 0.8rem;
+    }
+
+    .stats-grid {
+        padding: 14px 16px;
+        max-width: 230px;
+    }
+
+    .stat-num {
+        font-size: 1.3rem;
+    }
+
+    .stat-label {
+        font-size: 0.6rem;
+    }
+
+    .switch-grid {
+        padding: 0 10px;
+    }
+
+    .switch-card {
+        padding: 14px;
+    }
+
+    .tag-container {
+        gap: 5px;
+    }
+
+    .tag {
+        font-size: 0.68rem;
+        padding: 3px 8px;
+    }
+
+    .input-profession {
+        padding: 12px 100px 12px 14px;
+        font-size: 0.8rem;
+    }
+
+    .btn-activate {
+        padding: 9px 12px;
+        font-size: 0.75rem;
+    }
+
+    .cta-button-primary {
+        font-size: 0.85rem;
+        padding: 10px 22px;
+    }
+}
+
+
+/* ==========================================================================
+   5. AJUSTES GERAIS DE TOQUE E ACESSIBILIDADE
+   ========================================================================== */
+
+/* Tamanhos mínimos de toque (44px recomendado pelo WCAG) */
+@media (pointer: coarse) {
+
+    .nav-menu a {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+
+    .card-btn {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tag {
+        min-height: 36px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-activate {
+        min-height: 44px;
+    }
+}
+
+/* Remove hover effects no touch (evita "sticky hover") */
+@media (hover: none) {
+
+    .switch-card:hover {
+        transform: none;
+    }
+
+    .agente-card:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
+    .cta-button-primary:hover {
+        transform: none;
+    }
+}
+
+/* Orientação paisagem em celular */
+@media (max-height: 500px) and (orientation: landscape) {
+
+    #hero {
+        padding: 20px 15px;
+    }
+
+    .hero-content h2 {
+        font-size: 1.3rem;
+        margin-bottom: 10px;
+    }
+
+    .stats-grid {
+        flex-direction: row;
+        margin-top: 15px;
+    }
+
+    .nav-menu {
+        height: 100vh;
+        overflow-y: auto;
+    }
+}
+
+
+/* ==========================================================================
+   6. PROMPTS.HTML - RESPONSIVIDADE
+   ========================================================================== */
+
+/* --- Tablet (768px) --- */
+@media (max-width: 768px) {
+
+    /* Explainer Section */
+    .explainer-section {
+        max-width: 100%;
+        margin: 20px auto 30px;
+        padding: 15px;
+    }
+
+    .explainer-title {
+        font-size: 1.05rem;
+    }
+
+    .explainer-text {
+        font-size: 0.88rem;
+    }
+
+    /* Steps Visual (1. Clica → 2. Processa → 3. Resultado) */
+    .steps-visual {
+        gap: 10px;
+        font-size: 0.75rem;
+    }
+
+    .step-item i {
+        font-size: 1.2rem !important;
+    }
+
+    /* Nav Pills (Estudo / Trabalho) */
+    .nav-pills {
+        gap: 8px;
+        padding: 4px;
+        width: 90%;
+        justify-content: center;
+    }
+
+    .pill {
+        padding: 10px 20px;
+        font-size: 0.88rem;
+        flex: 1;
+        justify-content: center;
+    }
+
+    /* Pipeline / Demo Blocks */
+    .pipeline-container {
+        width: 95%;
+    }
+
+    .demo-block {
+        padding: 18px;
+    }
+
+    .block-header {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .block-title {
+        font-size: 1rem;
+    }
+
+    /* Flow Pipeline — centralizado e vertical no mobile */
+    .flow-pipeline {
+        flex-direction: column;
+        gap: 0;
+        padding: 10px 0;
+        align-items: center;
+    }
+
+    /* Esconde ícones circulares e conectores no mobile */
+    .stage-icon-wrap,
+    .pipeline-connector {
+        display: none;
+    }
+
+    /* Cada estágio centralizado */
+    .pipeline-stage {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        width: 100%;
+        gap: 8px;
+        padding: 12px 10px;
+    }
+
+    .stage-trigger {
+        width: 100%;
+        align-items: center;
+    }
+
+    .stage-process {
+        width: 100%;
+        padding: 8px 0;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .stage-result {
+        width: 100%;
+        align-items: center;
+    }
+
+    /* Switch menor no mobile */
+    .switch-demo {
+        width: 48px;
+        height: 26px;
+    }
+
+    .slider-demo:before {
+        height: 20px;
+        width: 20px;
+    }
+
+    input:checked+.slider-demo:before {
+        transform: translateX(20px);
+    }
+
+    /* Chips centralizados */
+    .process-visual {
+        flex-wrap: wrap;
+        gap: 6px;
+        justify-content: center;
+    }
+
+    .prompt-chip {
+        font-size: 0.68rem;
+        padding: 4px 10px;
+    }
+
+    /* Labels centralizados */
+    .stage-label {
+        font-size: 0.7rem;
+        letter-spacing: 0.5px;
+        text-align: center;
+    }
+
+    /* Doc-mini centralizado e menor */
+    .doc-mini {
+        width: 35px;
+        height: 45px;
+    }
+
+    /* Comparison (IA Genérica vs Agente Facility) */
+    .agent-explainer-section {
+        padding: 30px 15px;
+    }
+
+    .agent-explainer-section h2 {
+        font-size: 1.5rem !important;
+    }
+
+    .comparison-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .comparison-box {
+        width: 100%;
+        padding: 22px;
+    }
+
+    .comparison-list li {
+        font-size: 0.85rem;
+    }
+
+    /* Seta do comparativo: vira para baixo */
+    .connector-arrow {
+        transform: rotate(90deg);
+        font-size: 1.2rem;
+    }
+
+    /* Pills de profissões */
+    .pill-container {
+        gap: 8px;
+    }
+
+    .pro-pill {
+        font-size: 0.78rem;
+        padding: 4px 12px;
+    }
+}
+
+/* --- Mobile (480px) --- */
+@media (max-width: 480px) {
+
+    .explainer-section {
+        margin: 15px auto 20px;
+        padding: 12px;
+    }
+
+    .explainer-title {
+        font-size: 0.95rem;
+        gap: 8px;
+    }
+
+    .explainer-text {
+        font-size: 0.82rem;
+        line-height: 1.4;
+    }
+
+    /* Steps empilham verticalmente */
+    .steps-visual {
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .step-arrow {
+        transform: rotate(90deg);
+    }
+
+    .step-item {
+        flex-direction: row;
+        gap: 10px;
+    }
+
+    .step-item i {
+        font-size: 1rem !important;
+    }
+
+    /* Pills */
+    .nav-pills {
+        width: 95%;
+        gap: 5px;
+    }
+
+    .pill {
+        padding: 8px 15px;
+        font-size: 0.82rem;
+        gap: 6px;
+    }
+
+    .pill i {
+        font-size: 0.85rem;
+    }
+
+    /* Demo Blocks */
+    .pipeline-container {
+        width: 100%;
+        padding: 0 10px;
+    }
+
+    .demo-block {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .block-title {
+        font-size: 0.9rem;
+    }
+
+    .block-header .tag {
+        font-size: 0.6rem;
+    }
+
+    /* Switch demo menor */
+    .switch-demo {
+        width: 50px;
+        height: 28px;
+    }
+
+    .slider-demo:before {
+        height: 20px;
+        width: 20px;
+    }
+
+    input:checked+.slider-demo:before {
+        transform: translateX(20px);
+    }
+
+    .prompt-chip {
+        font-size: 0.58rem;
+        padding: 3px 6px;
+    }
+
+    .col-result {
+        height: 50px;
+    }
+
+    .doc-mini {
+        width: 40px;
+        height: 52px;
+    }
+
+    /* Comparison */
+    .agent-explainer-section h2 {
+        font-size: 1.2rem !important;
+    }
+
+    .agent-explainer-section p {
+        font-size: 0.85rem !important;
+    }
+
+    .comparison-box {
+        padding: 18px;
+        border-radius: 12px;
+    }
+
+    .comparison-box h3 {
+        font-size: 0.95rem !important;
+    }
+
+    .comparison-box p {
+        font-size: 0.82rem !important;
+    }
+
+    .comparison-list li {
+        font-size: 0.8rem;
+        margin-bottom: 6px;
+    }
+
+    .pro-pill {
+        font-size: 0.72rem;
+        padding: 3px 10px;
+    }
+}
+
+/* --- Mobile Pequeno (360px) --- */
+@media (max-width: 360px) {
+
+    .explainer-title {
+        font-size: 0.88rem;
+    }
+
+    .explainer-text {
+        font-size: 0.78rem;
+    }
+
+    .pill {
+        padding: 7px 10px;
+        font-size: 0.78rem;
+    }
+
+    .demo-block {
+        padding: 12px;
+    }
+
+    .block-title {
+        font-size: 0.82rem;
+    }
+
+    .prompt-chip {
+        font-size: 0.55rem;
+    }
+
+    .agent-explainer-section h2 {
+        font-size: 1.05rem !important;
+    }
+
+    .comparison-box {
+        padding: 14px;
+    }
+
+    .comparison-box h3 {
+        font-size: 0.88rem !important;
+    }
+
+    .comparison-list li {
+        font-size: 0.75rem;
+    }
+
+    .pro-pill {
+        font-size: 0.68rem;
+        padding: 3px 8px;
+    }
+}
+
+
+/* ==========================================================================
+   7. PLANOS.HTML - RESPONSIVIDADE
+   ========================================================================== */
+
+/* --- Tablet (768px) --- */
+@media (max-width: 768px) {
+
+    .pricing-section {
+        padding: 100px 15px 60px;
+    }
+
+    .pricing-section h2 {
+        font-size: 1.8rem !important;
+    }
+
+    .pricing-section p {
+        font-size: 0.95rem !important;
+    }
+
+    /* Toggle de ciclo */
+    .billing-cycle-container {
+        margin-bottom: 35px;
+    }
+
+    .toggle-wrapper {
+        padding: 4px;
+    }
+
+    .toggle-option {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+    }
+
+    .discount-badge {
+        font-size: 0.58rem;
+        padding: 2px 5px;
+        top: -8px;
+        right: -5px;
+    }
+
+    /* Grid de cards: empilha */
+    .pricing-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        max-width: 400px;
+        margin: 30px auto 0;
+    }
+
+    /* Cards */
+    .pricing-card {
+        padding: 30px 22px;
+        min-height: auto;
+        border-radius: 16px;
+    }
+
+    .pricing-card:hover {
+        transform: none;
+    }
+
+    .pricing-card.featured {
+        transform: none;
+        min-height: auto;
+        order: -1;
+    }
+
+    .pricing-card.featured:hover {
+        transform: none;
+    }
+
+    .plan-name {
+        font-size: 1.3rem;
+    }
+
+    .price {
+        font-size: 2.2rem;
+        margin: 10px 0;
+    }
+
+    .plan-desc {
+        font-size: 0.88rem;
+        min-height: auto;
+        margin-bottom: 15px;
+    }
+
+    .features-list li {
+        font-size: 0.88rem;
+        margin-bottom: 10px;
+    }
+
+    .btn-card {
+        padding: 14px;
+        font-size: 0.9rem;
+        margin-top: 20px;
+        border-radius: 10px;
+        min-height: 48px;
+    }
+}
+
+/* --- Mobile (480px) --- */
+@media (max-width: 480px) {
+
+    .pricing-section {
+        padding: 90px 12px 50px;
+    }
+
+    .pricing-section h2 {
+        font-size: 1.5rem !important;
+    }
+
+    .pricing-section p {
+        font-size: 0.88rem !important;
+    }
+
+    .billing-cycle-container {
+        margin-bottom: 25px;
+    }
+
+    .toggle-option {
+        padding: 7px 12px;
+        font-size: 0.75rem;
+    }
+
+    .pricing-grid {
+        max-width: 100%;
+        gap: 16px;
+    }
+
+    .pricing-card {
+        padding: 24px 18px;
+    }
+
+    .plan-name {
+        font-size: 1.15rem;
+    }
+
+    .price {
+        font-size: 1.9rem;
+    }
+
+    .price span {
+        font-size: 0.85rem;
+    }
+
+    .plan-desc {
+        font-size: 0.82rem;
+    }
+
+    .features-list li {
+        font-size: 0.82rem;
+        margin-bottom: 8px;
+    }
+
+    .features-list li i {
+        font-size: 0.85rem;
+        width: 18px;
+    }
+
+    .btn-card {
+        padding: 13px;
+        font-size: 0.85rem;
+    }
+}
+
+/* --- Mobile Pequeno (360px) --- */
+@media (max-width: 360px) {
+
+    .pricing-section h2 {
+        font-size: 1.3rem !important;
+    }
+
+    .toggle-option {
+        padding: 6px 10px;
+        font-size: 0.7rem;
+    }
+
+    .pricing-card {
+        padding: 20px 15px;
+    }
+
+    .plan-name {
+        font-size: 1.05rem;
+    }
+
+    .price {
+        font-size: 1.7rem;
+    }
+
+    .features-list li {
+        font-size: 0.78rem;
+    }
+
+    .btn-card {
+        font-size: 0.82rem;
+    }
+}
+
+
+/* ==========================================================================
+   8. LOGIN.HTML - RESPONSIVIDADE
+   ========================================================================== */
+
+/* --- Tablet/Mobile (768px) --- */
+@media (max-width: 768px) {
+
+    .auth-container {
+        padding: 15px;
+        align-items: flex-start;
+        padding-top: 80px;
+    }
+
+    .auth-card {
+        padding: 32px 24px;
+        border-radius: 18px;
+        max-width: 100%;
+    }
+
+    .auth-logo {
+        font-size: 1.6rem;
+    }
+
+    .auth-subtitle {
+        font-size: 0.85rem;
+        margin-bottom: 25px;
+    }
+
+    .auth-input-group {
+        margin-bottom: 16px;
+    }
+
+    .auth-input-group label {
+        font-size: 0.82rem;
+    }
+
+    .auth-input {
+        padding: 12px 15px 12px 42px;
+        font-size: 0.95rem;
+        min-height: 48px;
+        border-radius: 10px;
+    }
+
+    .auth-icon {
+        top: 40px;
+        left: 14px;
+        font-size: 0.9rem;
+    }
+
+    .btn-auth {
+        padding: 14px;
+        font-size: 0.95rem;
+        min-height: 48px;
+        border-radius: 12px;
+    }
+
+    .btn-auth:hover {
+        transform: none;
+    }
+
+    .auth-footer {
+        font-size: 0.85rem;
+        margin-top: 20px;
+    }
+
+    .feedback-msg {
+        font-size: 0.82rem;
+    }
+}
+
+/* --- Mobile (480px) --- */
+@media (max-width: 480px) {
+
+    .auth-container {
+        padding: 12px;
+        padding-top: 60px;
+    }
+
+    .auth-card {
+        padding: 28px 20px;
+        border-radius: 16px;
+    }
+
+    .auth-logo {
+        font-size: 1.4rem;
+    }
+
+    .auth-subtitle {
+        font-size: 0.8rem;
+        margin-bottom: 20px;
+    }
+
+    .auth-input {
+        padding: 11px 12px 11px 38px;
+        font-size: 0.9rem;
+    }
+
+    .auth-icon {
+        top: 39px;
+        left: 12px;
+        font-size: 0.85rem;
+    }
+
+    .btn-auth {
+        padding: 13px;
+        font-size: 0.9rem;
+    }
+
+    .auth-footer {
+        font-size: 0.8rem;
+    }
+}
+
+/* --- Mobile Pequeno (360px) --- */
+@media (max-width: 360px) {
+
+    .auth-card {
+        padding: 24px 16px;
+    }
+
+    .auth-logo {
+        font-size: 1.25rem;
+    }
+
+    .auth-subtitle {
+        font-size: 0.75rem;
+    }
+
+    .auth-input {
+        font-size: 0.85rem;
+    }
+
+    .btn-auth {
+        font-size: 0.85rem;
+    }
+}
+
+
+/* ==========================================================================
+   9. CADASTRODEUSUARIO.HTML - RESPONSIVIDADE
+   Herda toda responsividade de auth-* do Login.
+   Apenas ajustes específicos para elementos exclusivos.
+   ========================================================================== */
+
+@media (max-width: 768px) {
+
+    .verification-badge {
+        font-size: 0.78rem;
+        padding: 6px 12px;
+        margin-bottom: 18px;
+    }
+
+    .input-code {
+        letter-spacing: 4px;
+        font-size: 1.3rem !important;
+        padding: 12px 15px !important;
+    }
+
+    .back-link {
+        font-size: 0.82rem;
+        margin-top: 18px;
+    }
+
+    #step-verify {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .verification-badge {
+        font-size: 0.72rem;
+        padding: 5px 10px;
+    }
+
+    .input-code {
+        letter-spacing: 3px;
+        font-size: 1.2rem !important;
+    }
+
+    .back-link {
+        font-size: 0.78rem;
+    }
+}
+
+
+/* ==========================================================================
+   10. DASHBOARD.HTML - RESPONSIVIDADE
+   Sidebar off-canvas, mobile-header visível, card-grid adaptável.
+   ========================================================================== */
+
+/* --- Tablet (768px) --- */
+@media (max-width: 768px) {
+
+    /* Mostra header mobile */
+    .mobile-header {
+        display: flex !important;
+    }
+
+    /* Sidebar off-canvas */
+    .sidebar {
+        transform: translateX(-100%);
+        width: 280px;
+    }
+
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    /* Desktop-only elements */
+    .desktop-only {
+        display: block;
+    }
+
+    /* Content sem margin do sidebar */
+    .content {
+        margin-left: 0;
+        padding: 20px 15px;
+        padding-top: calc(var(--header-mobile-height) + 15px);
+    }
+
+    /* Top bar */
+    .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+    }
+
+    /* Hero banner compacto */
+    .hero-banner {
+        padding: 25px 20px;
+        margin-bottom: 25px;
+        border-radius: 14px;
+    }
+
+    .hero-title {
+        font-size: 1.4rem;
+    }
+
+    .hero-desc {
+        font-size: 0.85rem;
+        margin-bottom: 18px;
+    }
+
+    .hero-btn {
+        padding: 10px 22px;
+        font-size: 0.85rem;
+        border-radius: 25px;
+    }
+
+    .hero-btn:hover {
+        transform: none;
+    }
+
+    /* Category tabs: scroll horizontal */
+    .category-tabs {
+        gap: 8px;
+        margin-bottom: 18px;
+        padding-bottom: 8px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .cat-tab {
+        padding: 6px 14px;
+        font-size: 0.78rem;
+        border-radius: 16px;
+        flex-shrink: 0;
+    }
+
+    /* Card grid: 2 colunas */
+    .card-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .app-card {
+        padding: 18px 15px;
+        border-radius: 12px;
+    }
+
+    .app-card:hover {
+        transform: none;
+    }
+
+    .card-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+        border-radius: 10px;
+    }
+
+    .card-title {
+        font-size: 0.85rem;
+        margin-bottom: 5px;
+    }
+
+    .card-desc {
+        font-size: 0.72rem;
+        line-height: 1.4;
+    }
+
+    .card-arrow {
+        margin-top: 10px;
+        font-size: 0.75rem;
+    }
+
+    /* Plan card na sidebar: ajustes */
+    .card-plan-status {
+        padding: 14px !important;
+    }
+
+    .card-plan-status h2 {
+        font-size: 1.1rem !important;
+    }
+
+    .card-plan-status h3 {
+        font-size: 0.8rem !important;
+    }
+
+    /* User mini na sidebar */
+    .user-mini {
+        padding: 8px;
+    }
+
+    /* Nav buttons */
+    .nav-btn {
+        padding: 10px 12px;
+        font-size: 0.88rem;
+    }
+}
+
+/* --- Mobile (480px) --- */
+@media (max-width: 480px) {
+
+    .content {
+        padding: 15px 12px;
+        padding-top: calc(var(--header-mobile-height) + 12px);
+    }
+
+    .top-bar {
+        font-size: 0.82rem;
+        margin-bottom: 15px;
+    }
+
+    .hero-banner {
+        padding: 20px 15px;
+        margin-bottom: 20px;
+    }
+
+    .hero-title {
+        font-size: 1.2rem;
+    }
+
+    .hero-desc {
+        font-size: 0.8rem;
+    }
+
+    .hero-btn {
+        padding: 10px 18px;
+        font-size: 0.8rem;
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* Card grid: 1 coluna */
+    .card-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .app-card {
+        padding: 16px 14px;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .card-icon {
+        margin-bottom: 0;
+        flex-shrink: 0;
+    }
+
+    .card-desc {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .card-arrow {
+        display: none;
+    }
+
+    .cat-tab {
+        padding: 5px 12px;
+        font-size: 0.72rem;
+    }
+
+    /* Sidebar ajustes menores */
+    .sidebar {
+        width: 260px;
+        padding: 20px 18px;
+    }
+
+    .sidebar .logo {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+    }
+}
+
+/* --- Mobile Pequeno (360px) --- */
+@media (max-width: 360px) {
+
+    .content {
+        padding: 12px 10px;
+        padding-top: calc(var(--header-mobile-height) + 10px);
+    }
+
+    .hero-title {
+        font-size: 1.1rem;
+    }
+
+    .hero-desc {
+        font-size: 0.75rem;
+    }
+
+    .app-card {
+        padding: 14px 12px;
+    }
+
+    .card-title {
+        font-size: 0.8rem;
+    }
+
+    .card-desc {
+        font-size: 0.68rem;
+    }
+
+    .cat-tab {
+        font-size: 0.68rem;
+    }
+}
+
+
+/* ==========================================================================
+   11. ESCOLHER_AGENTE.HTML - RESPONSIVIDADE
+   Herda sidebar/mobile-header/content do Dashboard.
+   Apenas elementos exclusivos: search, agent-tabs, page-header.
+   ========================================================================== */
+
+/* --- CORREÇÃO GLOBAL DE CAIXA (Obrigatório para os cards não vazarem a tela) --- */
+
+/* ==========================================================================
+   13. CHATCOMIA.HTML - RESPONSIVIDADE DO CHAT DA IA
+   Focada em navegação mobile limpa, barra fixa e digitação segura.
+   ========================================================================== */
+
+/* --- Tablet & Mobile (max 768px) --- */
+@media (max-width: 768px) {
+
+    /* 1. Layout Base Single Column */
+    .chat-layout {
+        display: block !important;
+        height: 100dvh;
+        /* dvh evita que a barra de digitação fique escondida pelo teclado do iOS/Android */
+        width: 100vw;
+        overflow-x: hidden;
+    }
+
+    body.chat-mode main {
+        height: 100dvh !important;
+    }
+
+    /* 2. Sidebar Escondida (Off-canvas) */
+    .chat-layout .sidebar {
+        position: fixed;
+        left: -300px;
+        top: 0;
+        bottom: 0;
+        width: 280px;
+        height: 100dvh;
+        z-index: 9999;
+        transition: left 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+        background: rgba(15, 17, 21, 0.98);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.8);
+    }
+
+    .chat-layout .sidebar.active {
+        left: 0;
+    }
+
+    /* 3. Header e Área Principal */
+    .chat-interface {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100vw;
+        max-width: 100%;
+    }
+
+    .chat-header-bar {
+        padding: 10px 15px;
+        flex-shrink: 0;
+    }
+
+    .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+    }
+
+    /* Mostra o menu Hamburger */
+    .mobile-only {
+        display: inline-block !important;
+        /* Sobrescreve inline style ou display padrão */
+    }
+
+    /* Botões do header adaptados */
+    .header-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .export-btn {
+        padding: 5px 8px;
+        font-size: 0.75rem;
+    }
+
+    /* 4. Área de Mensagens */
+    .messages-area {
+        padding: 15px 10px;
+        padding-bottom: 20px;
+        /* Mais fôlego pra rolar */
+    }
+
+    .message-row {
+        gap: 10px;
+        padding: 0;
+    }
+
+    .message-bubble {
+        padding: 12px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    .user-message .message-bubble {
+        border-radius: 16px 16px 0 16px;
+    }
+
+    .ai-message .message-bubble {
+        border-radius: 16px 16px 16px 0;
+    }
+
+    /* 5. Área de Digitação (Input) - Crucial no Mobile */
+    .input-wrapper {
+        padding: 10px;
+        background: #050507;
+        flex-shrink: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .input-box-styled {
+        border-radius: 20px;
+        padding: 0 5px;
+    }
+
+    .input-container {
+        padding: 6px 5px;
+        gap: 5px;
+        align-items: center;
+    }
+
+    .input-container textarea {
+        font-size: 1rem;
+        /* MÁGICA: Evita zoom automático no iOS nas caixas de texto */
+        padding: 5px;
+        height: 40px;
+    }
+
+    .action-icon {
+        padding: 8px;
+        font-size: 1.1rem;
+    }
+
+    #sendBtn {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 50% !important;
+        /* Circular no celular fica mais natural */
+    }
+
+    /* Menus flutuantes do attachment reajustados para celular */
+    .floating-menu,
+    .floating-panel {
+        bottom: 55px;
+        left: 0;
+        max-width: 90vw;
+    }
+}
+
+/* --- Mobile (480px) --- */
+@media (max-width: 480px) {
+    .chat-header-bar {
+        padding: 10px;
+    }
+
+    #headerName {
+        font-size: 1rem;
+        max-width: 110px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .export-btn {
+        padding: 4px 6px;
+        font-size: 0.7rem;
+    }
+
+    /* Botão de nova mensagem da Sidebar */
+    .new-chat-btn {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+
+    /* Modal de Sistema ajustado */
+    .modal-content {
+        width: 95% !important;
+        height: 90vh !important;
+    }
+
+    .slash-menu {
+        width: calc(100vw - 40px);
+        left: 20px;
+        bottom: 60px;
+    }
+}
+
+/* --- Mobile Pequeno (360px) --- */
+@media (max-width: 360px) {
+    #headerName {
+        max-width: 80px;
+    }
+
+    .action-icon {
+        font-size: 1rem;
+        padding: 6px;
+    }
+
+    .input-container {
+        gap: 2px;
+    }
+}
+
+/* ==========================================================================
+   14. PAINEL ADMIN, GERENCIAR AGENTES & PERFIL - RESPONSIVIDADE
+   Corrige tabelas largas e grids de formulários inline.
+   ========================================================================== */
+@media (max-width: 768px) {
+
+    /* Impede que a tabela quebre o layout; cria scroll horizontal interno seguro */
+    .table-container {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        padding: 10px !important;
+        /* Garante que o container interno da tabela expanda conforme o conteúdo e não esmague as colunas */
+    }
+
+    .admin-table {
+        min-width: 600px;
+        /* Garante tamanho mínimo para rolar em vez de esmagar o texto */
+    }
+
+    /* O grid 1fr 1fr do perfil vai espremer no celular; deve virar display block/flex col ou grid 1fr */
+    .profile-form-grid {
+        grid-template-columns: 1fr !important;
+    }
+}

@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <link rel="icon" type="image/jpeg" href="/favicon.png">
     <title>Facility.IA - Nexus de Inteligência</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style-master.css?v=3">
+    <link rel="stylesheet" href="responsive.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
+
 <body>
 
     <div id="particles-js"></div>
@@ -21,11 +25,11 @@
                     <h1>FACILITY<span>.IA</span> <span class="badge-beta">BETA</span></h1>
                 </a>
             </div>
-            
+
             <div class="mobile-menu-btn" onclick="togglePublicMenu()">
                 <i class="fas fa-bars"></i>
             </div>
-            
+
             <div class="mobile-nav-overlay" onclick="togglePublicMenu()"></div>
 
             <nav class="nav-menu" id="publicNav">
@@ -39,7 +43,7 @@
                     <li><a href="prompts.html" onclick="togglePublicMenu()">Como funciona?</a></li>
                     <li><a href="planos.html" onclick="togglePublicMenu()">Planos</a></li>
                     <li><a href="index.html#universal" onclick="togglePublicMenu()">Profissões</a></li>
-                    
+
                     <li>
                         <a href="login.html" id="authBtn" class="cta-button">
                             Entrar <i class="fas fa-arrow-right" style="margin-left:5px; font-size:0.8rem;"></i>
@@ -49,14 +53,14 @@
             </nav>
         </div>
     </header>
-    
+
     <main>
         <section id="hero">
             <div class="hero-content">
                 <h2 id="typing-text"></h2>
-                
+
                 <p>Conhecimento a poucos cliques.</p>
-                
+
                 <div class="stats-grid">
                     <div class="stat-item">
                         <span class="stat-num">+150</span>
@@ -74,7 +78,8 @@
         </section>
 
         <p class="texto-centralizado">Escolha seu Prompt com um Clique</p>
-        <p class="texto-centralizado" style="color: #aaa; font-size: 0.9rem; margin-top: -10px;">Não converse com a IA. Apenas ative a chave e receba o resultado pronto.</p>
+        <p class="texto-centralizado" style="color: #aaa; font-size: 0.9rem; margin-top: -10px;">Não converse com a IA.
+            Apenas ative a chave e receba o resultado pronto.</p>
 
         <div class="switch-grid">
             <div class="switch-card" id="demo1">
@@ -115,7 +120,7 @@
         </div>
 
         <p class="texto-centralizado" style="margin-top: 60px;">Processamentos em Destaque</p>
-            
+
         <div class="cards-container">
             <div class="agente-card">
                 <div class="card-status">● Carreira</div>
@@ -132,7 +137,7 @@
                 <p>Estratégias de vendas, análise SWOT e inteligência competitiva.</p>
                 <button class="card-btn">Acessar</button>
             </div>
-            
+
             <div class="agente-card">
                 <div class="card-status">● Carreira</div>
                 <div class="icon">📢</div>
@@ -168,10 +173,11 @@
                 </div>
 
                 <div class="input-search-container">
-                    <input type="text" id="inputProfissao" class="input-profession" placeholder="Digite sua profissão (ex: Biomédico)..." autocomplete="off">
-                    
+                    <input type="text" id="inputProfissao" class="input-profession"
+                        placeholder="Digite sua profissão (ex: Biomédico)..." autocomplete="off">
+
                     <div id="listaSugestoes" class="autocomplete-list"></div>
-                    
+
                     <button class="btn-activate">Procurar</button>
                 </div>
             </div>
@@ -206,23 +212,22 @@
         </div>
     </footer>
 
-    <a href="https://wa.me/5511943544588?text=Ol%C3%A1%2C%20estou%20testando%20o%20Facility.IA%20e%20gostaria%20de%20falar%20sobre%20erros%20ou%20melhorias." 
-   target="_blank" 
-   class="whatsapp-float">
-    <i class="fab fa-whatsapp"></i>
-    <span class="tooltip-bala">📢 Reportar erros ou sugerir melhorias</span>
-</a>
-    
-    <script src="config.js"></script> 
+    <a href="https://wa.me/5511943544588?text=Ol%C3%A1%2C%20estou%20testando%20o%20Facility.IA%20e%20gostaria%20de%20falar%20sobre%20erros%20ou%20melhorias."
+        target="_blank" class="whatsapp-float">
+        <i class="fab fa-whatsapp"></i>
+        <span class="tooltip-bala">📢 Reportar erros ou sugerir melhorias</span>
+    </a>
+
+    <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    <script src="script.js"></script> 
+    <script src="script.js"></script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             const element = document.getElementById('typing-text');
             const text = "Facilitando sua vida profissional e acadêmica!";
-            const speed = 50; 
-            
+            const speed = 50;
+
             if (element) {
                 // Forçamos a visibilidade do contentor pai para garantir que aparece
                 const heroContent = document.querySelector('.hero-content');
@@ -232,10 +237,10 @@
 
                 // Limpamos o texto inicial
                 element.style.opacity = "1";
-                element.textContent = ""; 
-                
+                element.textContent = "";
+
                 let i = 0;
-                
+
                 function type() {
                     if (i < text.length) {
                         element.textContent += text.charAt(i);
@@ -243,28 +248,28 @@
                         setTimeout(type, speed);
                     }
                 }
-                setTimeout(type, 800); 
+                setTimeout(type, 800);
             }
         });
 
         // --- LÓGICA DE AUTOCOMPLETE ---
         const profissoes = [
-            "Advogado Civil", "Advogado Trabalhista", "Advogado Criminalista", "Advogado Tributário", 
+            "Advogado Civil", "Advogado Trabalhista", "Advogado Criminalista", "Advogado Tributário",
             "Juiz / Assessor Jurídico", "Oficial de Cartório", "Compliance Officer", "Perito Judicial",
-            "Médico Clínico Geral", "Cirurgião Dentista", "Ortodontista", "Implantodontista", 
-            "Enfermeiro(a)", "Psicólogo Clínico", "Nutricionista", "Fisioterapeuta", 
+            "Médico Clínico Geral", "Cirurgião Dentista", "Ortodontista", "Implantodontista",
+            "Enfermeiro(a)", "Psicólogo Clínico", "Nutricionista", "Fisioterapeuta",
             "Farmacêutico", "Médico Veterinário", "Biomédico", "Personal Trainer",
-            "Engenheiro Civil", "Arquiteto Urbanista", "Designer de Interiores", 
-            "Engenheiro Eletricista", "Engenheiro Mecânico", "Engenheiro de Segurança do Trabalho", 
+            "Engenheiro Civil", "Arquiteto Urbanista", "Designer de Interiores",
+            "Engenheiro Eletricista", "Engenheiro Mecânico", "Engenheiro de Segurança do Trabalho",
             "Engenheiro Agrônomo",
-            "Desenvolvedor Front-End", "Desenvolvedor Back-End", "Desenvolvedor Full-Stack", 
-            "Cientista de Dados", "Analista de QA", "DevOps / SRE", "Analista de Segurança", 
+            "Desenvolvedor Front-End", "Desenvolvedor Back-End", "Desenvolvedor Full-Stack",
+            "Cientista de Dados", "Analista de QA", "DevOps / SRE", "Analista de Segurança",
             "Product Owner", "UX/UI Designer",
-            "Contador", "Administrador de Empresas", "Analista Financeiro", "Corretor de Imóveis", 
+            "Contador", "Administrador de Empresas", "Analista Financeiro", "Corretor de Imóveis",
             "Corretor de Seguros", "Gestor de RH", "Gerente de Projetos",
-            "Copywriter", "Social Media Manager", "Jornalista", "Roteirista de Vídeo", 
+            "Copywriter", "Social Media Manager", "Jornalista", "Roteirista de Vídeo",
             "Tradutor", "Designer Gráfico",
-            "Professor (Ensino Fundamental/Médio)", "Professor Universitário", "Pedagogo", 
+            "Professor (Ensino Fundamental/Médio)", "Professor Universitário", "Pedagogo",
             "Pesquisador Acadêmico", "Estudante"
         ];
 
@@ -272,136 +277,137 @@
         const lista = document.getElementById("listaSugestoes");
 
         if (input) {
-            input.addEventListener("input", function() {
+            input.addEventListener("input", function () {
                 const valor = this.value;
-                lista.innerHTML = ""; 
+                lista.innerHTML = "";
                 if (!valor) { lista.style.display = "none"; return; }
                 const sugestoes = profissoes.filter(p => p.toLowerCase().includes(valor.toLowerCase()));
                 if (sugestoes.length > 0) {
-                    lista.style.display = "block"; 
+                    lista.style.display = "block";
                     sugestoes.forEach(sugestao => {
                         const item = document.createElement("div");
                         item.classList.add("autocomplete-item");
                         const regex = new RegExp(`(${valor})`, "gi");
                         const textoFormatado = sugestao.replace(regex, "<strong>$1</strong>");
                         item.innerHTML = textoFormatado;
-                        item.addEventListener("click", function() {
-                            input.value = sugestao; 
-                            lista.style.display = "none"; 
+                        item.addEventListener("click", function () {
+                            input.value = sugestao;
+                            lista.style.display = "none";
                         });
                         lista.appendChild(item);
                     });
                 } else { lista.style.display = "none"; }
             });
-            document.addEventListener("click", function(e) { if (e.target !== input) { lista.style.display = "none"; } });
+            document.addEventListener("click", function (e) { if (e.target !== input) { lista.style.display = "none"; } });
         }
         /* --- INTERATIVIDADE ADICIONAL (Adicione ao final do script.js) --- */
 
-// 1. Função para Abrir/Fechar o Chat (Obrigatório para o botão funcionar)
-function toggleChat() {
-    const chatWindow = document.getElementById('chatWindow');
-    if (chatWindow) {
-        // Alterna entre mostrar e esconder
-        if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
-            chatWindow.style.display = 'flex';
-            setTimeout(() => chatWindow.classList.add('active'), 10); // Pequeno delay para animação CSS se houver
-        } else {
-            chatWindow.classList.remove('active');
-            setTimeout(() => chatWindow.style.display = 'none', 300); // Espera animação terminar
+        // 1. Função para Abrir/Fechar o Chat (Obrigatório para o botão funcionar)
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            if (chatWindow) {
+                // Alterna entre mostrar e esconder
+                if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+                    chatWindow.style.display = 'flex';
+                    setTimeout(() => chatWindow.classList.add('active'), 10); // Pequeno delay para animação CSS se houver
+                } else {
+                    chatWindow.classList.remove('active');
+                    setTimeout(() => chatWindow.style.display = 'none', 300); // Espera animação terminar
+                }
+            }
         }
-    }
-}
 
-// 2. Função dos Switches (Botões de Ligar/Desligar na Home)
-function toggleSwitch(idElemento) {
-    // Busca o checkbox dentro do elemento pai (ex: demo1)
-    const checkbox = document.querySelector(`#${idElemento} input`);
-    
-    if (checkbox && checkbox.checked) {
-        showToast('Funcionalidade ativada para demonstração!', 'success');
-        // Aqui você poderia adicionar lógica extra, como mudar a cor do card
-        document.getElementById(idElemento).style.borderColor = '#00ff88';
-    } else {
-        showToast('Funcionalidade desativada.', 'warning');
-        if(document.getElementById(idElemento)) {
-            document.getElementById(idElemento).style.borderColor = 'rgba(255, 255, 255, 0.1)';
-        }
-    }
-}
+        // 2. Função dos Switches (Botões de Ligar/Desligar na Home)
+        function toggleSwitch(idElemento) {
+            // Busca o checkbox dentro do elemento pai (ex: demo1)
+            const checkbox = document.querySelector(`#${idElemento} input`);
 
-// 3. Lógica do Botão "Procurar" (Busca de Profissões)
-document.addEventListener('DOMContentLoaded', function() {
-    const btnProcurar = document.querySelector('.btn-activate');
-    const inputProfissao = document.getElementById('inputProfissao');
-
-    if (btnProcurar && inputProfissao) {
-        btnProcurar.addEventListener('click', function() {
-            const valor = inputProfissao.value.trim();
-            if (valor) {
-                // Simula um "carregando"
-                btnProcurar.innerText = "Buscando...";
-                setTimeout(() => {
-                    // Redireciona para o login ou cadastro levando o interesse
-                    window.location.href = `login.html?interesse=${encodeURIComponent(valor)}`;
-                }, 1000);
+            if (checkbox && checkbox.checked) {
+                showToast('Funcionalidade ativada para demonstração!', 'success');
+                // Aqui você poderia adicionar lógica extra, como mudar a cor do card
+                document.getElementById(idElemento).style.borderColor = '#00ff88';
             } else {
-                showToast('Por favor, digite ou selecione uma profissão.', 'error');
-                inputProfissao.focus();
+                showToast('Funcionalidade desativada.', 'warning');
+                if (document.getElementById(idElemento)) {
+                    document.getElementById(idElemento).style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                }
+            }
+        }
+
+        // 3. Lógica do Botão "Procurar" (Busca de Profissões)
+        document.addEventListener('DOMContentLoaded', function () {
+            const btnProcurar = document.querySelector('.btn-activate');
+            const inputProfissao = document.getElementById('inputProfissao');
+
+            if (btnProcurar && inputProfissao) {
+                btnProcurar.addEventListener('click', function () {
+                    const valor = inputProfissao.value.trim();
+                    if (valor) {
+                        // Simula um "carregando"
+                        btnProcurar.innerText = "Buscando...";
+                        setTimeout(() => {
+                            // Redireciona para o login ou cadastro levando o interesse
+                            window.location.href = `login.html?interesse=${encodeURIComponent(valor)}`;
+                        }, 1000);
+                    } else {
+                        showToast('Por favor, digite ou selecione uma profissão.', 'error');
+                        inputProfissao.focus();
+                    }
+                });
+            }
+
+            // 4. Lógica de Envio de Mensagem no Chat (Frontend)
+            const chatInput = document.querySelector('.chat-input input');
+            const chatBtn = document.querySelector('.chat-input button');
+            const chatBody = document.querySelector('.chat-body');
+
+            function enviarMensagem() {
+                const texto = chatInput.value.trim();
+                if (!texto) return;
+
+                // 1. Adiciona mensagem do usuário
+                const userMsg = document.createElement('p');
+                userMsg.style.cssText = "text-align:right; background: rgba(0, 255, 136, 0.2); padding: 8px; border-radius: 8px; margin: 5px 0; border: 1px solid #00ff88;";
+                userMsg.textContent = texto;
+                chatBody.appendChild(userMsg);
+
+                chatInput.value = ''; // Limpa input
+                chatBody.scrollTop = chatBody.scrollHeight; // Desce o scroll
+
+                // 2. Simula resposta da IA (Delay de 1.5s)
+                setTimeout(() => {
+                    const iaMsg = document.createElement('p');
+                    iaMsg.style.cssText = "text-align:left; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 8px; margin: 5px 0;";
+                    iaMsg.innerHTML = "<strong>Facility.IA:</strong> Para acessar respostas completas, por favor faça login ou crie sua conta.";
+                    chatBody.appendChild(iaMsg);
+                    chatBody.scrollTop = chatBody.scrollHeight;
+                }, 1500);
+            }
+
+            // Adiciona eventos ao botão e ao Enter
+            if (chatBtn) chatBtn.addEventListener('click', enviarMensagem);
+            if (chatInput) {
+                chatInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') enviarMensagem();
+                });
             }
         });
-    }
-    
-    // 4. Lógica de Envio de Mensagem no Chat (Frontend)
-    const chatInput = document.querySelector('.chat-input input');
-    const chatBtn = document.querySelector('.chat-input button');
-    const chatBody = document.querySelector('.chat-body');
-
-    function enviarMensagem() {
-        const texto = chatInput.value.trim();
-        if (!texto) return;
-
-        // 1. Adiciona mensagem do usuário
-        const userMsg = document.createElement('p');
-        userMsg.style.cssText = "text-align:right; background: rgba(0, 255, 136, 0.2); padding: 8px; border-radius: 8px; margin: 5px 0; border: 1px solid #00ff88;";
-        userMsg.textContent = texto;
-        chatBody.appendChild(userMsg);
-
-        chatInput.value = ''; // Limpa input
-        chatBody.scrollTop = chatBody.scrollHeight; // Desce o scroll
-
-        // 2. Simula resposta da IA (Delay de 1.5s)
-        setTimeout(() => {
-            const iaMsg = document.createElement('p');
-            iaMsg.style.cssText = "text-align:left; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 8px; margin: 5px 0;";
-            iaMsg.innerHTML = "<strong>Facility.IA:</strong> Para acessar respostas completas, por favor faça login ou crie sua conta.";
-            chatBody.appendChild(iaMsg);
-            chatBody.scrollTop = chatBody.scrollHeight;
-        }, 1500);
-    }
-
-    // Adiciona eventos ao botão e ao Enter
-    if (chatBtn) chatBtn.addEventListener('click', enviarMensagem);
-    if (chatInput) {
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') enviarMensagem();
-        });
-    }
-});
     </script>
-   <script>
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        // 2. Efeito de Scroll no Header (Deixa escuro ao rolar)
-        const header = document.querySelector('header');
-        if(header) {
-            window.addEventListener('scroll', () => {
-                if (window.scrollY > 50) header.classList.add('scrolled');
-                else header.classList.remove('scrolled');
-            });
-        }
+    <script>
 
-        
-    });
-</script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // 2. Efeito de Scroll no Header (Deixa escuro ao rolar)
+            const header = document.querySelector('header');
+            if (header) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 50) header.classList.add('scrolled');
+                    else header.classList.remove('scrolled');
+                });
+            }
+
+
+        });
+    </script>
 </body>
+
 </html>
