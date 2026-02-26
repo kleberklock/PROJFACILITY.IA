@@ -141,6 +141,7 @@ function fixMobileVh() {
 window.fazerLogout = function () {
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
+    localStorage.removeItem('userPlan');
     window.location.href = 'index.html';
 }
 
@@ -213,9 +214,8 @@ function updateUI(name, email, plan, profilePicture) {
     const dashboardPlanCard = document.getElementById('dashboardPlanCard');
     const upgradeSection = document.getElementById('upgradeSection');
 
-    // Read plan from localStorage, or use API value, or default to Free
-    const localStoredPlan = localStorage.getItem('userPlan');
-    const activePlan = localStoredPlan || plan || 'Iniciante';
+    // Read plan from API first, then localStorage, or default to Free
+    const activePlan = plan || localStorage.getItem('userPlan') || 'Iniciante';
 
     // Garante atualizações mesmo se um dos elementos não existir na tela
     if (dashboardPlanCard) {
