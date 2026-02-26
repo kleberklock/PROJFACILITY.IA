@@ -17,11 +17,13 @@ namespace PROJFACILITY.IA.Controllers
     {
         private readonly AppDbContext _context;
         private readonly KnowledgeService _knowledgeService;
+        private readonly EmailService _emailService;
 
-        public AdminController(AppDbContext context, KnowledgeService knowledgeService)
+        public AdminController(AppDbContext context, KnowledgeService knowledgeService, EmailService emailService)
         {
             _context = context;
             _knowledgeService = knowledgeService;
+            _emailService = emailService;
         }
 
         // ==========================================================
@@ -75,6 +77,8 @@ namespace PROJFACILITY.IA.Controllers
             var user = await _context.Users.FindAsync(request.UserId);
             if (user == null) return NotFound(new { message = "Usuário não encontrado." });
 
+            string planoAntigo = user.Plan;
+
             if (!string.IsNullOrEmpty(request.NewPlan)) 
                 user.Plan = request.NewPlan;
 
@@ -89,6 +93,38 @@ namespace PROJFACILITY.IA.Controllers
                 user.UsedTokensCurrentMonth = 0;
 
             await _context.SaveChangesAsync();
+
+            // --- INÍCIO DA ADIÇÃO: ALERTA DE ALTERAÇÃO DE PLANO ---
+            if (planoAntigo != user.Plan)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        var tipoMudanca = planoAntigo == "Free" || planoAntigo == "Iniciante" ? "Upgrade" : "Alteração de Plano";
+                        var mensagem = $@"
+                            <div style='font-family: Arial, sans-serif; padding: 20px; color: #333; border: 1px solid #e0e0e0; border-radius: 8px; max-width: 600px; margin: 0 auto;'>
+                                <h2 style='color: #009966;'>{tipoMudanca} de Plano no Facility.IA</h2>
+                                <p>O usuário <strong>{user.Name}</strong> ({user.Email}) atualizou sua assinatura.</p>
+                                <ul style='list-style-type: none; padding: 0;'>
+                                    <li><strong>Plano Anterior:</strong> {planoAntigo}</li>
+                                    <li><strong>Novo Plano:</strong> {user.Plan}</li>
+                                    <li><strong>Data e Hora:</strong> {DateTime.Now:dd/MM/yyyy HH:mm:ss}</li>
+                                </ul>
+                                <p style='font-size: 12px; color: #888; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;'>Este é um alerta automático do painel administrativo.</p>
+                            </div>";
+
+                        await _emailService.SendEmailAsync(
+                            "klockk27@gmail.com",
+                            "Aviso de Alteração de Plano - Facility.IA",
+                            mensagem
+                        );
+                    }
+                    catch { }
+                });
+            }
+            // --- FIM DA ADIÇÃO ---
+
             return Ok(new { message = "Usuário atualizado com sucesso!" });
         }
 

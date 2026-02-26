@@ -210,10 +210,19 @@ namespace PROJFACILITY.IA.Controllers
             {
                 try 
                 {
-                    var mensagem = $"Alerta de Segurança: O usuário <b>{user.Email}</b> acabou de fazer login no Facility.IA.<br>Data e Hora: {DateTime.Now:dd/MM/yyyy HH:mm:ss}";
+                    var mensagem = $@"
+                        <div style='font-family: Arial, sans-serif; padding: 20px; color: #333; border: 1px solid #e0e0e0; border-radius: 8px; max-width: 600px; margin: 0 auto;'>
+                            <h2 style='color: #009966;'>Alerta de Novo Login</h2>
+                            <p>O usuário <strong>{user.Name}</strong> acabou de acessar o sistema.</p>
+                            <ul style='list-style-type: none; padding: 0;'>
+                                <li><strong>E-mail:</strong> {user.Email}</li>
+                                <li><strong>Data e Hora:</strong> {DateTime.Now:dd/MM/yyyy HH:mm:ss}</li>
+                            </ul>
+                            <p style='font-size: 12px; color: #888; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;'>Este é um alerta automático de segurança do Facility.IA.</p>
+                        </div>";
                     
                     await _emailService.SendEmailAsync(
-                        "facility.ia001@gmail.com", // <--- COLOQUE SEU E-MAIL AQUI
+                        "klockk27@gmail.com", 
                         "Alerta de Novo Login - Facility.IA", 
                         mensagem
                     );

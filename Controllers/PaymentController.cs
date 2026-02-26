@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PROJFACILITY.IA.Data;
 using PROJFACILITY.IA.Models;
+using PROJFACILITY.IA.Services;
 using Stripe;
 using Stripe.Checkout;
 using System.IO;
@@ -18,12 +19,14 @@ namespace PROJFACILITY.IA.Controllers
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly ILogger<PaymentController> _logger;
+        private readonly EmailService _emailService;
 
-        public PaymentController(AppDbContext context, IConfiguration configuration, ILogger<PaymentController> logger)
+        public PaymentController(AppDbContext context, IConfiguration configuration, ILogger<PaymentController> logger, EmailService emailService)
         {
             _context = context;
             _configuration = configuration;
             _logger = logger;
+            _emailService = emailService;
         }
 
         [HttpPost("create-checkout-session")]
@@ -169,11 +172,45 @@ namespace PROJFACILITY.IA.Controllers
             var user = await _context.Users.FindAsync(userId);
             if (user != null)
             {
+                string planoAntigo = user.Plan;
+
                 user.Plan = planName;
                 user.SubscriptionCycle = cycle;
                 user.IsActive = true; 
                 await _context.SaveChangesAsync();
                 _logger.LogInformation($"Usuário {userId} ativado: {planName}");
+
+                // --- INÍCIO DA ADIÇÃO: ALERTA DE ALTERAÇÃO DE PLANO STRIPE ---
+                if (planoAntigo != planName)
+                {
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var tipoMudanca = planoAntigo == "Free" || planoAntigo == "Iniciante" ? "Upgrade" : "Alteração de Plano";
+                            var mensagem = $@"
+                                <div style='font-family: Arial, sans-serif; padding: 20px; color: #333; border: 1px solid #e0e0e0; border-radius: 8px; max-width: 600px; margin: 0 auto;'>
+                                    <h2 style='color: #009966;'>{tipoMudanca} de Plano no Facility.IA</h2>
+                                    <p>O usuário <strong>{user.Name}</strong> ({user.Email}) atualizou sua assinatura via Stripe.</p>
+                                    <ul style='list-style-type: none; padding: 0;'>
+                                        <li><strong>Plano Anterior:</strong> {planoAntigo}</li>
+                                        <li><strong>Novo Plano:</strong> {planName}</li>
+                                        <li><strong>Novo Ciclo:</strong> {cycle}</li>
+                                        <li><strong>Data e Hora:</strong> {DateTime.Now:dd/MM/yyyy HH:mm:ss}</li>
+                                    </ul>
+                                    <p style='font-size: 12px; color: #888; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;'>Este é um alerta automático do sistema de pagamentos da plataforma.</p>
+                                </div>";
+
+                            await _emailService.SendEmailAsync(
+                                "klockk27@gmail.com",
+                                "Aviso de Alteração de Plano - Facility.IA",
+                                mensagem
+                            );
+                        }
+                        catch { }
+                    });
+                }
+                // --- FIM DA ADIÇÃO ---
             }
         }
     }

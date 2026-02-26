@@ -232,37 +232,74 @@ function updateUI(name, email, plan, profilePicture) {
 
     if (activePlan.toLowerCase() === 'iniciante' || activePlan.toLowerCase() === 'free') {
         if (planBadge) {
-            planBadge.innerText = 'INICIANTE';
             planBadge.style.background = '#00ff88';
-            // Garante override de innerHTML caso precise (e.g. quando volta do pro)
             planBadge.innerHTML = 'INICIANTE';
             planBadge.style.color = 'black';
+            planBadge.style.boxShadow = 'none';
         }
-        if (planName) planName.innerText = 'Iniciante';
-        if (upgradeSection) upgradeSection.style.display = 'block';
+        if (planName) {
+            planName.innerText = 'Iniciante';
+            planName.style.background = 'none';
+            planName.style.webkitTextFillColor = 'white';
+        }
+        if (dashboardPlanCard) {
+            dashboardPlanCard.style.background = "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)";
+            dashboardPlanCard.style.border = "1px solid rgba(255,255,255,0.1)";
+            dashboardPlanCard.style.boxShadow = "none";
+        }
+        if (upgradeSection) {
+            upgradeSection.style.display = 'block';
+            upgradeSection.innerHTML = `
+                <a href="planos.html"
+                    style="color:#00ff88; text-decoration:none; font-size:0.85rem; font-weight:bold; display:flex; align-items:center; gap:5px;">
+                    <i class="fas fa-arrow-up"></i> Fazer Upgrade
+                </a>
+            `;
+            upgradeSection.style.borderTop = "1px solid rgba(255,255,255,0.1)";
+            upgradeSection.style.marginTop = "15px";
+            upgradeSection.style.paddingTop = "10px";
+        }
     }
     else if (activePlan.toLowerCase() === 'plus') {
         if (planBadge) {
-            planBadge.innerText = 'PLUS';
-            planBadge.innerHTML = 'PLUS';
-            planBadge.style.background = '#00ff88';
+            planBadge.style.background = 'linear-gradient(135deg, #00ff88 0%, #009966 100%)';
             planBadge.style.color = 'black';
+            planBadge.innerHTML = '<i class="fas fa-rocket"></i> PLUS';
+            planBadge.style.boxShadow = '0 0 10px rgba(0, 255, 136, 0.5)';
         }
         if (planName) {
-            planName.innerText = 'Plus';
-            planName.style.color = '#00ff88';
+            planName.innerText = 'Plus (Avançado)';
+            planName.style.background = 'linear-gradient(135deg, #00ff88 0%, #009966 100%)';
+            planName.style.webkitBackgroundClip = 'text';
+            planName.style.webkitTextFillColor = 'transparent';
         }
         if (dashboardPlanCard) {
-            dashboardPlanCard.style.border = "1px solid rgba(0,255,136,0.3)";
-            dashboardPlanCard.style.boxShadow = "0 0 15px rgba(0, 255, 136, 0.1)";
+            dashboardPlanCard.style.background = "linear-gradient(135deg, #0a1511 0%, #16213e 100%)";
+            dashboardPlanCard.style.border = "1px solid rgba(0, 255, 136, 0.4)";
+            dashboardPlanCard.style.boxShadow = "0 0 20px rgba(0, 255, 136, 0.15)";
         }
-        if (upgradeSection) upgradeSection.style.display = 'block'; // Can upgrade to Pro
+        if (upgradeSection) {
+            upgradeSection.style.display = 'block';
+            upgradeSection.innerHTML = `
+                <div style="font-size: 0.75rem; color: #00ff88; margin-bottom: 10px; line-height: 1.5;">
+                    <i class="fas fa-check-circle"></i> Mais tokens mensais<br>
+                    <i class="fas fa-check-circle"></i> Recursos aprimorados
+                </div>
+                <a href="planos.html" style="color:#00ff88; text-decoration:none; font-size:0.85rem; font-weight:bold; display:flex; align-items:center; justify-content:center; gap:5px; background: rgba(0, 255, 136, 0.1); padding: 8px; border-radius: 8px; transition: all 0.3s ease;">
+                    <i class="fas fa-arrow-up"></i> Evoluir para PRO
+                </a>
+            `;
+            upgradeSection.style.borderTop = "1px solid rgba(0, 255, 136, 0.2)";
+            upgradeSection.style.marginTop = "12px";
+            upgradeSection.style.paddingTop = "12px";
+        }
     }
     else if (activePlan.toLowerCase() === 'pro') {
         if (planBadge) {
             planBadge.style.background = 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)';
             planBadge.style.color = 'black';
             planBadge.innerHTML = '<i class="fas fa-crown"></i> PRO';
+            planBadge.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.5)';
         }
         if (planName) {
             planName.innerText = 'Pro (Premium)';
@@ -275,7 +312,21 @@ function updateUI(name, email, plan, profilePicture) {
             dashboardPlanCard.style.border = "1px solid rgba(255, 215, 0, 0.4)";
             dashboardPlanCard.style.boxShadow = "0 0 20px rgba(255, 215, 0, 0.15)";
         }
-        if (upgradeSection) upgradeSection.style.display = 'none'; // Max level
+        if (upgradeSection) {
+            upgradeSection.style.display = 'block';
+            upgradeSection.innerHTML = `
+                <div style="font-size: 0.75rem; color: #FFD700; margin-bottom: 10px; line-height: 1.5;">
+                    <i class="fas fa-check-circle"></i> Tokens Ilimitados<br>
+                    <i class="fas fa-check-circle"></i> Acesso VIP a tudo
+                </div>
+                <div style="color:#FFD700; text-align:center; font-size:0.85rem; font-weight:bold; background: rgba(255, 215, 0, 0.1); padding: 8px; border-radius: 8px;">
+                    <i class="fas fa-star"></i> Plano Máximo
+                </div>
+            `;
+            upgradeSection.style.borderTop = "1px solid rgba(255, 215, 0, 0.2)";
+            upgradeSection.style.marginTop = "12px";
+            upgradeSection.style.paddingTop = "12px";
+        }
     }
 
     // --- Lógica Específica para perfil.html ---
