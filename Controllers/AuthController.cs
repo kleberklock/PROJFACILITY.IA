@@ -183,35 +183,32 @@ namespace PROJFACILITY.IA.Controllers
             
             await _context.SaveChangesAsync();
 
-            // --- INÍCIO DA ADIÇÃO: ALERTA DE NOVO USUÁRIO ---
-            _ = Task.Run(async () => 
+            // --- ALERTA DE NOVO USUÁRIO ---
+            try 
             {
-                try 
-                {
-                    var mensagem = $@"
-                        <div style='font-family: Arial, sans-serif; padding: 20px; color: #333; border: 1px solid #e0e0e0; border-radius: 8px; max-width: 600px; margin: 0 auto;'>
-                            <h2 style='color: #009966;'>Alerta de Novo Cadastro</h2>
-                            <p>Um novo usuário acabou de criar uma conta no sistema.</p>
-                            <ul style='list-style-type: none; padding: 0;'>
-                                <li><strong>Nome:</strong> {user.Name}</li>
-                                <li><strong>E-mail:</strong> {user.Email}</li>
-                                <li><strong>Data e Hora:</strong> {DateTime.Now:dd/MM/yyyy HH:mm:ss}</li>
-                            </ul>
-                            <p style='font-size: 12px; color: #888; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;'>Este é um alerta automático de sistema do Facility.IA.</p>
-                        </div>";
-                    
-                    await _emailService.SendEmailAsync(
-                        "klockk27@gmail.com", 
-                        "Alerta de Novo Usuário - Facility.IA", 
-                        mensagem
-                    );
-                } 
-                catch 
-                {
-                    // Ignora o erro silenciosamente para não impedir o registro do usuário
-                }
-            });
-            // --- FIM DA ADIÇÃO ---
+                var mensagem = $@"
+                    <div style='font-family: Arial, sans-serif; padding: 20px; color: #333; border: 1px solid #e0e0e0; border-radius: 8px; max-width: 600px; margin: 0 auto;'>
+                        <h2 style='color: #009966;'>Alerta de Novo Cadastro</h2>
+                        <p>Um novo usuário acabou de criar uma conta no sistema.</p>
+                        <ul style='list-style-type: none; padding: 0;'>
+                            <li><strong>Nome:</strong> {user.Name}</li>
+                            <li><strong>E-mail:</strong> {user.Email}</li>
+                            <li><strong>Data e Hora:</strong> {DateTime.Now:dd/MM/yyyy HH:mm:ss}</li>
+                        </ul>
+                        <p style='font-size: 12px; color: #888; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;'>Este é um alerta automático de sistema do Facility.IA.</p>
+                    </div>";
+                
+                await _emailService.SendEmailAsync(
+                    "klockk27@gmail.com", 
+                    "Alerta de Novo Usuário - Facility.IA", 
+                    mensagem
+                );
+            } 
+            catch 
+            {
+                // Ignora o erro para não impedir o registro do usuário
+            }
+            // --- FIM DO ALERTA ---
 
             var token = GerarTokenJwt(user);
             return Ok(new { 

@@ -9,7 +9,7 @@ const CONFIG = {
     API_URL: BASE_URL
 };
 
- //3. Compatibilidade para o Perfil e Script Novo (que usam API_BASE_URL)
+//3. Compatibilidade para o Perfil e Script Novo (que usam API_BASE_URL)
 const API_BASE_URL = BASE_URL;
 
 console.log("Facility.IA: Conectado em", BASE_URL);
