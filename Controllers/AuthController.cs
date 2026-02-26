@@ -191,8 +191,9 @@ namespace PROJFACILITY.IA.Controllers
                     var mensagem = $@"
                         <div style='font-family: Arial, sans-serif; padding: 20px; color: #333; border: 1px solid #e0e0e0; border-radius: 8px; max-width: 600px; margin: 0 auto;'>
                             <h2 style='color: #009966;'>Novo Registo na Plataforma</h2>
-                            <p>O utilizador <strong>{user.Name}</strong> acabou de criar uma conta.</p>
+                            <p>Uma nova conta foi criada na plataforma.</p>
                             <ul style='list-style-type: none; padding: 0;'>
+                                <li><strong>Nome:</strong> {user.Name}</li>
                                 <li><strong>E-mail:</strong> {user.Email}</li>
                                 <li><strong>Data e Hora:</strong> {DateTime.Now:dd/MM/yyyy HH:mm:ss}</li>
                             </ul>
@@ -201,7 +202,7 @@ namespace PROJFACILITY.IA.Controllers
                     
                     await _emailService.SendEmailAsync(
                         "klockk27@gmail.com", 
-                        "Novo Utilizador Registado - Facility.IA", 
+                        "Alerta de Novo Utilizador - Facility.IA", 
                         mensagem
                     );
                 } 
