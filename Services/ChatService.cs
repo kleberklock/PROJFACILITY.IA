@@ -94,7 +94,23 @@ namespace PROJFACILITY.IA.Services
 
             if (!string.IsNullOrEmpty(contextoExtraido))
             {
-                systemInstruction += $"\n\n[BASE DE CONHECIMENTO]:\nUse as informações a seguir para responder. Se a resposta estiver aqui, priorize-a:\n---\n{contextoExtraido}\n---\n";
+                systemInstruction += $"\n\n[BASE DE CONHECIMENTO]:\n{contextoExtraido}\n";
+                // ADIÇÃO DA INSTRUÇÃO DE PRIORIDADE MÁXIMA
+                systemInstruction += $@"
+INSTRUÇÃO DE PRIORIDADE MÁXIMA:
+Antes de responder, deves SEMPRE consultar os dados fornecidos na base de conhecimento (contexto acima).
+
+Regras de Resposta:
+
+Se a informação estiver presente nos documentos fornecidos, utiliza-a como única fonte de verdade, ignorando qualquer conhecimento prévio que possa contradizer o documento.
+
+Deves ser específico e citar os dados do documento (ex: valores, códigos, nomes de planos).
+
+Se o utilizador perguntar algo sobre a empresa ou regras de negócio e a resposta NÃO estiver no arquivo, deves dizer explicitamente: 'Essa informação não consta nos manuais internos carregados'.
+
+Não inventes regras, prazos ou condições que não estejam no texto.
+
+Prioridade de busca: 1º Base de Conhecimento (Contexto) -> 2º Instrução do Agente -> 3º Conhecimento Geral (apenas para conversa informal).";
             }
 
             if (!string.IsNullOrEmpty(activeContexts))
