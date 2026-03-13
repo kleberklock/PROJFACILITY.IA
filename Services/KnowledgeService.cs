@@ -170,8 +170,8 @@ namespace PROJFACILITY.IA.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro no upload");
-                // Importante: Não relança o erro, mas retorna false para o controller saber
-                return false; 
+                // Lança a exceção para que o KnowledgeController consiga ler a mensagem de erro exata
+                throw; 
             }
         }
 
