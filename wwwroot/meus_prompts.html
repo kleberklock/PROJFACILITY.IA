@@ -101,7 +101,7 @@
             padding: 20px;
             color: #ddd;
             font-size: 1rem;
-            resize: none;
+            resize: vertical;
             min-height: 200px;
         }
 
@@ -521,7 +521,7 @@
 
                             <label style="display:block; color:#666; margin-bottom:10px; font-size:0.9rem;">O QUE ELE
                                 DEVE FAZER?</label>
-                            <textarea id="agentPrompt" class="minimal-textarea" style="min-height: 150px;"
+                            <textarea id="agentPrompt" class="minimal-textarea" style="min-height: 250px;"
                                 placeholder="Explique como ele deve agir. Ex: 'Você é um especialista em contratos de aluguel. Responda de forma simples e sempre cite a lei do inquilinato.'"></textarea>
 
                             <div style="margin-top: 20px;">
@@ -647,7 +647,7 @@
                 placeholder="Dê um nome curto">
 
             <label style="color:#aaa; font-size:0.9rem; display:block; margin-bottom:5px;">Conteúdo do Prompt</label>
-            <textarea id="inputPromptContent" class="minimal-textarea" style="min-height: 120px; width:100%;"
+            <textarea id="inputPromptContent" class="minimal-textarea" style="min-height: 250px; width:100%;"
                 placeholder="Digite o comando que a IA deve executar..."></textarea>
 
             <div style="text-align: right; margin-top: 20px;">
@@ -851,7 +851,7 @@
 
                         const formData = new FormData();
                         formData.append('file', fileInput.files[0]);
-                        formData.append('profession', name);
+                        formData.append('tag', name);
                         formData.append('userId', creatorId);
 
                         const uploadResponse = await fetch(`${baseUrl}/api/knowledge/upload`, {
@@ -922,7 +922,7 @@
 
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
-            formData.append('profession', nomeAgente);
+            formData.append('tag', nomeAgente);
             formData.append('userId', userId);
 
             const btn = document.getElementById('btnEnviarTreino');

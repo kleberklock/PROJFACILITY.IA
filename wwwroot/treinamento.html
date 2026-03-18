@@ -258,9 +258,9 @@
                 const formData = new FormData();
                 formData.append('file', file);
 
-                // MÁGICA AQUI: Enviamos o Nome do Agente como 'profession'
+                // MÁGICA AQUI: Enviamos o Nome do Agente como 'tag'
                 // O KnowledgeService salva isso na tag do Pinecone
-                formData.append('profession', agentName);
+                formData.append('tag', agentName);
 
                 const baseUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
                 const res = await fetch(`${baseUrl}/api/knowledge/upload`, {

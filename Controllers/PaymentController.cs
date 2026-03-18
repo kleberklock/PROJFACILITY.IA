@@ -1,14 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using PROJFACILITY.IA.Data;
 using PROJFACILITY.IA.Models;
-using PROJFACILITY.IA.Services;
-using Stripe;
-using Stripe.Checkout;
-using System.IO;
+using MercadoPago.Config;
+using MercadoPago.Client.Preference;
+using MercadoPago.Client.Payment;
+using MercadoPago.Resource.Preference;
+using MercadoPago.Resource.Payment;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using System.IO;
 using System.Threading.Tasks;
-using System;
 using System.Collections.Generic;
+using System;
+using System.Text.Json;
 
 namespace PROJFACILITY.IA.Controllers
 {
@@ -19,205 +24,177 @@ namespace PROJFACILITY.IA.Controllers
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly ILogger<PaymentController> _logger;
-        private readonly EmailService _emailService;
 
-        public PaymentController(AppDbContext context, IConfiguration configuration, ILogger<PaymentController> logger, EmailService emailService)
+        public PaymentController(AppDbContext context, IConfiguration configuration, ILogger<PaymentController> logger)
         {
             _context = context;
             _configuration = configuration;
             _logger = logger;
-            _emailService = emailService;
+
+            var accessToken = _configuration["MercadoPago:AccessToken"];
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                MercadoPagoConfig.AccessToken = accessToken;
+            }
         }
 
+        // 1. ENDPOINT PARA CRIAR A SESSÃO DE CHECKOUT (Restrito a usuários logados)
+        [Authorize]
         [HttpPost("create-checkout-session")]
-        public async Task<IActionResult> CreateCheckoutSession([FromBody] CheckoutRequest request)
+        public async Task<IActionResult> CriarSessaoCheckout([FromBody] CheckoutRequest request)
         {
-            try 
+            try
             {
-                // 1. VERIFICAÇÃO DE SEGURANÇA (Chave Stripe)
-                var apiKey = _configuration["Stripe:SecretKey"];
-                if (string.IsNullOrEmpty(apiKey) || !apiKey.StartsWith("sk_"))
-                {
-                    return BadRequest(new { message = "CONFIGURAÇÃO INVÁLIDA: Chave do Stripe não encontrada ou incorreta no appsettings.json." });
-                }
-                StripeConfiguration.ApiKey = apiKey;
+                // Extrai o ID do utilizador autenticado a partir do token JWT
+                var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst(ClaimTypes.Name)?.Value;
+                if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
+                    return Unauthorized(new { message = "Usuário não autenticado." });
 
-                // 2. Validação do Usuário
-                var user = await _context.Users.FindAsync(request.UserId);
-                if (user == null) 
-                {
-                    // Retorna 404 para o front-end forçar logout
-                    return NotFound(new { message = "Usuário não encontrado." });
-                }
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null) return NotFound(new { message = "Usuário não encontrado." });
 
                 var domain = _configuration["App:Domain"] ?? "http://localhost:5217";
 
-                // 3. Cálculo do Preço (Centavos)
-                long basePrice = request.Plan.ToLower() == "pro" ? 14990 : 5990;
-                long finalPrice = basePrice;
-                
-                string interval = "month";
-                int intervalCount = 1;
+                decimal basePrice = request.Plan.ToLower() == "pro" ? 149.90m : 59.90m;
+                decimal finalPrice = basePrice;
                 string descCiclo = "Mensal";
 
-                if (request.Cycle == "quarterly") 
+                if (request.Cycle == "quarterly")
                 {
-                    finalPrice = (long)((basePrice * 3) * 0.9);
-                    interval = "month";
-                    intervalCount = 3;
+                    finalPrice = (basePrice * 3) * 0.9m;
                     descCiclo = "Trimestral";
                 }
-                else if (request.Cycle == "annual") 
+                else if (request.Cycle == "annual")
                 {
-                    finalPrice = (long)((basePrice * 12) * 0.8);
-                    interval = "year";
-                    intervalCount = 1;
+                    finalPrice = (basePrice * 12) * 0.8m;
                     descCiclo = "Anual";
                 }
 
-                // 4. Criação da Sessão
-                var options = new SessionCreateOptions
+                var preferenceRequest = new PreferenceRequest
                 {
-                    PaymentMethodTypes = new List<string> { "card" },
-                    LineItems = new List<SessionLineItemOptions>
+                    Items = new List<PreferenceItemRequest>
                     {
-                        new SessionLineItemOptions
+                        new PreferenceItemRequest
                         {
-                            PriceData = new SessionLineItemPriceDataOptions
-                            {
-                                UnitAmount = finalPrice,
-                                Currency = "brl",
-                                Recurring = new SessionLineItemPriceDataRecurringOptions
-                                {
-                                    Interval = interval,
-                                    IntervalCount = intervalCount
-                                },
-                                ProductData = new SessionLineItemPriceDataProductDataOptions
-                                {
-                                    Name = $"Facility.IA - Plano {request.Plan} ({descCiclo})",
-                                    Description = "Assinatura Premium"
-                                },
-                            },
+                            Title = $"Facility.IA - Plano {request.Plan} ({descCiclo})",
+                            Description = "Assinatura Premium PROJFACILITY.IA",
                             Quantity = 1,
-                        },
+                            CurrencyId = "BRL",
+                            UnitPrice = finalPrice,
+                        }
                     },
-                    Mode = "subscription",
-                    SuccessUrl = $"{domain}/sucesso.html?plan={request.Plan}",
-                    CancelUrl = $"{domain}/checkout.html?payment=canceled",
-                    Metadata = new Dictionary<string, string>
+                    BackUrls = new PreferenceBackUrlsRequest
                     {
-                        { "userId", user.Id.ToString() },
-                        { "planName", request.Plan },
-                        { "cycle", request.Cycle }
-                    }
+                        Success = $"{domain}/sucesso.html",
+                        Failure = $"{domain}/checkout.html?payment=canceled",
+                        Pending = $"{domain}/checkout.html?payment=pending"
+                    },
+                    AutoReturn = "approved",
+                    PaymentMethods = new PreferencePaymentMethodsRequest
+                    {
+                        ExcludedPaymentTypes = new List<PreferencePaymentTypeRequest>
+                        {
+                            new PreferencePaymentTypeRequest { Id = "ticket" } // Exclui boleto, aceita apenas Cartão e PIX
+                        }
+                    },
+                    ExternalReference = userId.ToString(), // Super importante para identificar quem pagou no webhook
+                    NotificationUrl = $"{domain}/api/payment/webhook" // MP enviará POST pra cá intermitentemente
                 };
 
-                var service = new SessionService();
-                Session session = await service.CreateAsync(options);
+                var client = new PreferenceClient();
+                Preference preference = await client.CreateAsync(preferenceRequest);
 
-                return Ok(new { url = session.Url });
-            }
-            catch (StripeException e)
-            {
-                _logger.LogError(e, "Erro na API do Stripe");
-                // Retorna o erro exato do Stripe para o Front-end
-                return BadRequest(new { message = $"Erro Stripe: {e.StripeError.Message}" });
+                // Retorna a URL (InitPoint) para o front-end redirecionar o utilizador para a página do Mercado Pago
+                return Ok(new { url = preference.InitPoint });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro Interno no Pagamento");
-                return StatusCode(500, new { message = $"Erro Interno: {ex.Message}" });
+                _logger.LogError(ex, "Erro interno ao criar sessão do Mercado Pago");
+                return StatusCode(500, new { message = "Ocorreu um erro interno ao processar o checkout." });
             }
         }
 
+        // 2. ENDPOINT DE WEBHOOK DO MERCADO PAGO 
         [HttpPost("webhook")]
-        public async Task<IActionResult> StripeWebhook()
+        public async Task<IActionResult> MercadoPagoWebhook()
         {
-            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
             try
             {
-                var stripeEvent = EventUtility.ConstructEvent(
-                    json, Request.Headers["Stripe-Signature"], _configuration["Stripe:WebhookSecret"]
-                );
+                var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+                _logger.LogInformation($"[MP Webhook] JSON recebido: {json}");
 
-                // CORREÇÃO: Usando string direta para evitar erros de compilação
-                if (stripeEvent.Type == "checkout.session.completed")
+                // Se houver uma secret de assinatura configurada no seu appsettings,
+                // você também pode ler Request.Headers["x-signature"] para validar a origem via HMAC (código não ilustrado aqui).
+                
+                if (string.IsNullOrEmpty(json)) return BadRequest();
+
+                using JsonDocument doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                // O Mercado Pago pode mandar eventos de 'payment' nestes dois formatos principais
+                bool isPaymentEvent = (root.TryGetProperty("type", out var typeElement) && typeElement.GetString() == "payment") ||
+                                      (root.TryGetProperty("action", out var actionElement) && actionElement.GetString() != null && actionElement.GetString()!.StartsWith("payment"));
+
+                if (isPaymentEvent)
                 {
-                    var session = stripeEvent.Data.Object as Session;
-
-                    if (session?.Metadata != null &&
-                        session.Metadata.TryGetValue("userId", out string? userIdStr))
+                    string? paymentIdStr = null;
+                    if (root.TryGetProperty("data", out var dataElement) && dataElement.TryGetProperty("id", out var idElement))
                     {
-                        if (int.TryParse(userIdStr, out int userId))
-                        {
-                            string planName = session.Metadata.GetValueOrDefault("planName", "Plus");
-                            string cycle = session.Metadata.GetValueOrDefault("cycle", "Mensal");
+                        paymentIdStr = idElement.ToString();
+                    }
 
-                            await AtivarPlanoUsuario(userId, planName, cycle);
+                    if (!string.IsNullOrEmpty(paymentIdStr) && long.TryParse(paymentIdStr, out long paymentId))
+                    {
+                        // Consulta a API do MP usando o PaymentClient para verificar o status real
+                        // Isso previne que chamadas fakes com payloads de "approved" invadam o banco
+                        var client = new PaymentClient();
+                        Payment payment = await client.GetAsync(paymentId);
+
+                        if (payment.Status == "approved")
+                        {
+                            // A ExternalReference carrega o ID do usuário que injetamos na criação
+                            if (!string.IsNullOrEmpty(payment.ExternalReference) && int.TryParse(payment.ExternalReference, out int userId))
+                            {
+                                var user = await _context.Users.FindAsync(userId);
+                                if (user != null)
+                                {
+                                    // Determina o plano que ele pagou baseado no Title gerado na payment.Description
+                                    // ou fazemos um upgrade padrão:
+                                    string planoComprado = "Pro";
+                                    if (payment.Description != null && payment.Description.Contains("Plus")) planoComprado = "Plus";
+                                    
+                                    string cicloComprado = "Mensal";
+                                    if (payment.Description != null)
+                                    {
+                                        if (payment.Description.Contains("Anual")) cicloComprado = "Anual";
+                                        if (payment.Description.Contains("Trimestral")) cicloComprado = "Trimestral";
+                                    }
+
+                                    user.Plan = planoComprado; 
+                                    user.IsActive = true;
+                                    user.SubscriptionCycle = cicloComprado;
+
+                                    await _context.SaveChangesAsync();
+                                    _logger.LogInformation($"[WEBHOOK] Pagamento Aprovado. Assinatura ativada para UserId: {userId} - Plano: {planoComprado}");
+                                }
+                            }
                         }
                     }
                 }
 
-                return Ok();
+                // O Mercado Pago ESPERA um StatusCode 200/201 para saber que você recebeu a msg. Senão, tenta reenviar.
+                return Ok(); 
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Webhook Falhou");
-                return BadRequest();
-            }
-        }
-
-        private async Task AtivarPlanoUsuario(int userId, string planName, string cycle)
-        {
-            var user = await _context.Users.FindAsync(userId);
-            if (user != null)
-            {
-                string planoAntigo = user.Plan;
-
-                user.Plan = planName;
-                user.SubscriptionCycle = cycle;
-                user.IsActive = true; 
-                await _context.SaveChangesAsync();
-                _logger.LogInformation($"Usuário {userId} ativado: {planName}");
-
-                // --- INÍCIO DA ADIÇÃO: ALERTA DE ALTERAÇÃO DE PLANO STRIPE ---
-                if (planoAntigo != planName)
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            var tipoMudanca = planoAntigo == "Free" || planoAntigo == "Iniciante" ? "Upgrade" : "Alteração de Plano";
-                            var mensagem = $@"
-                                <div style='font-family: Arial, sans-serif; padding: 20px; color: #333; border: 1px solid #e0e0e0; border-radius: 8px; max-width: 600px; margin: 0 auto;'>
-                                    <h2 style='color: #009966;'>{tipoMudanca} de Plano no Facility.IA</h2>
-                                    <p>O usuário <strong>{user.Name}</strong> ({user.Email}) atualizou sua assinatura via Stripe.</p>
-                                    <ul style='list-style-type: none; padding: 0;'>
-                                        <li><strong>Plano Anterior:</strong> {planoAntigo}</li>
-                                        <li><strong>Novo Plano:</strong> {planName}</li>
-                                        <li><strong>Novo Ciclo:</strong> {cycle}</li>
-                                        <li><strong>Data e Hora:</strong> {DateTime.Now:dd/MM/yyyy HH:mm:ss}</li>
-                                    </ul>
-                                    <p style='font-size: 12px; color: #888; margin-top: 20px; border-top: 1px solid #eee; padding-top: 10px;'>Este é um alerta automático do sistema de pagamentos da plataforma.</p>
-                                </div>";
-
-                            await _emailService.SendEmailAsync(
-                                "klockk27@gmail.com",
-                                "Aviso de Alteração de Plano - Facility.IA",
-                                mensagem
-                            );
-                        }
-                        catch { }
-                    });
-                }
-                // --- FIM DA ADIÇÃO ---
+                _logger.LogError(ex, "Erro interno no processamento do Webhook do Mercado Pago");
+                return StatusCode(500);
             }
         }
     }
 
     public class CheckoutRequest
     {
-        public int UserId { get; set; }
         public string Plan { get; set; } = "Plus";
         public string Cycle { get; set; } = "monthly";
     }

@@ -413,7 +413,7 @@
         async function carregarArquivos() {
             const divFiles = document.getElementById('fileListContainer');
             try {
-                const resFiles = await fetch(`${API_URL}/api/knowledge/${agentId}/files`, {
+                const resFiles = await fetch(`${API_URL}/api/knowledge/files`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
@@ -564,8 +564,8 @@
 
             const formData = new FormData();
             formData.append('file', file);
-            // IMPORTANTE: Envia o nome atual que está no input, pois o backend usa isso para linkar (Tag/Profession)
-            formData.append('profession', document.getElementById('agentName').value);
+            // IMPORTANTE: Envia o nome atual que está no input, pois o backend usa isso para linkar (Tag)
+            formData.append('tag', document.getElementById('agentName').value);
             // O backend pega o userId do token, mas se pedir explicitamente podemos mandar 0 ou omitir se o controller tratar
 
             try {

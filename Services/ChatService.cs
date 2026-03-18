@@ -168,7 +168,6 @@ Prioridade de busca: 1º Base de Conhecimento (Contexto) -> 2º Instrução do A
                 filtroUserId.Add("$in", new string[] { userId.ToString(), "system" });
 
                 var filtroPrincipal = new Metadata();
-                filtroPrincipal.Add("tag", profissao);
                 filtroPrincipal.Add("userId", filtroUserId); 
 
                 var searchRequest = new QueryRequest
@@ -214,7 +213,6 @@ Prioridade de busca: 1º Base de Conhecimento (Contexto) -> 2º Instrução do A
                 filtroUserId.Add("$in", new string[] { userId.ToString(), "system" });
 
                 var filtroPrincipal = new Metadata();
-                filtroPrincipal.Add("tag", agentName);
                 filtroPrincipal.Add("userId", filtroUserId);
 
                 var index = _pinecone.Index(_indexName);

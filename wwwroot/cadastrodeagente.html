@@ -265,7 +265,7 @@
                     btn.innerHTML = '<i class="fas fa-cog fa-spin"></i> Treinando...';
                     const formData = new FormData();
                     formData.append('file', file);
-                    formData.append('profession', name);
+                    formData.append('tag', name);
                     formData.append('userId', userData.id);
 
                     const resUpload = await fetch(`${apiUrl}/api/knowledge/upload`, {
