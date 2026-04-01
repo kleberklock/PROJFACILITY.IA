@@ -14,9 +14,12 @@ namespace PROJFACILITY.IA.Models
         public required string Profession { get; set; } // Adicionado 'required'
 
         [Required]
-        public required string ButtonTitle { get; set; } // Adicionado 'required'
+        public required string ButtonTitle { get; set; }
 
         [Required]
-        public required string Content { get; set; } // Adicionado 'required'
+        public required string ShortDescription { get; set; }
+
+        [Required]
+        public required string Content { get; set; }
     }
 }

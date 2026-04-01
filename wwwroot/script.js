@@ -1,5 +1,34 @@
 /* FACILITY.IA - Core Script Limpo */
 
+// --- Injeção de CSS do Tooltip para System Prompts ---
+(function injectTooltipCSS() {
+    if (document.getElementById('sp-tooltip-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'sp-tooltip-styles';
+    style.textContent = `
+        .sp-has-tooltip { position: relative; }
+        .sp-tooltip {
+            visibility: hidden; opacity: 0;
+            position: absolute; bottom: calc(100% + 10px); left: 50%;
+            transform: translateX(-50%);
+            background: #1a1a2e; border: 1px solid var(--primary, #10b981);
+            color: #ccc; font-size: 0.78rem; line-height: 1.4;
+            padding: 8px 12px; border-radius: 8px; width: 220px;
+            text-align: left; z-index: 9999; pointer-events: none;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            box-shadow: 0 4px 20px rgba(16,185,129,0.2);
+        }
+        .sp-tooltip::after {
+            content: ''; position: absolute; top: 100%; left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--primary, #10b981);
+        }
+        .sp-has-tooltip:hover .sp-tooltip { visibility: visible; opacity: 1; }
+    `;
+    document.head.appendChild(style);
+})();
+
 document.addEventListener('DOMContentLoaded', function () {
     // 1. Inicializa Partículas
     initParticles();
@@ -538,16 +567,18 @@ function renderSystemPrompts(prompts) {
 
         items.forEach(p => {
             const card = document.createElement('div');
-            card.className = 'system-prompt-card';
+            card.className = 'system-prompt-card sp-has-tooltip';
 
             // Garantir que passamos o título e o conteúdo
             const titulo = p.buttonTitle || p.ButtonTitle || p.profession || p.Profession || 'Sistema';
             const conteudo = p.content || p.Content || '';
+            const descricao = p.shortDescription || p.ShortDescription || '';
 
             card.onclick = () => selecionarPromptChat(encodeURIComponent(titulo), encodeURIComponent(conteudo));
             card.innerHTML = `
                 <div class="sp-prof">${p.profession || p.Profession || ''}</div>
                 <div class="sp-title">${p.buttonTitle || p.ButtonTitle || ''}</div>
+                ${descricao ? `<div class="sp-tooltip">${descricao}</div>` : ''}
             `;
             body.appendChild(card);
         });

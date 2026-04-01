@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -46,7 +46,7 @@
                     style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
                     Administração</div>
 
-                <a href="treinamento.html" class="nav-btn"><i class="fas fa-brain"></i> Treinamento</a>
+
                 <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i>
                     Agentes</a>
                 <a href="admin.html" class="nav-btn" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel
@@ -117,9 +117,12 @@
                             <div style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Plano Atual</div>
                         </div>
                         <div>
-                            <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">0</div>
-                            <div style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Prompts Criados
-                            </div>
+                            <div id="promptsCount" style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">0</div>
+                            <div style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Prompts Criados</div>
+                        </div>
+                        <div>
+                            <div id="agentsCount" style="font-size: 1.5rem; font-weight: bold; color: #00F3FF;">0</div>
+                            <div style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Agentes Criados</div>
                         </div>
                     </div>
                 </div>
@@ -253,6 +256,42 @@
             document.getElementById('sidebar').classList.toggle('active');
             document.querySelector('.overlay').classList.toggle('active');
         }
+
+        async function loadProfileStats() {
+            try {
+                const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:5217';
+                
+                // Carregar Prompts
+                const resPrompts = await fetch(`${baseUrl}/api/prompts`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (resPrompts.ok) {
+                    const prompts = await resPrompts.json();
+                    document.getElementById('promptsCount').innerText = prompts.length;
+                }
+
+                // Carregar Agentes
+                const resAgents = await fetch(`${baseUrl}/api/agents`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (resAgents.ok) {
+                    const allAgents = await resAgents.json();
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const payload = JSON.parse(window.atob(base64));
+                    const currentUserId = payload.id || payload.nameid || parseInt(payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]);
+                    
+                    const myAgents = allAgents.filter(a => a.userId == currentUserId);
+                    document.getElementById('agentsCount').innerText = myAgents.length;
+                }
+            } catch (err) {
+                console.error("Erro ao carregar os totais:", err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadProfileStats);
 
     </script>
 </body>
