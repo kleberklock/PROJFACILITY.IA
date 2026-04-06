@@ -45,20 +45,30 @@ namespace PROJFACILITY.IA.Controllers
                     .Select(g => g.Key)
                     .FirstOrDefaultAsync();
 
+                // Total de mensagens trocadas (aprox. horas salvas)
+                var totalMessages = await _context.ChatMessages
+                    .Where(m => m.UserId == user.Id)
+                    .CountAsync();
+
                 relatorio.Add(new 
                 {
                     user.Id,
                     user.Name,
                     user.Email,
-                    user.Plan,
                     user.Role,
-                    
-                    SubscriptionCycle = user.SubscriptionCycle ?? "Mensal",
+                    user.Plan,
+                    user.SubscriptionCycle,
+                    IsActive = user.IsActive ?? false,
                     CreatedAt = user.CreatedAt,
                     LastLogin = user.LastLogin,
-                    
+                    LastResetDate = user.LastResetDate,
+                    IsEmailVerified = !string.IsNullOrEmpty(user.VerificationCode) ? false : true,
+                    HasProfilePicture = !string.IsNullOrEmpty(user.ProfilePicture),
                     MostUsedAgent = favAgentId ?? "Nenhum",
-                    UsedTokensCurrentMonth = user.UsedTokensCurrentMonth
+                    UsedTokensCurrentMonth = user.UsedTokensCurrentMonth,
+                    TotalMessages = totalMessages,
+                    // Estimativa: 1 mensagem IA ≈ 2 min economizados
+                    HoursSaved = Math.Round(totalMessages * 2.0 / 60.0, 1)
                 });
             }
 
@@ -77,7 +87,7 @@ namespace PROJFACILITY.IA.Controllers
             var user = await _context.Users.FindAsync(request.UserId);
             if (user == null) return NotFound(new { message = "Usuário não encontrado." });
 
-            string planoAntigo = user.Plan;
+            string? planoAntigo = user.Plan;
 
             if (!string.IsNullOrEmpty(request.NewPlan)) 
                 user.Plan = request.NewPlan;
@@ -85,9 +95,11 @@ namespace PROJFACILITY.IA.Controllers
             if (!string.IsNullOrEmpty(request.NewCycle)) 
                 user.SubscriptionCycle = request.NewCycle;
             
-            // Lógica de Admin
-            if (request.NewPlan == "Admin") user.Role = "admin";
-            else if (user.Role == "admin" && request.NewPlan != "Admin") user.Role = "user";
+            if (!string.IsNullOrEmpty(request.NewRole))
+                user.Role = request.NewRole;
+
+            if (request.IsActive.HasValue)
+                user.IsActive = request.IsActive.Value;
 
             if (request.ResetTokens) 
                 user.UsedTokensCurrentMonth = 0;
@@ -185,9 +197,8 @@ namespace PROJFACILITY.IA.Controllers
                 await _context.SaveChangesAsync();
                 return Ok(new { message = "Usuário excluído com sucesso." });
             }
-            catch (System.Exception ex)
+            catch (System.Exception)
             {
-                // Logar o erro 'ex' se necessário
                 return BadRequest(new { message = "Erro ao excluir: O usuário possui dados vinculados." });
             }
         }
@@ -200,6 +211,8 @@ namespace PROJFACILITY.IA.Controllers
             public int UserId { get; set; } 
             public string NewPlan { get; set; } = string.Empty; 
             public string NewCycle { get; set; } = "Mensal"; 
+            public string NewRole { get; set; } = string.Empty;
+            public bool? IsActive { get; set; }
             public bool ResetTokens { get; set; } = false;
         }
 

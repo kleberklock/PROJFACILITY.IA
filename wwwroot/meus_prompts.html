@@ -815,7 +815,18 @@
 
         function mostrarNomeArquivoForm(input) {
             if (input.files && input.files[0]) {
-                document.getElementById('fileNameDisplayForm').innerText = "Arquivo selecionado: " + input.files[0].name;
+                const file = input.files[0];
+                const allowed = ['.pdf', '.txt', '.docx', '.csv', '.xlsx', '.xls'];
+                const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+                
+                if (!allowed.includes(ext)) {
+                    if (typeof Swal !== 'undefined') Swal.fire('Aviso', 'Formato não suportado. Envie apenas arquivos PDF, DOCX, TXT ou Excel.', 'warning');
+                    else alert('Formato não suportado. Envie apenas arquivos PDF, DOCX, TXT ou Excel.');
+                    input.value = '';
+                    document.getElementById('fileNameDisplayForm').innerText = '';
+                    return;
+                }
+                document.getElementById('fileNameDisplayForm').innerText = "Arquivo selecionado: " + file.name;
             }
         }
 
@@ -908,7 +919,18 @@
 
         function mostrarNomeArquivo(input) {
             if (input.files && input.files[0]) {
-                document.getElementById('fileNameDisplay').innerText = input.files[0].name;
+                const file = input.files[0];
+                const allowed = ['.pdf', '.txt', '.docx', '.csv', '.xlsx', '.xls'];
+                const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+                
+                if (!allowed.includes(ext)) {
+                    if (typeof Swal !== 'undefined') Swal.fire('Aviso', 'Formato não suportado. Envie apenas arquivos de documentos válidos.', 'warning');
+                    else alert('Formato não suportado. Envie apenas arquivos de documentos válidos.');
+                    input.value = '';
+                    document.getElementById('fileNameDisplay').innerText = '';
+                    return;
+                }
+                document.getElementById('fileNameDisplay').innerText = file.name;
             }
         }
 

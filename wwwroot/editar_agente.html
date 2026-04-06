@@ -557,6 +557,15 @@
         }
 
         async function uploadArquivo(file) {
+            const allowed = ['.pdf', '.txt', '.docx'];
+            const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+            
+            if (!allowed.includes(ext)) {
+                if (typeof Swal !== 'undefined') Swal.fire('Aviso', 'Formato não suportado. Envie apenas arquivos PDF, TXT ou DOCX.', 'warning');
+                else alert('Formato não suportado. Envie apenas arquivos PDF, TXT ou DOCX.');
+                return;
+            }
+
             // Feedback Visual imediato
             const dropZoneOriginalContent = dropZone.innerHTML;
             dropZone.innerHTML = `<i class="fas fa-circle-notch fa-spin" style="color:#00F3FF; font-size:2rem;"></i><br><span style="color:white;">Processando ${file.name}...</span>`;

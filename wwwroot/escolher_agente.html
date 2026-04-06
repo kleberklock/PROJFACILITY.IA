@@ -12,7 +12,10 @@
         if (!token) window.location.href = 'login.html';
     </script>
     <script>
-        const token = localStorage.getItem('token');
+        // Token já foi lido no script acima, sem const para evitar erro 'Cannot redeclare block-scoped variable'
+        if (typeof token === 'undefined') {
+            var token = localStorage.getItem('token');
+        }
 
         // 1. Redireciona se não tiver token
         if (!token) {
@@ -214,10 +217,10 @@
             box-shadow: 0 8px 20px -5px rgba(255, 0, 204, 0.4);
         }
 
-        /* Operacional */
+        /* Operacional - Vermelho Tijolo / Bordô Quente */
         .icon-operacional {
-            background: linear-gradient(135deg, #606c88 0%, #3f4c6b 100%) !important;
-            box-shadow: 0 8px 20px -5px rgba(96, 108, 136, 0.4);
+            background: linear-gradient(135deg, #EC4E3A 0%, #7B1C1C 100%) !important;
+            box-shadow: 0 8px 20px -5px rgba(236, 78, 58, 0.5);
         }
 
         /* Geral/Fallback */
@@ -358,7 +361,7 @@
             </div>
 
             <div id="gridAgentes" class="card-grid">
-                <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">
+                <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #7B1C1C;">
                     <i class="fas fa-circle-notch fa-spin fa-2x"></i>
                     <p style="margin-top:10px">Sincronizando inteligências...</p>
                 </div>
@@ -508,6 +511,7 @@
                 card.href = `chatcomIA.html?agent=${encodeURIComponent(agent.name)}&icon=${agent.displayIcon}&area=${agent.visualClass}`;
                 card.className = `app-card fade-in`;
                 card.style.animationDelay = `${index * 0.05}s`;
+                card.onclick = () => localStorage.setItem('selectedAgentCategory', agent.visualClass);
 
                 let desc = agent.description;
                 if (!desc) {

@@ -437,7 +437,7 @@ function getCategoryColor(area) {
         'criativo': '#FF3366',
         'negocios': '#0099FF',
         'educacao': '#9933FF',
-        'operacional': '#888888',
+        'operacional': '#EC4E3A',
         'meus': '#7c3aed',
         'outros': '#FFFFFF'
     };

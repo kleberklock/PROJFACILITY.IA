@@ -210,7 +210,19 @@
 
         function handleFileSelect(input) {
             if (input.files && input.files[0]) {
-                document.getElementById('fileName').innerText = input.files[0].name;
+                const file = input.files[0];
+                const allowed = ['.pdf', '.txt', '.docx'];
+                const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+                
+                if (!allowed.includes(ext)) {
+                    if (typeof Swal !== 'undefined') Swal.fire('Aviso', 'Formato não suportado. Envie apenas arquivos PDF, TXT ou DOCX.', 'warning');
+                    else alert('Formato não suportado. Envie apenas arquivos PDF, TXT ou DOCX.');
+                    input.value = '';
+                    checkButtonState();
+                    return;
+                }
+                
+                document.getElementById('fileName').innerText = file.name;
                 document.getElementById('fileInfo').style.display = 'block';
                 checkButtonState();
             }

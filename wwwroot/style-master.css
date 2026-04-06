@@ -1010,8 +1010,26 @@ footer {
     color: #00ccff;
 }
 
-.icon-engenharia {
+.icon-engenharia,
+.area-engenharia .agent-icon {
     color: #ffcc00;
+}
+
+/* Operacional */
+.icon-operacional,
+.area-operacional .agent-icon {
+    color: #EC4E3A;
+}
+
+div.icon-operacional,
+div.area-operacional .agent-icon {
+    background: linear-gradient(135deg, #EC4E3A 0%, #7B1C1C 100%) !important;
+    color: white !important;
+    box-shadow: 0 8px 15px -3px rgba(236, 78, 58, 0.4) !important;
+}
+
+div.icon-operacional i, div.area-operacional .agent-icon i {
+    color: white !important;
 }
 
 /* Mobile Header (Interno) */

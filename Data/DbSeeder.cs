@@ -9,10 +9,157 @@ namespace PROJFACILITY.IA.Data
         public static void Seed(AppDbContext context)
         {
             // Seeding de Agentes
-            // SeedAgents(context); 
+            SeedAgents(context);
 
             // Seeding dos Prompts do Sistema
             SeedSystemPrompts(context);
+        }
+
+        private static void SeedAgents(AppDbContext context)
+        {
+            // Verifica se já existem agentes para evitar duplicidade
+            if (context.Agents.Any())
+            {
+                return;
+            }
+
+            var agents = new List<Agent>
+            {
+                // ===== JURÍDICO =====
+                new Agent { Name = "Advogado Civil", Icon = "fa-scale-balanced", Specialty = "Juridico", IsPublic = true, Description = "Especialista em contratos, litígios civis e direitos do cidadão." },
+                new Agent { Name = "Advogado Trabalhista", Icon = "fa-briefcase", Specialty = "Juridico", IsPublic = true, Description = "Especialista em relações de trabalho, direitos do trabalhador e empregador." },
+                new Agent { Name = "Advogado Criminalista", Icon = "fa-handcuffs", Specialty = "Juridico", IsPublic = true, Description = "Especialista em defesa criminal, habeas corpus e processo penal." },
+                new Agent { Name = "Advogado Tributarista", Icon = "fa-file-invoice-dollar", Specialty = "Juridico", IsPublic = true, Description = "Especialista em impostos, otimização fiscal e planejamento tributário." },
+                new Agent { Name = "Advogado Imobiliário", Icon = "fa-house-chimney", Specialty = "Juridico", IsPublic = true, Description = "Especialista em contratos e litígios envolvendo bens imóveis." },
+                new Agent { Name = "Advogado de Família", Icon = "fa-people-roof", Specialty = "Juridico", IsPublic = true, Description = "Especialista em divórcio, guarda, pensão e sucessões." },
+                new Agent { Name = "Advogado Digital/LGPD", Icon = "fa-laptop-code", Specialty = "Juridico", IsPublic = true, Description = "Especialista em direito digital, proteção de dados e LGPD." },
+                new Agent { Name = "Advogado Ambiental", Icon = "fa-tree", Specialty = "Juridico", IsPublic = true, Description = "Especialista em legislação ambiental e conformidade ecológica." },
+                new Agent { Name = "Advogado Corporativo", Icon = "fa-building", Specialty = "Juridico", IsPublic = true, Description = "Especialista em direito empresarial, contratos e fusões." },
+                new Agent { Name = "Advogado Previdenciário", Icon = "fa-person-cane", Specialty = "Juridico", IsPublic = true, Description = "Especialista em aposentadoria, benefícios do INSS e previdência." },
+                new Agent { Name = "Juiz / Magistrado", Icon = "fa-gavel", Specialty = "Juridico", IsPublic = true, Description = "Perspectiva judicial para análise imparcial de casos e sentenças." },
+                new Agent { Name = "Promotor de Justiça", Icon = "fa-book-atlas", Specialty = "Juridico", IsPublic = true, Description = "Especialista em acusação criminal e defesa dos interesses públicos." },
+                new Agent { Name = "Defensor Público", Icon = "fa-shield-halved", Specialty = "Juridico", IsPublic = true, Description = "Especialista em assistência jurídica gratuita e direitos fundamentais." },
+                new Agent { Name = "Oficial de Cartório", Icon = "fa-stamp", Specialty = "Juridico", IsPublic = true, Description = "Especialista em registros, escrituras e atos notariais." },
+                new Agent { Name = "Paralegal", Icon = "fa-folder-open", Specialty = "Juridico", IsPublic = true, Description = "Assistente jurídico especializado em pesquisa e organização de processos." },
+
+                // ===== SAÚDE =====
+                new Agent { Name = "Médico Clínico Geral", Icon = "fa-user-doctor", Specialty = "Saude", IsPublic = true, Description = "Orientação geral sobre saúde, sintomas e prevenção de doenças." },
+                new Agent { Name = "Cardiologista", Icon = "fa-heart-pulse", Specialty = "Saude", IsPublic = true, Description = "Especialista em saúde do coração e doenças cardiovasculares." },
+                new Agent { Name = "Dermatologista", Icon = "fa-hand-dots", Specialty = "Saude", IsPublic = true, Description = "Especialista em pele, cabelo, unhas e tratamentos estéticos." },
+                new Agent { Name = "Pediatra", Icon = "fa-baby", Specialty = "Saude", IsPublic = true, Description = "Especialista em saúde infantil e desenvolvimento da criança." },
+                new Agent { Name = "Ortopedista", Icon = "fa-bone", Specialty = "Saude", IsPublic = true, Description = "Especialista em ossos, articulações, músculos e reabilitação." },
+                new Agent { Name = "Ginecologista", Icon = "fa-person-pregnant", Specialty = "Saude", IsPublic = true, Description = "Especialista em saúde feminina, gravidez e ginecologia." },
+                new Agent { Name = "Psiquiatra", Icon = "fa-brain", Specialty = "Saude", IsPublic = true, Description = "Especialista em transtornos mentais e tratamento farmacológico." },
+                new Agent { Name = "Neurologista", Icon = "fa-bolt", Specialty = "Saude", IsPublic = true, Description = "Especialista em sistema nervoso, enxaquecas e AVC." },
+                new Agent { Name = "Cirurgião Plástico", Icon = "fa-scalpel", Specialty = "Saude", IsPublic = true, Description = "Especialista em procedimentos estéticos e reconstrutivos." },
+                new Agent { Name = "Oftalmologista", Icon = "fa-eye", Specialty = "Saude", IsPublic = true, Description = "Especialista em saúde ocular, visão e cirurgias oculares." },
+                new Agent { Name = "Dentista Geral", Icon = "fa-tooth", Specialty = "Saude", IsPublic = true, Description = "Especialista em saúde bucal, cáries e higiene dental." },
+                new Agent { Name = "Ortodontista", Icon = "fa-teeth", Specialty = "Saude", IsPublic = true, Description = "Especialista em alinhamento dental, aparelhos e oclusão." },
+                new Agent { Name = "Implantodontista", Icon = "fa-screwdriver", Specialty = "Saude", IsPublic = true, Description = "Especialista em implantes dentários e reabilitação oral." },
+                new Agent { Name = "Psicólogo Clínico", Icon = "fa-comments", Specialty = "Saude", IsPublic = true, Description = "Especialista em saúde mental, terapia e comportamento humano." },
+                new Agent { Name = "Nutricionista", Icon = "fa-apple-whole", Specialty = "Saude", IsPublic = true, Description = "Especialista em alimentação saudável, dietas e planejamento nutricional." },
+                new Agent { Name = "Fisioterapeuta", Icon = "fa-person-walking", Specialty = "Saude", IsPublic = true, Description = "Especialista em reabilitação física, postura e dor muscular." },
+                new Agent { Name = "Enfermeiro(a)", Icon = "fa-user-nurse", Specialty = "Saude", IsPublic = true, Description = "Especialista em cuidados de saúde, curativos e procedimentos clínicos." },
+                new Agent { Name = "Farmacêutico", Icon = "fa-pills", Specialty = "Saude", IsPublic = true, Description = "Especialista em medicamentos, interações e farmacologia." },
+                new Agent { Name = "Médico Veterinário", Icon = "fa-dog", Specialty = "Saude", IsPublic = true, Description = "Especialista em saúde animal, diagnósticos e tratamentos veterinários." },
+                new Agent { Name = "Personal Trainer", Icon = "fa-dumbbell", Specialty = "Saude", IsPublic = true, Description = "Especialista em treinos personalizados, condicionamento e composição corporal." },
+
+                // ===== TECNOLOGIA =====
+                new Agent { Name = "Dev. Front-End", Icon = "fa-desktop", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em interfaces web, HTML, CSS, JavaScript e frameworks." },
+                new Agent { Name = "Dev. Back-End", Icon = "fa-server", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em servidores, APIs, bancos de dados e lógica de negócio." },
+                new Agent { Name = "Dev. FullStack", Icon = "fa-layer-group", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em desenvolvimento completo, do front ao back-end." },
+                new Agent { Name = "Dev. Mobile (iOS)", Icon = "fa-apple", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em apps para iPhone e iPad com Swift/Xcode." },
+                new Agent { Name = "Dev. Mobile (Android)", Icon = "fa-android", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em apps Android com Kotlin e Flutter." },
+                new Agent { Name = "DevOps Engineer", Icon = "fa-infinity", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em CI/CD, infraestrutura cloud e automação de deploy." },
+                new Agent { Name = "Engenheiro de Dados", Icon = "fa-database", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em pipelines de dados, ETL, Data Lakes e Big Data." },
+                new Agent { Name = "Cientista de Dados", Icon = "fa-chart-pie", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em análise de dados, Machine Learning e estatística." },
+                new Agent { Name = "Analista de Segurança", Icon = "fa-user-secret", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em cibersegurança, vulnerabilidades e OWASP." },
+                new Agent { Name = "Arquiteto de Software", Icon = "fa-sitemap", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em design de sistemas, padrões e arquitetura escalável." },
+                new Agent { Name = "QA / Tester", Icon = "fa-bug-slash", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em testes automatizados, qualidade e validação de software." },
+                new Agent { Name = "Product Manager (PM)", Icon = "fa-clipboard-check", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em gestão de produto, roadmap e priorização de features." },
+                new Agent { Name = "Scrum Master", Icon = "fa-rotate", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em metodologias ágeis, Scrum e facilitação de equipes." },
+                new Agent { Name = "Dev. Blockchain", Icon = "fa-bitcoin-sign", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em blockchain, smart contracts e Web3." },
+                new Agent { Name = "Dev. de Jogos", Icon = "fa-gamepad", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em desenvolvimento de jogos com Unity, Unreal e outras engines." },
+                new Agent { Name = "Engenheiro de IA", Icon = "fa-robot", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em Inteligência Artificial, LLMs e integração de modelos." },
+                new Agent { Name = "UX Designer", Icon = "fa-pen-nib", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em experiência do usuário, pesquisa e jornadas digitais." },
+                new Agent { Name = "UI Designer", Icon = "fa-palette", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em interfaces visuais, design systems e prototipagem." },
+                new Agent { Name = "Admin de Redes", Icon = "fa-network-wired", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em infraestrutura de redes, firewalls e configuração." },
+                new Agent { Name = "Suporte Técnico", Icon = "fa-headset", Specialty = "Tecnologia", IsPublic = true, Description = "Especialista em resolução de problemas técnicos e suporte ao usuário." },
+
+                // ===== ENGENHARIA =====
+                new Agent { Name = "Engenheiro Civil", Icon = "fa-helmet-safety", Specialty = "Engenharia", IsPublic = true, Description = "Especialista em construção, estruturas e projetos de obras." },
+                new Agent { Name = "Engenheiro Elétrico", Icon = "fa-bolt", Specialty = "Engenharia", IsPublic = true, Description = "Especialista em instalações elétricas, dimensionamento e energia solar." },
+                new Agent { Name = "Engenheiro Mecânico", Icon = "fa-gears", Specialty = "Engenharia", IsPublic = true, Description = "Especialista em máquinas, manutenção industrial e termodinâmica." },
+                new Agent { Name = "Engenheiro de Produção", Icon = "fa-industry", Specialty = "Engenharia", IsPublic = true, Description = "Especialista em processos industriais, Lean e otimização produtiva." },
+                new Agent { Name = "Engenheiro Químico", Icon = "fa-flask", Specialty = "Engenharia", IsPublic = true, Description = "Especialista em processos químicos, materiais e segurança industrial." },
+                new Agent { Name = "Engenheiro Agrônomo", Icon = "fa-wheat-awn", Specialty = "Engenharia", IsPublic = true, Description = "Especialista em agricultura, solo, irrigação e agronegócio." },
+                new Agent { Name = "Engenheiro Ambiental", Icon = "fa-leaf", Specialty = "Engenharia", IsPublic = true, Description = "Especialista em sustentabilidade, licenciamento e gestão ambiental." },
+                new Agent { Name = "Eng. de Segurança", Icon = "fa-shield", Specialty = "Engenharia", IsPublic = true, Description = "Especialista em segurança do trabalho, NRs e prevenção de acidentes." },
+                new Agent { Name = "Arquiteto Urbanista", Icon = "fa-city", Specialty = "Engenharia", IsPublic = true, Description = "Especialista em projetos arquitetônicos, urbanismo e planejamento de espaços." },
+                new Agent { Name = "Designer de Interiores", Icon = "fa-couch", Specialty = "Engenharia", IsPublic = true, Description = "Especialista em ambientação, decoração e projetos de interiores." },
+                new Agent { Name = "Paisagista", Icon = "fa-tree-city", Specialty = "Engenharia", IsPublic = true, Description = "Especialista em jardins, áreas verdes e paisagismo sustentável." },
+                new Agent { Name = "Topógrafo", Icon = "fa-mountain-sun", Specialty = "Engenharia", IsPublic = true, Description = "Especialista em levantamentos topográficos e georreferenciamento." },
+
+                // ===== NEGÓCIOS =====
+                new Agent { Name = "Contador", Icon = "fa-calculator", Specialty = "Negocios", IsPublic = true, Description = "Especialista em contabilidade, tributos e obrigações fiscais." },
+                new Agent { Name = "Auditor Fiscal", Icon = "fa-magnifying-glass-dollar", Specialty = "Negocios", IsPublic = true, Description = "Especialista em auditoria contábil, conformidade e revisão fiscal." },
+                new Agent { Name = "Analista Financeiro", Icon = "fa-chart-line", Specialty = "Negocios", IsPublic = true, Description = "Especialista em análise financeira, fluxo de caixa e investimentos." },
+                new Agent { Name = "Consultor de Investimentos", Icon = "fa-sack-dollar", Specialty = "Negocios", IsPublic = true, Description = "Especialista em carteiras de investimento, renda variável e planejamento." },
+                new Agent { Name = "Trader", Icon = "fa-arrow-trend-up", Specialty = "Negocios", IsPublic = true, Description = "Especialista em operações no mercado financeiro e análise técnica." },
+                new Agent { Name = "Economista", Icon = "fa-money-bill-transfer", Specialty = "Negocios", IsPublic = true, Description = "Especialista em cenários econômicos, inflação e política monetária." },
+                new Agent { Name = "Gestor de RH", Icon = "fa-users", Specialty = "Negocios", IsPublic = true, Description = "Especialista em gestão de pessoas, recrutamento e cultura organizacional." },
+                new Agent { Name = "Recrutador / Headhunter", Icon = "fa-user-plus", Specialty = "Negocios", IsPublic = true, Description = "Especialista em atração de talentos, entrevistas e employer branding." },
+                new Agent { Name = "Business Partner", Icon = "fa-handshake", Specialty = "Negocios", IsPublic = true, Description = "Especialista em parceria estratégica entre RH e as áreas de negócio." },
+                new Agent { Name = "Gerente de Projetos", Icon = "fa-timeline", Specialty = "Negocios", IsPublic = true, Description = "Especialista em planejamento, execução e entrega de projetos." },
+                new Agent { Name = "Corretor de Imóveis", Icon = "fa-house", Specialty = "Negocios", IsPublic = true, Description = "Especialista em compra, venda e locação de imóveis." },
+                new Agent { Name = "Corretor de Seguros", Icon = "fa-file-shield", Specialty = "Negocios", IsPublic = true, Description = "Especialista em seguros de vida, auto, saúde e empresas." },
+                new Agent { Name = "Consultor Empresarial", Icon = "fa-briefcase", Specialty = "Negocios", IsPublic = true, Description = "Especialista em estratégia, crescimento e gestão de negócios." },
+                new Agent { Name = "CEO / Executivo", Icon = "fa-user-tie", Specialty = "Negocios", IsPublic = true, Description = "Perspectiva executiva para decisões estratégicas e liderança empresarial." },
+                new Agent { Name = "Vendedor B2B", Icon = "fa-phone", Specialty = "Negocios", IsPublic = true, Description = "Especialista em vendas consultivas, prospecção e fechamento de negócios." },
+                new Agent { Name = "Representante Comercial", Icon = "fa-suitcase", Specialty = "Negocios", IsPublic = true, Description = "Especialista em representação comercial, carteira de clientes e negociação." },
+
+                // ===== CRIATIVOS =====
+                new Agent { Name = "Copywriter", Icon = "fa-feather", Specialty = "Criativos", IsPublic = true, Description = "Especialista em textos persuasivos, headlines e copy de alta conversão." },
+                new Agent { Name = "Redator SEO", Icon = "fa-keyboard", Specialty = "Criativos", IsPublic = true, Description = "Especialista em conteúdo otimizado para mecanismos de busca." },
+                new Agent { Name = "Social Media Manager", Icon = "fa-hashtag", Specialty = "Criativos", IsPublic = true, Description = "Especialista em gestão de redes sociais, calendário e engajamento." },
+                new Agent { Name = "Gestor de Tráfego", Icon = "fa-bullhorn", Specialty = "Criativos", IsPublic = true, Description = "Especialista em anúncios pagos, Meta Ads, Google Ads e ROI." },
+                new Agent { Name = "Designer Gráfico", Icon = "fa-pen-ruler", Specialty = "Criativos", IsPublic = true, Description = "Especialista em identidade visual, layouts e criação de peças gráficas." },
+                new Agent { Name = "Diretor de Arte", Icon = "fa-palette", Specialty = "Criativos", IsPublic = true, Description = "Especialista em direção criativa, conceito visual e narrativa de marca." },
+                new Agent { Name = "Editor de Vídeo", Icon = "fa-film", Specialty = "Criativos", IsPublic = true, Description = "Especialista em edição, corte, motion e pós-produção de vídeo." },
+                new Agent { Name = "Motion Designer", Icon = "fa-play", Specialty = "Criativos", IsPublic = true, Description = "Especialista em animações, motion graphics e vídeos animados." },
+                new Agent { Name = "Fotógrafo", Icon = "fa-camera", Specialty = "Criativos", IsPublic = true, Description = "Especialista em fotografia, composição, iluminação e edição de imagens." },
+                new Agent { Name = "Jornalista", Icon = "fa-newspaper", Specialty = "Criativos", IsPublic = true, Description = "Especialista em redação jornalística, reportagens e comunicação factual." },
+                new Agent { Name = "Roteirista", Icon = "fa-scroll", Specialty = "Criativos", IsPublic = true, Description = "Especialista em roteiros para vídeos, filmes, podcasts e apresentações." },
+                new Agent { Name = "Tradutor", Icon = "fa-language", Specialty = "Criativos", IsPublic = true, Description = "Especialista em tradução e localização de conteúdos entre idiomas." },
+                new Agent { Name = "Revisor de Texto", Icon = "fa-glasses", Specialty = "Criativos", IsPublic = true, Description = "Especialista em revisão gramatical, coesão e clareza de textos." },
+                new Agent { Name = "Produtor Musical", Icon = "fa-music", Specialty = "Criativos", IsPublic = true, Description = "Especialista em produção musical, arranjos e direção de áudio." },
+                new Agent { Name = "Influenciador Digital", Icon = "fa-star", Specialty = "Criativos", IsPublic = true, Description = "Especialista em criação de conteúdo, personal branding e audiência." },
+
+                // ===== EDUCAÇÃO =====
+                new Agent { Name = "Professor Fundamental", Icon = "fa-chalkboard-user", Specialty = "Educacao", IsPublic = true, Description = "Especialista em ensino fundamental, metodologias e didática infantil." },
+                new Agent { Name = "Professor Universitário", Icon = "fa-graduation-cap", Specialty = "Educacao", IsPublic = true, Description = "Especialista em ensino superior, pesquisa e produção acadêmica." },
+                new Agent { Name = "Pesquisador Acadêmico", Icon = "fa-microscope", Specialty = "Educacao", IsPublic = true, Description = "Especialista em pesquisa científica, artigos e metodologia acadêmica." },
+                new Agent { Name = "Pedagogo", Icon = "fa-shapes", Specialty = "Educacao", IsPublic = true, Description = "Especialista em educação, aprendizagem e desenvolvimento pedagógico." },
+                new Agent { Name = "Professor de Idiomas", Icon = "fa-earth-americas", Specialty = "Educacao", IsPublic = true, Description = "Especialista em ensino de línguas estrangeiras e comunicação intercultural." },
+                new Agent { Name = "Orientador Vocacional", Icon = "fa-compass", Specialty = "Educacao", IsPublic = true, Description = "Especialista em orientação de carreira e escolhas profissionais." },
+                new Agent { Name = "Bibliotecário", Icon = "fa-book", Specialty = "Educacao", IsPublic = true, Description = "Especialista em organização do conhecimento, pesquisa bibliográfica e literatura." },
+                new Agent { Name = "Estudante", Icon = "fa-backpack", Specialty = "Educacao", IsPublic = true, Description = "Perspectiva estudantil para resumos, provas, trabalhos e aprendizado." },
+
+                // ===== OPERACIONAL =====
+                new Agent { Name = "Gestor de Logística", Icon = "fa-truck-fast", Specialty = "Operacional", IsPublic = true, Description = "Especialista em supply chain, transporte, estoque e distribuição." },
+                new Agent { Name = "Comprador / Supply", Icon = "fa-cart-shopping", Specialty = "Operacional", IsPublic = true, Description = "Especialista em compras estratégicas, fornecedores e negociação." },
+                new Agent { Name = "Chef de Cozinha", Icon = "fa-utensils", Specialty = "Operacional", IsPublic = true, Description = "Especialista em gastronomia, fichas técnicas e gestão de restaurantes." },
+                new Agent { Name = "Nutricionista Gastronômico", Icon = "fa-carrot", Specialty = "Operacional", IsPublic = true, Description = "Especialista em alimentação saudável com foco em gastronomia e culinária." },
+                new Agent { Name = "Organizador de Eventos", Icon = "fa-champagne-glasses", Specialty = "Operacional", IsPublic = true, Description = "Especialista em planejamento e execução de eventos corporativos e sociais." },
+                new Agent { Name = "Agente de Viagens", Icon = "fa-plane", Specialty = "Operacional", IsPublic = true, Description = "Especialista em roteiros de viagem, hospedagem e turismo." },
+                new Agent { Name = "Piloto de Avião", Icon = "fa-plane-up", Specialty = "Operacional", IsPublic = true, Description = "Especialista em aviação, procedimentos de voo e regulamentação aeronáutica." },
+                new Agent { Name = "Policial / Segurança", Icon = "fa-shield-cat", Specialty = "Operacional", IsPublic = true, Description = "Especialista em segurança pública, prevenção e resposta a emergências." },
+                new Agent { Name = "Bombeiro Civil", Icon = "fa-fire-extinguisher", Specialty = "Operacional", IsPublic = true, Description = "Especialista em prevenção de incêndios, primeiros socorros e emergências." },
+                new Agent { Name = "Síndico Profissional", Icon = "fa-building-user", Specialty = "Operacional", IsPublic = true, Description = "Especialista em gestão condominial, assembleias e manutenção predial." }
+            };
+
+            context.Agents.AddRange(agents);
+            context.SaveChanges();
         }
 
         private static void SeedSystemPrompts(AppDbContext context)

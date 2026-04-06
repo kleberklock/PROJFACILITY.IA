@@ -538,21 +538,36 @@
                         <div class="attachments-preview" id="attachmentsPreview"></div>
                         <div class="input-container">
                             <div style="position:relative;">
-                                <div class="action-icon" onclick="toggleMenu('attachMenu')"><i
+                                <div class="action-icon" onclick="toggleMenu('attachMenu')" title="Anexar arquivo"><i
                                         class="fas fa-paperclip"></i></div>
 
-                                <div class="floating-menu" id="attachMenu">
-                                    <div class="menu-option" onclick="triggerFileUpload('application/pdf')">
-                                        <i class="far fa-file-pdf"></i> PDF
+                                <div class="floating-menu" id="attachMenu" style="width: 250px; padding: 10px; border-radius: 12px; border: 1px solid rgba(0, 243, 255, 0.2);">
+                                    <div style="font-size: 0.75rem; color: #888; margin-bottom: 10px; padding-left: 5px; font-weight: bold; text-transform: uppercase;">Enviar Arquivos</div>
+                                    
+                                    <div class="menu-option" onclick="triggerFileUpload('.pdf, .txt, .docx')" style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; margin-bottom: 5px; transition: background 0.2s;">
+                                        <div style="width: 38px; height: 38px; background: rgba(0, 243, 255, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #00F3FF; flex-shrink: 0;">
+                                            <i class="fas fa-file-alt" style="font-size: 1.2rem;"></i>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span style="font-weight: bold; color: white; line-height: 1.2; font-size: 0.95rem;">Documento</span>
+                                            <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">PDF, TXT ou DOCX</span>
+                                        </div>
                                     </div>
-                                    <div class="menu-option" onclick="triggerFileUpload('image/*')">
-                                        <i class="far fa-file-image"></i> Imagem
+                                    
+                                    <div class="menu-option" onclick="triggerFileUpload('.jpg, .jpeg, .png, .webp')" style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; transition: background 0.2s;">
+                                        <div style="width: 38px; height: 38px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #10b981; flex-shrink: 0;">
+                                            <i class="fas fa-image" style="font-size: 1.2rem;"></i>
+                                        </div>
+                                        <div style="display: flex; flex-direction: column;">
+                                            <span style="font-weight: bold; color: white; line-height: 1.2; font-size: 0.95rem;">Imagem</span>
+                                            <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">JPG, PNG ou WEBP</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div style="position:relative;">
-                                <div class="action-icon prompts" onclick="abrirMeusPromptsChat()"><i
+                                <div class="action-icon prompts" onclick="abrirMeusPromptsChat()" title="Biblioteca de Prompts"><i
                                         class="fas fa-wand-magic-sparkles" style="color:var(--primary)"></i></div>
 
                                 <div class="floating-panel" id="promptsPanel" style="display:none;">
@@ -561,12 +576,12 @@
                                 </div>
                             </div>
 
-                            <div class="action-icon" id="micBtn" onclick="toggleRecording()"><i
+                            <div class="action-icon" id="micBtn" onclick="toggleRecording()" title="Digitar por voz"><i
                                     class="fas fa-microphone"></i></div>
 
                             <textarea id="userInput" placeholder="Digite aqui..." rows="1"></textarea>
 
-                            <button id="sendBtn" onclick="handleSendMessage()"
+                            <button id="sendBtn" onclick="handleSendMessage()" title="Enviar mensagem"
                                 style="background:var(--primary); border:none; width:40px; height:40px; border-radius:10px; cursor:pointer; color:black; transition: all 0.3s;">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
@@ -949,7 +964,18 @@
         function triggerFileUpload(accept) { toggleMenu('attachMenu'); const i = document.getElementById('realFileInput'); i.accept = accept; i.click(); }
 
         function handleFileSelected(e) {
-            const f = e.target.files[0]; if (!f) return; currentFile = f;
+            const f = e.target.files[0]; if (!f) return; 
+
+            const allowed = ['.pdf', '.txt', '.docx', '.jpg', '.jpeg', '.png', '.webp'];
+            const fileExt = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
+            if (!allowed.includes(fileExt)) {
+                if (typeof Swal !== 'undefined') Swal.fire('Aviso', 'Formato não suportado. Envie arquivos PDF, TXT, DOCX ou Imagens.', 'warning');
+                else alert('Formato não suportado. Envie arquivos PDF, TXT, DOCX ou Imagens.');
+                e.target.value = '';
+                return;
+            }
+
+            currentFile = f;
 
             let previewHTML = `<div class="attachment-chip"><i class="fas fa-file"></i> ${f.name} <i class="fas fa-times" onclick="clearAttachments()"></i></div>`;
 
@@ -1220,11 +1246,48 @@
             });
 
             const sortedAreas = Object.keys(groups).sort();
+            
+            const savedCategory = localStorage.getItem('selectedAgentCategory');
+            let firstRendered = false;
+
+            let activeItemElement = null;
 
             for (const area of sortedAreas) {
                 const items = groups[area];
                 const accItem = document.createElement('div');
                 accItem.className = 'accordion-item';
+                
+                let isActive = false;
+                if (savedCategory) {
+                    const catMap = {
+                        'tech': ['tecnologia', 'tech'],
+                        'juridico': ['jurídico', 'juridico'],
+                        'saude': ['saúde', 'saude', 'medicina', 'médico'],
+                        'engenharia': ['engenharia'],
+                        'negocios': ['negócios', 'negocios'],
+                        'operacional': ['operacional'],
+                        'criativo': ['criatividade', 'criativo', 'criativos'],
+                        'educacao': ['educação', 'estudante', 'educacao'],
+                        'meus': ['personalizado']
+                    };
+                    const possibleMappings = catMap[savedCategory] || [savedCategory];
+                    const loweredArea = area.toLowerCase();
+                    if (possibleMappings.some(m => loweredArea.includes(m))) {
+                        isActive = true;
+                    }
+                }
+                
+                // Se for a primeira aba e não houver um savedCategory que abra nenhuma aba, o fallback será mantê-la fechada (ou pode expandir a primeira)
+                // O usuário solicitou abrir a primeira como fallback caso não haja match
+                if (!firstRendered && Object.keys(groups).length > 0 && !savedCategory) {
+                    isActive = true;
+                }
+
+                if (isActive) {
+                    accItem.classList.add('active');
+                    firstRendered = true; // só o primeiro será o fallback ou o que logrou sucesso
+                    activeItemElement = accItem;
+                }
 
                 let iconClass = 'fa-layer-group';
                 if (area.toLowerCase().includes('juridico')) iconClass = 'fa-scale-balanced';
@@ -1265,6 +1328,12 @@
                 });
 
                 container.appendChild(accItem);
+            }
+
+            if (activeItemElement) {
+                setTimeout(() => {
+                    activeItemElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 150);
             }
         }
 

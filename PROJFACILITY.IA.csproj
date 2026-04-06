@@ -23,8 +23,8 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
 
-    <PackageReference Include="MailKit" Version="4.14.1" />
-    <PackageReference Include="MimeKit" Version="4.14.0" />
+<PackageReference Include="MailKit" Version="4.15.1" />
+    <PackageReference Include="MimeKit" Version="4.15.1" />
     
     <PackageReference Include="PdfPig" Version="0.1.13" />
     <PackageReference Include="Pinecone.Client" Version="4.0.2" />

@@ -221,7 +221,20 @@
         }
         function mostrarNomeArquivo() {
             const input = document.getElementById('agentFile');
-            if (input.files[0]) document.getElementById('fileNameDisplay').innerText = input.files[0].name;
+            if (input.files[0]) {
+                const file = input.files[0];
+                const allowed = ['.pdf', '.txt', '.docx'];
+                const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+                
+                if (!allowed.includes(ext)) {
+                    if (typeof Swal !== 'undefined') Swal.fire('Aviso', 'Formato não suportado. Envie apenas arquivos PDF, TXT ou DOCX.', 'warning');
+                    else alert('Formato não suportado. Envie apenas arquivos PDF, TXT ou DOCX.');
+                    input.value = '';
+                    document.getElementById('fileNameDisplay').innerText = '';
+                    return;
+                }
+                document.getElementById('fileNameDisplay').innerText = file.name;
+            }
         }
 
         // --- LÓGICA DE CRIAÇÃO ATUALIZADA ---

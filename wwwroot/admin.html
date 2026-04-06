@@ -12,22 +12,14 @@
         const token = localStorage.getItem('token');
         if (!token) window.location.href = 'login.html';
 
-        // Verificação de segurança (JWT Decode)
         try {
             const base64Url = token.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
             const payload = JSON.parse(window.atob(base64));
-
-            // Verifica os dois formatos possíveis de Claim de Role
             const role = payload["role"] ||
                 payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-
-            if (role !== 'admin') {
-                console.error("Acesso negado: Role de administrador não encontrada.", role);
-                window.location.href = 'dashboard.html';
-            }
+            if (role !== 'admin') window.location.href = 'dashboard.html';
         } catch (e) {
-            console.error("Erro ao validar token:", e);
             window.location.href = 'login.html';
         }
     </script>
@@ -35,6 +27,394 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style-master.css">
     <link rel="stylesheet" href="responsive.css">
+
+    <style>
+        /* ====================== ADMIN CONSOLE STYLES ====================== */
+        .admin-header {
+            background: linear-gradient(135deg, #2c1a06 0%, #1a1a1a 100%);
+            border: 1px solid rgba(255, 204, 0, 0.2);
+            border-radius: 16px;
+            padding: 24px 30px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .admin-header h2 {
+            color: #ffcc00;
+            margin: 0;
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Stat cards */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-card .stat-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.72rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        /* Toolbar */
+        .table-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .table-toolbar h3 {
+            margin: 0;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .toolbar-right {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-admin {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px;
+            padding: 7px 14px;
+            color: white;
+            font-size: 0.85rem;
+            outline: none;
+            width: 220px;
+            transition: border-color 0.2s;
+        }
+
+        .search-admin:focus {
+            border-color: #ffcc00;
+        }
+
+        .search-admin::placeholder {
+            color: #555;
+        }
+
+        .btn-refresh {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: white;
+            padding: 7px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-refresh:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        /* Table wrapper */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.07);
+            background: rgba(255,255,255,0.02);
+        }
+
+        .table-wrapper::-webkit-scrollbar { height: 8px; }
+        .table-wrapper::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 8px; }
+        .table-wrapper::-webkit-scrollbar-thumb { background: rgba(255,204,0,0.4); border-radius: 8px; }
+        .table-wrapper::-webkit-scrollbar-thumb:hover { background: rgba(255,204,0,0.7); }
+
+        /* Ajustes Estruturais para Scroll Vertical Perfeito na Página */
+        html, body {
+            overflow: hidden !important; 
+            height: 100vh;
+        }
+        
+        .layout {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .content {
+            flex: 1;
+            height: 100vh;
+            overflow-y: auto !important; /* Habilita rolagem vertical do Painel */
+            padding-bottom: 60px; /* Margem extra ao final */
+        }
+        
+        .content::-webkit-scrollbar { width: 8px; }
+        .content::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        .content::-webkit-scrollbar-thumb { background: rgba(255,204,0,0.3); border-radius: 4px; }
+        .content::-webkit-scrollbar-thumb:hover { background: rgba(255,204,0,0.6); }
+
+        /* ==== TABELA PRINCIPAL ==== */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            min-width: 1400px;
+        }
+
+        .admin-table thead th {
+            background: rgba(255, 204, 0, 0.08);
+            color: #ffcc00;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 14px;
+            text-align: left;
+            white-space: nowrap;
+            border-bottom: 1px solid rgba(255,204,0,0.15);
+            position: sticky;
+            top: 0;
+        }
+
+        .admin-table thead th:first-child {
+            border-radius: 12px 0 0 0;
+        }
+
+        .admin-table thead th:last-child {
+            border-radius: 0 12px 0 0;
+        }
+
+        .admin-table tbody tr {
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.15s;
+        }
+
+        .admin-table tbody tr:hover {
+            background: rgba(255,255,255,0.04);
+        }
+
+        .admin-table tbody td {
+            padding: 11px 14px;
+            color: #ccc;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        /* User name + avatar */
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .user-avatar-mini {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        /* Badges genéricos */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 0.68rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-admin   { background: rgba(255,204,0,0.15); color: #ffcc00; border: 1px solid rgba(255,204,0,0.3); }
+        .badge-user    { background: rgba(255,255,255,0.07); color: #aaa; border: 1px solid rgba(255,255,255,0.1); }
+        .badge-pro     { background: rgba(255,215,0,0.15); color: #FFD700; border: 1px solid rgba(255,215,0,0.3); }
+        .badge-plus    { background: rgba(0,255,136,0.12); color: #00ff88; border: 1px solid rgba(0,255,136,0.3); }
+        .badge-free    { background: rgba(255,255,255,0.06); color: #888; border: 1px solid rgba(255,255,255,0.1); }
+        .badge-active  { background: rgba(0,255,136,0.12); color: #00ff88; border: 1px solid rgba(0,255,136,0.3); }
+        .badge-inactive{ background: rgba(255,85,85,0.12); color: #ff5555; border: 1px solid rgba(255,85,85,0.3); }
+        .badge-verified{ background: rgba(0,243,255,0.1); color: #00F3FF; border: 1px solid rgba(0,243,255,0.25); }
+        .badge-unverif { background: rgba(255,153,0,0.12); color: #ff9900; border: 1px solid rgba(255,153,0,0.3); }
+
+        /* Token bar */
+        .token-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            min-width: 110px;
+        }
+
+        .token-bar-bg {
+            flex: 1;
+            height: 5px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .token-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #00ff88, #00F3FF);
+            transition: width 0.5s ease;
+        }
+
+        /* Action buttons */
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px 6px;
+            border-radius: 6px;
+            transition: background 0.15s;
+            font-size: 0.85rem;
+        }
+
+        .action-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .action-edit   { color: #ffcc00; }
+        .action-delete { color: #ff5555; }
+        .action-reset  { color: #00F3FF; }
+
+        /* === MODAL === */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(6px);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #141428;
+            border: 1px solid rgba(255,204,0,0.2);
+            border-radius: 16px;
+            padding: 30px;
+            width: 420px;
+            max-width: 95vw;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        }
+
+        .modal-input {
+            width: 100%;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: white;
+            font-size: 0.9rem;
+            margin-bottom: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .modal-input:focus {
+            border-color: #ffcc00;
+        }
+
+        .modal-input option {
+            background: #141428;
+            color: white;
+        }
+
+        .modal-label {
+            display: block;
+            color: #888;
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ID column */
+        .col-id {
+            color: #555;
+            font-family: monospace;
+            font-size: 0.75rem;
+        }
+
+        .date-small {
+            font-size: 0.73rem;
+            color: #777;
+        }
+
+        .hours-badge {
+            color: #a78bfa;
+            font-weight: 600;
+        }
+
+        /* Empty / loading */
+        .table-msg {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        /* Filter tabs */
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 5px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04);
+            color: #888;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-tab:hover, .filter-tab.active {
+            background: rgba(255,204,0,0.12);
+            border-color: rgba(255,204,0,0.3);
+            color: #ffcc00;
+        }
+    </style>
 </head>
 
 <body>
@@ -43,7 +423,7 @@
 
     <div class="mobile-header">
         <i class="fas fa-bars menu-trigger" onclick="toggleSidebar()"></i>
-        <div class="mobile-title">ADMINISTRADOR</div>
+        <div class="mobile-title">ADMIN CONSOLE</div>
         <div style="width: 32px;"></div>
     </div>
     <div class="overlay" onclick="toggleSidebar()"></div>
@@ -60,45 +440,30 @@
             <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
 
             <div id="adminArea"
-                style="display: none; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
-                <div
-                    style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
+                style="display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
+                <div style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
                     Administração</div>
-
-
-                <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i>
-                    Agentes</a>
-                <a href="admin.html" class="nav-btn" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel
-                    Admin</a>
+                <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i> Agentes</a>
+                <a href="admin.html" class="nav-btn" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel Admin</a>
             </div>
 
             <div class="spacer"></div>
 
             <div id="dashboardPlanCard" class="card-plan-status"
-                style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px; transition: all 0.3s ease;">
+                style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <h3 style="margin:0; font-size:0.9rem; color:#aaa; font-weight:600;">SEU PLANO</h3>
-                    <span id="planBadge"
-                        style="background:#00ff88; color:black; padding:3px 10px; border-radius:12px; font-weight:bold; font-size:0.7rem;">INICIANTE</span>
+                    <span id="planBadge" style="background:#ffcc00; color:black; padding:3px 10px; border-radius:12px; font-weight:bold; font-size:0.7rem;">ADMIN</span>
                 </div>
                 <div style="margin-top:10px;">
-                    <h2 id="planName" style="margin:0; font-size:1.4rem;">Iniciante</h2>
-                </div>
-                <div style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;"
-                    id="upgradeSection">
-                    <a href="planos.html"
-                        style="color:#00ff88; text-decoration:none; font-size:0.85rem; font-weight:bold; display:flex; align-items:center; gap:5px;">
-                        <i class="fas fa-arrow-up"></i> Fazer Upgrade
-                    </a>
+                    <h2 id="planName" style="margin:0; font-size:1.4rem;">Administrador</h2>
                 </div>
             </div>
 
             <a href="perfil.html" class="user-mini">
-                <div class="avatar" id="sidebarAvatar">U</div>
+                <div class="avatar" id="sidebarAvatar">A</div>
                 <div style="font-size:0.85rem; color:#ccc; overflow:hidden;">
-                    <div id="sidebarUserName"
-                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">Usuário
-                    </div>
+                    <div id="sidebarUserName" style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">Admin</div>
                     <div style="color:#666; font-size:0.75rem;">Ver Perfil</div>
                 </div>
             </a>
@@ -110,65 +475,146 @@
         </nav>
 
         <main class="content">
-            <div class="hero-banner"
-                style="background: linear-gradient(135deg, #2c1a06 0%, #1a1a1a 100%); border-color: rgba(255, 204, 0, 0.2);">
-                <div class="hero-content">
-                    <h2 class="hero-title" style="color: #ffcc00;">Painel de Controle</h2>
-                    <p class="hero-desc">Gerencie usuários, planos e métricas do sistema.</p>
+
+            <!-- Header Banner -->
+            <div class="admin-header">
+                <h2><i class="fas fa-shield-halved"></i> Painel de Controle · Admin Console</h2>
+                <div style="color:#888; font-size:0.8rem;" id="lastUpdated">—</div>
+            </div>
+
+            <!-- Stat Cards -->
+            <div class="stat-grid" id="statGrid">
+                <div class="stat-card">
+                    <div class="stat-value" id="statTotal">—</div>
+                    <div class="stat-label">Total Usuários</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statActive" style="color:#00ff88;">—</div>
+                    <div class="stat-label">Ativos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statPro" style="color:#FFD700;">—</div>
+                    <div class="stat-label">Plano Pro</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statPlus" style="color:#00ff88;">—</div>
+                    <div class="stat-label">Plano Plus</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statVerified" style="color:#00F3FF;">—</div>
+                    <div class="stat-label">Email Verificado</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statTokens" style="color:#a78bfa;">—</div>
+                    <div class="stat-label">Tokens Usados (mês)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statHours" style="color:#EC4E3A;">—</div>
+                    <div class="stat-label">Horas Economizadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statMsgs" style="color:#f59e0b;">—</div>
+                    <div class="stat-label">Total Mensagens</div>
                 </div>
             </div>
 
+            <!-- Tabela -->
             <div class="table-container">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3 style="margin:0; color:white;">Usuários Cadastrados</h3>
-                    <button onclick="loadData()"
-                        style="background: rgba(255,255,255,0.1); border:none; color:white; padding: 8px 15px; border-radius: 8px; cursor: pointer;"><i
-                            class="fas fa-sync"></i> Atualizar</button>
+                <div class="table-toolbar">
+                    <h3><i class="fas fa-users" style="color:#ffcc00; margin-right:8px;"></i> Usuários Cadastrados</h3>
+                    <div class="toolbar-right">
+                        <input type="text" id="searchInput" class="search-admin" placeholder="🔍  Buscar nome ou email..." oninput="filterTable()">
+                        <button onclick="loadData()" class="btn-refresh">
+                            <i class="fas fa-sync" id="syncIcon"></i> Atualizar
+                        </button>
+                    </div>
                 </div>
 
-                <div style="overflow-x: auto;">
+                <!-- Filter tabs -->
+                <div class="filter-tabs">
+                    <div class="filter-tab active" onclick="setFilter('all', this)">Todos</div>
+                    <div class="filter-tab" onclick="setFilter('pro', this)">Pro</div>
+                    <div class="filter-tab" onclick="setFilter('plus', this)">Plus</div>
+                    <div class="filter-tab" onclick="setFilter('free', this)">Iniciante</div>
+                    <div class="filter-tab" onclick="setFilter('active', this)">Ativos</div>
+                    <div class="filter-tab" onclick="setFilter('inactive', this)">Inativos</div>
+                    <div class="filter-tab" onclick="setFilter('admin', this)">Admin</div>
+                </div>
+
+                <div class="table-wrapper">
                     <table class="admin-table">
                         <thead>
                             <tr>
-                                <th>Nome</th>
+                                <th>ID</th>
+                                <th>Usuário</th>
                                 <th>Email</th>
+                                <th>Role</th>
                                 <th>Plano</th>
-                                <th>Tokens</th>
+                                <th>Ciclo</th>
+                                <th>Ativo</th>
+                                <th>Email Verif.</th>
+                                <th>Cadastro</th>
+                                <th>Último Login</th>
+                                <th>Reset Tokens</th>
+                                <th>Agente Favorito</th>
+                                <th>Tokens Usados</th>
+                                <th>Mensagens</th>
+                                <th>Horas Salvas</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
                             <tr>
-                                <td colspan="5" style="text-align:center; padding: 30px;">Iniciando sistema...</td>
+                                <td colspan="16" class="table-msg">
+                                    <i class="fas fa-circle-notch fa-spin"></i> Carregando...
+                                </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+
+                <div id="tableCount" style="color:#555; font-size:0.75rem; margin-top:10px; text-align:right;"></div>
             </div>
         </main>
     </div>
 
+    <!-- Modal de Edição -->
     <div id="editModal" class="modal-backdrop">
         <div class="modal-content">
-            <h3 style="color:white; margin-top:0;">Editar Usuário</h3>
+            <h3 style="color:white; margin-top:0; display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-user-edit" style="color:#ffcc00;"></i> Editar Usuário
+            </h3>
+            <div style="color:#555; font-size:0.78rem; margin-bottom:20px;" id="editEmailDisplay">—</div>
             <input type="hidden" id="editEmail">
 
-            <label style="color:#888; font-size:0.8rem;">Novo Plano</label>
+            <label class="modal-label">Novo Plano</label>
             <select id="editPlan" class="modal-input">
                 <option value="Free">Iniciante (Free)</option>
                 <option value="Plus">Plus</option>
                 <option value="Pro">Pro</option>
             </select>
 
-            <label style="color:#888; font-size:0.8rem;">Ciclo</label>
-            <select id="editCycle" class="modal-input">
+            <label class="modal-label">Acesso / Role</label>
+            <select id="editRole" class="modal-input">
+                <option value="user">Usuário Comum</option>
+                <option value="admin">Administrador</option>
+            </select>
+
+            <label class="modal-label">Status da Conta</label>
+            <select id="editIsActive" class="modal-input">
+                <option value="true">Ativa</option>
+                <option value="false">Inativa</option>
+            </select>
+
+            <label class="modal-label">Ciclo de Assinatura</label>
+            <select id="editCycle" class="modal-input" style="margin-bottom: 20px;">
                 <option value="monthly">Mensal</option>
                 <option value="quarterly">Trimestral</option>
                 <option value="annual">Anual</option>
             </select>
 
             <div style="margin-bottom:20px;">
-                <label style="color:#888; font-size:0.8rem; display:flex; align-items:center; gap:10px;">
+                <label style="color:#888; font-size:0.8rem; display:flex; align-items:center; gap:10px; cursor:pointer;">
                     <input type="checkbox" id="resetTokens"> Resetar Tokens para o padrão do plano
                 </label>
             </div>
@@ -177,7 +623,9 @@
                 <button onclick="closeModal()"
                     style="flex:1; padding:10px; background:transparent; border:1px solid #555; color:white; border-radius:8px; cursor:pointer;">Cancelar</button>
                 <button id="btnSave" onclick="saveChanges()"
-                    style="flex:1; padding:10px; background:#ffcc00; border:none; color:black; font-weight:bold; border-radius:8px; cursor:pointer;">Salvar</button>
+                    style="flex:1; padding:10px; background:#ffcc00; border:none; color:black; font-weight:bold; border-radius:8px; cursor:pointer;">
+                    <i class="fas fa-save"></i> Salvar
+                </button>
             </div>
         </div>
     </div>
@@ -187,124 +635,314 @@
     <script src="script.js"></script>
 
     <script>
-        // --- DEFINIÇÃO SEGURA DA URL DA API ---
-        let API_URL = "http://localhost:5217/api/admin"; // Valor padrão (Fallback)
+        let API_URL = "http://localhost:5217/api/admin";
+        if (typeof BASE_URL !== 'undefined') API_URL = `${BASE_URL}/api/admin`;
 
-        if (typeof BASE_URL !== 'undefined') {
-            API_URL = `${BASE_URL}/api/admin`;
-            console.log("Configuração carregada do config.js:", API_URL);
-        } else {
-            console.warn("AVISO: config.js não carregou ou BASE_URL não definida. Usando fallback localhost.");
-        }
+        let allUsers = [];
+        let currentFilter = 'all';
+        let searchTerm = '';
 
-        // --- FUNÇÃO PRINCIPAL DE CARREGAMENTO ---
+        // ============================================================
+        // CARREGAMENTO PRINCIPAL
+        // ============================================================
         async function loadData() {
             const tbody = document.getElementById('usersTableBody');
-            if (!tbody) return;
+            const syncIcon = document.getElementById('syncIcon');
+            if (syncIcon) { syncIcon.classList.add('fa-spin'); }
 
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;"><i class="fas fa-spinner fa-spin"></i> Conectando ao servidor...</td></tr>';
+            tbody.innerHTML = `<tr><td colspan="16" class="table-msg"><i class="fas fa-circle-notch fa-spin"></i> Buscando dados...</td></tr>`;
 
             try {
-                const token = localStorage.getItem('token');
-                if (!token) throw new Error("Token não encontrado");
-
-                console.log("Buscando usuários em:", `${API_URL}/users`);
+                const authToken = localStorage.getItem('token');
+                if (!authToken) throw new Error("Token não encontrado");
 
                 const response = await fetch(`${API_URL}/users`, {
                     headers: {
-                        'Authorization': `Bearer ${token}`,
+                        'Authorization': `Bearer ${authToken}`,
                         'Content-Type': 'application/json'
                     }
                 });
 
                 if (response.status === 401 || response.status === 403) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#ff5555;">Acesso Negado. (Erro 401/403)</td></tr>';
-                    // Opcional: Redirecionar
-                    // window.location.href = 'login.html'; 
+                    tbody.innerHTML = `<tr><td colspan="16" class="table-msg" style="color:#ff5555;"><i class="fas fa-lock"></i> Acesso Negado (401/403)</td></tr>`;
                     return;
                 }
 
                 if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
 
-                const users = await response.json();
-                tbody.innerHTML = "";
+                allUsers = await response.json();
+                renderStats(allUsers);
+                renderTable();
 
-                if (!users || users.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhum usuário encontrado.</td></tr>';
-                    return;
-                }
-
-                users.forEach(u => {
-                    const id = u.id || u.Id;
-                    const name = u.name || u.Name || 'Sem nome';
-                    const email = u.email || u.Email || '---';
-                    const plan = u.plan || u.Plan || 'Free';
-                    const cycle = u.subscriptionCycle || u.SubscriptionCycle || 'Mensal';
-                    // Tratamento seguro para tokens que podem vir nulos
-                    const tokensVal = (u.usedTokensCurrentMonth !== undefined) ? u.usedTokensCurrentMonth : (u.UsedTokensCurrentMonth || 0);
-                    const tokens = tokensVal.toLocaleString();
-
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${name}</td>
-                        <td>${email}</td>
-                        <td><span style="background:rgba(255,255,255,0.1); padding:2px 8px; border-radius:4px; font-size:0.8rem;">${plan}</span></td>
-                        <td>${tokens}</td>
-                        <td>
-                            <button onclick="openModal(${id}, '${email}', '${plan}', '${cycle}')" 
-                                    style="background:none; border:none; color:#ffcc00; cursor:pointer; margin-right:10px;" 
-                                    title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="deleteUser(${id}, '${email}')" 
-                                    style="background:none; border:none; color:#ff5555; cursor:pointer;" 
-                                    title="Excluir Permanentemente">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+                document.getElementById('lastUpdated').textContent =
+                    'Última atualização: ' + new Date().toLocaleTimeString('pt-BR');
 
             } catch (error) {
-                console.error("Erro fatal ao carregar dados:", error);
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ff5555;">Erro: ${error.message}<br><small>Verifique se o backend está rodando na porta correta.</small></td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="16" class="table-msg" style="color:#ff5555;">
+                    <i class="fas fa-triangle-exclamation"></i> Erro: ${error.message}
+                    <br><small>Verifique se o backend está rodando.</small>
+                </td></tr>`;
+            } finally {
+                if (syncIcon) syncIcon.classList.remove('fa-spin');
             }
         }
 
-        // --- FUNÇÕES DE AÇÃO (DELETE / UPDATE) ---
+        // ============================================================
+        // RENDERIZAÇÃO DAS STATS
+        // ============================================================
+        function renderStats(users) {
+            document.getElementById('statTotal').textContent = users.length;
+            document.getElementById('statActive').textContent = users.filter(u => u.isActive).length;
+            document.getElementById('statPro').textContent = users.filter(u => (u.plan||'').toLowerCase() === 'pro').length;
+            document.getElementById('statPlus').textContent = users.filter(u => (u.plan||'').toLowerCase() === 'plus').length;
+            document.getElementById('statVerified').textContent = users.filter(u => u.isEmailVerified).length;
 
+            const totalTokens = users.reduce((s, u) => s + (u.usedTokensCurrentMonth || 0), 0);
+            document.getElementById('statTokens').textContent = totalTokens >= 1000000
+                ? (totalTokens / 1000000).toFixed(1) + 'M'
+                : totalTokens >= 1000 ? (totalTokens / 1000).toFixed(1) + 'K'
+                : totalTokens;
+
+            const totalHours = users.reduce((s, u) => s + (u.hoursSaved || 0), 0);
+            document.getElementById('statHours').textContent = totalHours.toFixed(1) + 'h';
+
+            const totalMsgs = users.reduce((s, u) => s + (u.totalMessages || 0), 0);
+            document.getElementById('statMsgs').textContent = totalMsgs >= 1000
+                ? (totalMsgs / 1000).toFixed(1) + 'K' : totalMsgs;
+        }
+
+        // ============================================================
+        // RENDERIZAÇÃO DA TABELA
+        // ============================================================
+        function renderTable() {
+            const tbody = document.getElementById('usersTableBody');
+            const countEl = document.getElementById('tableCount');
+
+            let filtered = allUsers.filter(u => {
+                const name = (u.name || '').toLowerCase();
+                const email = (u.email || '').toLowerCase();
+                const plan = (u.plan || '').toLowerCase();
+                const role = (u.role || '').toLowerCase();
+
+                // Filter tab
+                if (currentFilter === 'pro' && plan !== 'pro') return false;
+                if (currentFilter === 'plus' && plan !== 'plus') return false;
+                if (currentFilter === 'free' && !['free', 'iniciante', ''].includes(plan)) return false;
+                if (currentFilter === 'active' && !u.isActive) return false;
+                if (currentFilter === 'inactive' && u.isActive) return false;
+                if (currentFilter === 'admin' && role !== 'admin') return false;
+
+                // Search
+                if (searchTerm && !name.includes(searchTerm) && !email.includes(searchTerm)) return false;
+                return true;
+            });
+
+            countEl.textContent = `Exibindo ${filtered.length} de ${allUsers.length} usuários`;
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="16" class="table-msg">Nenhum usuário encontrado com os filtros aplicados.</td></tr>`;
+                return;
+            }
+
+            // Max tokens para barra relativa
+            const maxTokens = Math.max(...filtered.map(u => u.usedTokensCurrentMonth || 0), 1);
+
+            tbody.innerHTML = '';
+            filtered.forEach(u => {
+                const id = u.id ?? '—';
+                const name = u.name || 'Sem nome';
+                const email = u.email || '—';
+                const role = (u.role || 'user').toLowerCase();
+                const plan = (u.plan || 'Free');
+                const cycle = u.subscriptionCycle || 'Mensal';
+                const isActive = u.isActive ?? false;
+                const verified = u.isEmailVerified ?? false;
+                const tokens = u.usedTokensCurrentMonth || 0;
+                const msgs = u.totalMessages || 0;
+                const hours = u.hoursSaved ?? 0;
+                const agent = u.mostUsedAgent || 'Nenhum';
+
+                const createdAt = u.createdAt ? new Date(u.createdAt).toLocaleDateString('pt-BR') : '—';
+                const lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleDateString('pt-BR') : 'Nunca';
+                const lastReset = u.lastResetDate ? new Date(u.lastResetDate).toLocaleDateString('pt-BR') : '—';
+
+                const tokenPct = Math.round((tokens / maxTokens) * 100);
+                const tokensDisplay = tokens >= 1000000
+                    ? (tokens / 1000000).toFixed(1) + 'M'
+                    : tokens >= 1000 ? (tokens / 1000).toFixed(1) + 'K'
+                    : tokens.toLocaleString();
+
+                // Badges
+                const roleBadge = role === 'admin'
+                    ? `<span class="badge badge-admin"><i class="fas fa-star"></i> Admin</span>`
+                    : `<span class="badge badge-user"><i class="fas fa-user"></i> Usuário</span>`;
+
+                const planLow = plan.toLowerCase();
+                let planBadge;
+                if (planLow === 'pro') planBadge = `<span class="badge badge-pro"><i class="fas fa-crown"></i> Pro</span>`;
+                else if (planLow === 'plus') planBadge = `<span class="badge badge-plus"><i class="fas fa-rocket"></i> Plus</span>`;
+                else planBadge = `<span class="badge badge-free">Iniciante</span>`;
+
+                const activeBadge = isActive
+                    ? `<span class="badge badge-active"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Ativo</span>`
+                    : `<span class="badge badge-inactive"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Inativo</span>`;
+
+                const verifiedBadge = verified
+                    ? `<span class="badge badge-verified"><i class="fas fa-check-circle"></i> Sim</span>`
+                    : `<span class="badge badge-unverif"><i class="fas fa-clock"></i> Pendente</span>`;
+
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-plan', planLow);
+                tr.setAttribute('data-role', role);
+                tr.innerHTML = `
+                    <td class="col-id">#${id}</td>
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar-mini">${name.charAt(0).toUpperCase()}</div>
+                            <span style="color:white; font-weight:500;">${name}</span>
+                        </div>
+                    </td>
+                    <td style="color:#aaa;">${email}</td>
+                    <td>${roleBadge}</td>
+                    <td>${planBadge}</td>
+                    <td style="color:#777; font-size:0.75rem;">${cycle}</td>
+                    <td>${activeBadge}</td>
+                    <td>${verifiedBadge}</td>
+                    <td class="date-small">${createdAt}</td>
+                    <td class="date-small">${lastLogin}</td>
+                    <td class="date-small">${lastReset}</td>
+                    <td style="color:#f59e0b; font-size:0.75rem;" title="${agent}">
+                        <i class="fas fa-robot" style="margin-right:4px; opacity:0.6;"></i>
+                        ${agent.length > 18 ? agent.substring(0, 18) + '…' : agent}
+                    </td>
+                    <td>
+                        <div class="token-bar-wrap">
+                            <span style="color:white; font-weight:600; min-width:45px;">${tokensDisplay}</span>
+                            <div class="token-bar-bg">
+                                <div class="token-bar-fill" style="width:${tokenPct}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="color:#f59e0b;">${msgs.toLocaleString()}</td>
+                    <td class="hours-badge">${hours}h</td>
+                    <td>
+                        <button class="action-btn action-edit" onclick="openModal(${id}, '${email}', '${plan}', '${cycle}', '${role}', ${isActive})" title="Editar Usuário">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        <button class="action-btn action-reset" onclick="resetUserTokens(${id}, '${name}')" title="Resetar Tokens">
+                            <i class="fas fa-rotate-right"></i>
+                        </button>
+                        <button class="action-btn action-delete" onclick="deleteUser(${id}, '${email}')" title="Excluir Usuário">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ============================================================
+        // FILTROS / BUSCA
+        // ============================================================
+        function setFilter(filter, el) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            renderTable();
+        }
+
+        function filterTable() {
+            searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            renderTable();
+        }
+
+        // ============================================================
+        // AÇÕES
+        // ============================================================
         async function deleteUser(id, email) {
-            const confirmacao = confirm(`PERIGO: Excluir o usuário ${email}?\n\nEssa ação não pode ser desfeita.`);
-            if (!confirmacao) return;
+            const result = await Swal.fire({
+                title: 'Excluir Usuário?',
+                html: `<div style="color:#ccc">Essa ação não pode ser desfeita.<br><strong style="color:#ff5555">${email}</strong></div>`,
+                icon: 'warning',
+                background: '#141428',
+                color: '#fff',
+                showCancelButton: true,
+                confirmButtonColor: '#ff5555',
+                cancelButtonColor: '#555',
+                confirmButtonText: 'Sim, excluir',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!result.isConfirmed) return;
 
             try {
-                const token = localStorage.getItem('token');
+                const authToken = localStorage.getItem('token');
                 const response = await fetch(`${API_URL}/user/${id}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${authToken}` }
                 });
 
                 if (response.ok) {
-                    alert('Usuário excluído!');
+                    showToast('Usuário excluído!', 'success');
                     loadData();
                 } else {
                     const err = await response.json();
-                    alert('Erro: ' + (err.message || response.statusText));
+                    showToast('Erro: ' + (err.message || response.statusText), 'error');
                 }
             } catch (error) {
-                alert('Erro de conexão: ' + error.message);
+                showToast('Erro de conexão: ' + error.message, 'error');
+            }
+        }
+
+        async function resetUserTokens(id, name) {
+            const result = await Swal.fire({
+                title: 'Resetar Tokens?',
+                html: `<div style="color:#ccc">Zerar o contador de tokens de <strong style="color:#00F3FF">${name}</strong>?</div>`,
+                icon: 'question',
+                background: '#141428',
+                color: '#fff',
+                showCancelButton: true,
+                confirmButtonColor: '#00F3FF',
+                cancelButtonColor: '#555',
+                confirmButtonText: 'Sim, resetar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const authToken = localStorage.getItem('token');
+                const response = await fetch(`${API_URL}/update-user`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                    body: JSON.stringify({ userId: id, newPlan: '', newCycle: '', newRole: '', isActive: null, resetTokens: true })
+                });
+
+                if (response.ok) {
+                    showToast(`Tokens de ${name} resetados!`, 'success');
+                    loadData();
+                } else {
+                    showToast('Erro ao resetar tokens.', 'error');
+                }
+            } catch (error) {
+                showToast('Erro de conexão.', 'error');
             }
         }
 
         let currentEditingUserId = null;
-        function openModal(id, email, plan, cycle) {
+
+        function openModal(id, email, plan, cycle, role, isActive) {
             currentEditingUserId = id;
             document.getElementById('editEmail').value = email;
+            document.getElementById('editEmailDisplay').textContent = '✉️  ' + email;
             document.getElementById('editPlan').value = plan;
             document.getElementById('editCycle').value = cycle;
+            document.getElementById('editRole').value = role;
+            document.getElementById('editIsActive').value = isActive.toString();
+            document.getElementById('resetTokens').checked = false;
             document.getElementById('editModal').style.display = 'flex';
         }
+
         function closeModal() {
             document.getElementById('editModal').style.display = 'none';
             currentEditingUserId = null;
@@ -315,34 +953,36 @@
             if (!currentEditingUserId) return;
 
             btn.disabled = true;
-            btn.innerText = "Salvando...";
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Salvando...';
 
             try {
-                const token = localStorage.getItem('token');
+                const authToken = localStorage.getItem('token');
                 const response = await fetch(`${API_URL}/update-user`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
                     body: JSON.stringify({
                         userId: currentEditingUserId,
                         newPlan: document.getElementById('editPlan').value,
                         newCycle: document.getElementById('editCycle').value,
+                        newRole: document.getElementById('editRole').value,
+                        isActive: document.getElementById('editIsActive').value === 'true',
                         resetTokens: document.getElementById('resetTokens').checked
                     })
                 });
 
                 if (response.ok) {
-                    alert('Usuário atualizado!');
+                    showToast('Usuário atualizado!', 'success');
                     closeModal();
                     loadData();
                 } else {
                     const err = await response.json();
-                    alert('Erro: ' + (err.message || 'Falha ao atualizar'));
+                    showToast('Erro: ' + (err.message || 'Falha ao atualizar'), 'error');
                 }
             } catch (error) {
-                alert('Erro: ' + error.message);
+                showToast('Erro: ' + error.message, 'error');
             } finally {
                 btn.disabled = false;
-                btn.innerText = "Salvar";
+                btn.innerHTML = '<i class="fas fa-save"></i> Salvar';
             }
         }
 
@@ -353,7 +993,11 @@
             if (overlay) overlay.classList.toggle('active');
         }
 
-        // Inicia o carregamento assim que o DOM estiver pronto
+        // Fechar modal clicando fora
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
         document.addEventListener('DOMContentLoaded', loadData);
     </script>
 </body>
