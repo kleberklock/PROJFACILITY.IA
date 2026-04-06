@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using BCrypt.Net;
 using Microsoft.AspNetCore.Authorization;
 
@@ -105,6 +106,11 @@ namespace PROJFACILITY.IA.Controllers
             if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Codigo) || string.IsNullOrEmpty(request.NewPassword))
                 return BadRequest(new { message = "Preencha todos os campos." });
 
+            // Validação de política de senha forte
+            const string senhaRegex = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$";
+            if (!Regex.IsMatch(request.NewPassword, senhaRegex))
+                return BadRequest(new { message = "A senha deve conter no mínimo 8 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial." });
+
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (user == null) return BadRequest(new { message = "Usuário não encontrado." });
@@ -139,6 +145,11 @@ namespace PROJFACILITY.IA.Controllers
                     return BadRequest(new { message = "A senha atual está incorreta." });
                 }
 
+                // Validação de política de senha forte
+                const string senhaRegex = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$";
+                if (!Regex.IsMatch(request.NewPassword, senhaRegex))
+                    return BadRequest(new { message = "A senha deve conter no mínimo 8 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial." });
+
                 user.Password = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
                 await _context.SaveChangesAsync();
 
@@ -172,6 +183,11 @@ namespace PROJFACILITY.IA.Controllers
 
             if (user.VerificationCodeExpires < DateTime.UtcNow)
                 return BadRequest(new { message = "Código expirado. Solicite novamente." });
+
+            // Validação de política de senha forte
+            const string senhaRegex = @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$";
+            if (!Regex.IsMatch(request.Password, senhaRegex))
+                return BadRequest(new { message = "A senha deve conter no mínimo 8 caracteres, incluindo uma letra maiúscula, uma minúscula, um número e um caractere especial." });
 
             string passwordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
 

@@ -100,13 +100,21 @@
                     <input type="password" id="oldPass" class="modal-input">
 
                     <label style="color:#ccc; font-size:0.9rem;">Nova Senha</label>
-                    <input type="password" id="newPass" class="modal-input">
+                    <input type="password" id="newPass" class="modal-input" oninput="validarNovaSenha()">
+
+                    <ul id="nova-senha-requisitos" style="list-style:none; padding:0 4px; margin:8px 0 16px; font-size:0.82rem;">
+                        <li id="ns-min"     style="color:#ff5555; margin:4px 0; display:flex; align-items:center; gap:6px;"><i class="fas fa-times-circle"></i> Mínimo de 8 caracteres</li>
+                        <li id="ns-upper"   style="color:#ff5555; margin:4px 0; display:flex; align-items:center; gap:6px;"><i class="fas fa-times-circle"></i> Pelo menos uma letra maiúscula</li>
+                        <li id="ns-lower"   style="color:#ff5555; margin:4px 0; display:flex; align-items:center; gap:6px;"><i class="fas fa-times-circle"></i> Pelo menos uma letra minúscula</li>
+                        <li id="ns-num"     style="color:#ff5555; margin:4px 0; display:flex; align-items:center; gap:6px;"><i class="fas fa-times-circle"></i> Pelo menos um número</li>
+                        <li id="ns-special" style="color:#ff5555; margin:4px 0; display:flex; align-items:center; gap:6px;"><i class="fas fa-times-circle"></i> Pelo menos um caractere especial (@$!%*?&)</li>
+                    </ul>
 
                     <label style="color:#ccc; font-size:0.9rem;">Confirmar Nova Senha</label>
                     <input type="password" id="confirmPass" class="modal-input">
 
-                    <button onclick="updatePassword()" class="hero-btn"
-                        style="margin-top:10px; font-size:0.9rem;">Atualizar Senha</button>
+                    <button onclick="updatePassword()" id="btnUpdatePass" class="hero-btn" disabled
+                        style="margin-top:10px; font-size:0.9rem; opacity:0.5; cursor:not-allowed;">Atualizar Senha</button>
                 </div>
 
                 <div class="profile-card"
@@ -126,17 +134,83 @@
     <script src="script.js"></script>
 
     <script>
-        function updatePassword() {
-            // Simulação
-            const old = document.getElementById('oldPass').value;
-            const newP = document.getElementById('newPass').value;
-            if (!old || !newP) return alert("Preencha todos os campos.");
+        const NS_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-            alert("Senha atualizada com sucesso! (Simulação)");
-            document.getElementById('oldPass').value = "";
-            document.getElementById('newPass').value = "";
-            document.getElementById('confirmPass').value = "";
+        function validarNovaSenha() {
+            const senha = document.getElementById('newPass').value;
+            const btn   = document.getElementById('btnUpdatePass');
+
+            const checks = {
+                'ns-min':     senha.length >= 8,
+                'ns-upper':   /[A-Z]/.test(senha),
+                'ns-lower':   /[a-z]/.test(senha),
+                'ns-num':     /\d/.test(senha),
+                'ns-special': /[@$!%*?&]/.test(senha)
+            };
+
+            let tudo_ok = true;
+            for (const [id, ok] of Object.entries(checks)) {
+                const el   = document.getElementById(id);
+                const icon = el.querySelector('i');
+                if (ok) {
+                    el.style.color  = '#00ff88';
+                    icon.className  = 'fas fa-check-circle';
+                } else {
+                    el.style.color  = '#ff5555';
+                    icon.className  = 'fas fa-times-circle';
+                    tudo_ok = false;
+                }
+            }
+
+            btn.disabled       = !tudo_ok;
+            btn.style.opacity  = tudo_ok ? '1'       : '0.5';
+            btn.style.cursor   = tudo_ok ? 'pointer' : 'not-allowed';
         }
+
+        async function updatePassword() {
+            const old  = document.getElementById('oldPass').value;
+            const newP = document.getElementById('newPass').value;
+            const conf = document.getElementById('confirmPass').value;
+            const btn  = document.getElementById('btnUpdatePass');
+
+            if (!old || !newP || !conf) { showToast('Preencha todos os campos.', 'warning'); return; }
+            if (newP !== conf)          { showToast('As senhas não coincidem.', 'error');    return; }
+
+            btn.disabled = true;
+            btn.innerText = 'Atualizando...';
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/auth/trocar-senha`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ oldPassword: old, newPassword: newP })
+                });
+
+                const data = await res.json().catch(() => ({}));
+
+                if (res.ok) {
+                    showToast('Senha atualizada com sucesso!', 'success');
+                    document.getElementById('oldPass').value     = '';
+                    document.getElementById('newPass').value     = '';
+                    document.getElementById('confirmPass').value = '';
+                    validarNovaSenha();
+                } else {
+                    showToast(data.message || 'Erro ao atualizar senha.', 'error');
+                }
+            } catch (e) {
+                showToast('Erro de conexão com o servidor.', 'error');
+            } finally {
+                btn.innerText = 'Atualizar Senha';
+                if (NS_REGEX.test(document.getElementById('newPass').value)) {
+                    btn.disabled      = false;
+                    btn.style.opacity = '1';
+                }
+            }
+        }
+
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.querySelector('.overlay').classList.toggle('active'); }
         function fazerLogout() { localStorage.removeItem('token'); localStorage.removeItem('userData'); window.location.href = 'index.html'; }
         if (typeof particlesJS !== 'undefined') { particlesJS("particles-js", { "particles": { "number": { "value": 20 }, "color": { "value": "#ffffff" }, "opacity": { "value": 0.1 }, "size": { "value": 2 }, "move": { "enable": true, "speed": 0.5 } } }); }

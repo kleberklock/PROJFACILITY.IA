@@ -52,10 +52,18 @@
                 <div class="auth-input-group">
                     <label>Criar Senha</label>
                     <i class="fas fa-lock auth-icon"></i>
-                    <input type="password" id="senha" class="auth-input" placeholder="••••••••">
+                    <input type="password" id="senha" class="auth-input" placeholder="••••••••" oninput="validarSenhaCadastro()">
                 </div>
 
-                <button class="btn-auth" onclick="finalizarCadastro()" id="btnRegister">Confirmar e Entrar</button>
+                <ul id="senha-requisitos" style="list-style:none; padding:0 4px; margin:10px 0 16px; font-size:0.82rem;">
+                    <li id="req-min" style="color:#ff5555; margin:4px 0; display:flex; align-items:center; gap:6px;"><i class="fas fa-times-circle"></i> Mínimo de 8 caracteres</li>
+                    <li id="req-upper" style="color:#ff5555; margin:4px 0; display:flex; align-items:center; gap:6px;"><i class="fas fa-times-circle"></i> Pelo menos uma letra maiúscula</li>
+                    <li id="req-lower" style="color:#ff5555; margin:4px 0; display:flex; align-items:center; gap:6px;"><i class="fas fa-times-circle"></i> Pelo menos uma letra minúscula</li>
+                    <li id="req-num" style="color:#ff5555; margin:4px 0; display:flex; align-items:center; gap:6px;"><i class="fas fa-times-circle"></i> Pelo menos um número</li>
+                    <li id="req-special" style="color:#ff5555; margin:4px 0; display:flex; align-items:center; gap:6px;"><i class="fas fa-times-circle"></i> Pelo menos um caractere especial (@$!%*?&)</li>
+                </ul>
+
+                <button class="btn-auth" onclick="finalizarCadastro()" id="btnRegister" disabled style="opacity:0.5; cursor:not-allowed;">Confirmar e Entrar</button>
             </div>
 
             <p id="feedback" class="feedback-msg"></p>
@@ -117,6 +125,39 @@
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Código';
             }
+        }
+
+        const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        function validarSenhaCadastro() {
+            const senha = document.getElementById('senha').value;
+            const btn = document.getElementById('btnRegister');
+
+            const checks = {
+                'req-min':     senha.length >= 8,
+                'req-upper':   /[A-Z]/.test(senha),
+                'req-lower':   /[a-z]/.test(senha),
+                'req-num':     /\d/.test(senha),
+                'req-special': /[@$!%*?&]/.test(senha)
+            };
+
+            let tudo_ok = true;
+            for (const [id, ok] of Object.entries(checks)) {
+                const el = document.getElementById(id);
+                const icon = el.querySelector('i');
+                if (ok) {
+                    el.style.color = '#00ff88';
+                    icon.className = 'fas fa-check-circle';
+                } else {
+                    el.style.color = '#ff5555';
+                    icon.className = 'fas fa-times-circle';
+                    tudo_ok = false;
+                }
+            }
+
+            btn.disabled = !tudo_ok;
+            btn.style.opacity = tudo_ok ? '1' : '0.5';
+            btn.style.cursor = tudo_ok ? 'pointer' : 'not-allowed';
         }
 
         async function finalizarCadastro() {
