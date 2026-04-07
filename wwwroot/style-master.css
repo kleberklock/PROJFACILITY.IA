@@ -3065,12 +3065,13 @@ input:checked+.slider-demo:before {
 }
 
 .input-container textarea {
-    height: 38px !important;
-    /* Altura mais compacta para o texto */
+    height: auto;
     min-height: 38px !important;
+    max-height: 300px !important;
     padding: 8px 0 !important;
-    /* Ajuste fino do texto */
     line-height: 20px;
+    resize: none;
+    overflow-y: hidden;
 }
 
 /* Botão Flutuante do WhatsApp */

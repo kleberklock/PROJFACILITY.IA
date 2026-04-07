@@ -648,6 +648,12 @@
                     const text = event.results[0][0].transcript;
                     userInput.value += (userInput.value ? ' ' : '') + text;
                     userInput.focus();
+                    
+                    // Auto-resize
+                    userInput.style.height = 'auto';
+                    userInput.style.height = userInput.scrollHeight + 'px';
+                    userInput.style.overflowY = userInput.scrollHeight >= 300 ? 'auto' : 'hidden';
+                    
                     document.getElementById('micBtn').style.color = '';
                 };
                 recognition.onerror = () => { document.getElementById('micBtn').style.color = 'red'; };
@@ -658,6 +664,18 @@
             userInput.addEventListener('input', function () {
                 if (this.value === '/') slashMenu.style.display = 'block';
                 else if (!this.value.startsWith('/')) slashMenu.style.display = 'none';
+                
+                // Auto-resize logic
+                this.style.height = 'auto';
+                const newHeight = this.scrollHeight;
+                this.style.height = newHeight + 'px';
+                
+                // Toggle scrollbar manually for better UX if needed
+                if (newHeight >= 300) {
+                    this.style.overflowY = 'auto';
+                } else {
+                    this.style.overflowY = 'hidden';
+                }
             });
 
             // Params e Setup
@@ -683,6 +701,7 @@
                     if (campoInput.style) {
                         campoInput.style.height = 'auto';
                         campoInput.style.height = campoInput.scrollHeight + 'px';
+                        campoInput.style.overflowY = campoInput.scrollHeight >= 300 ? 'auto' : 'hidden';
                     }
                 }
                 localStorage.removeItem('prompt_pendente');
@@ -737,11 +756,19 @@
             userInput.value = cmd + ' ';
             slashMenu.style.display = 'none';
             userInput.focus();
+            
+            // Refaz a altura
+            userInput.style.height = 'auto';
+            userInput.style.height = userInput.scrollHeight + 'px';
         }
 
         function editUserMessage(text) {
             userInput.value = text;
             userInput.focus();
+            
+            // Refaz a altura
+            userInput.style.height = 'auto';
+            userInput.style.height = userInput.scrollHeight + 'px';
         }
 
         // --- ENVIO DE MENSAGEM COM STOP REAL ---
@@ -779,6 +806,9 @@
 
             const aiDiv = addMessage("ai", "", currentAgentIcon, true);
             userInput.value = "";
+            userInput.style.height = '38px'; // Reseta altura inicial
+            userInput.style.overflowY = 'hidden';
+            
             const fileToSend = currentFile;
             clearAttachments();
 
