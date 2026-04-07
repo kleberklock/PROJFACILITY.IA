@@ -22,6 +22,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
+        /* --- Scrollbar Customizada --- */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+
         /* --- Styles Específicos para as Novas Funcionalidades --- */
 
         /* Code Blocks */
@@ -61,41 +67,6 @@
             color: var(--primary);
         }
 
-        /* Slash Commands Menu */
-        .slash-menu {
-            position: absolute;
-            bottom: 70px;
-            left: 20px;
-            width: 250px;
-            background: #1e1e1e;
-            border: 1px solid #333;
-            border-radius: 8px;
-            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.5);
-            display: none;
-            z-index: 1000;
-            overflow: hidden;
-        }
-
-        .slash-item {
-            padding: 10px 15px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #ccc;
-            border-bottom: 1px solid #2a2a2a;
-        }
-
-        .slash-item:hover,
-        .slash-item.active {
-            background: var(--primary);
-            color: #000;
-        }
-
-        .slash-item i {
-            width: 20px;
-            text-align: center;
-        }
 
         /* Edit User Message */
         .edit-msg-btn {
@@ -156,32 +127,63 @@
             font-weight: bold;
         }
 
-        /* Export Dropdown in Header */
+        /* Animação suave do fundo do cabeçalho */
+        @keyframes smoothGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .chat-header-bar {
+            background: linear-gradient(-45deg, rgba(22, 27, 34, 0.95), rgba(16, 185, 129, 0.15), rgba(22, 27, 34, 0.95)) !important;
+            background-size: 400% 400% !important;
+            animation: smoothGradient 15s ease infinite !important;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 15px 20px;
+            z-index: 100;
+            transition: all 0.5s ease;
+        }
+
+        /* Tipografia do Nome do Agente no Cabeçalho */
+        #headerName {
+            font-size: 1.2rem;
+            font-weight: 700 !important;
+            background: linear-gradient(90deg, #ffffff, #a7f3d0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        /* Botões de Exportação Premium */
         .header-actions {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             margin-left: auto;
         }
-
         .export-btn {
-            background: transparent;
-            border: 1px solid #444;
-            color: #ccc;
-            padding: 5px 10px;
-            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #d1d5db !important;
+            padding: 8px 16px !important;
+            border-radius: 20px !important; /* Estilo Pílula */
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.85rem !important;
+            font-weight: 600;
+            transition: all 0.4s ease !important; /* Transição muito suave */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-
         .export-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        /* Stop Button State */
-        .stop-btn {
-            background: #ff4444 !important;
-            color: white !important;
-            animation: pulse-red 2s infinite;
+            background: rgba(16, 185, 129, 0.15) !important;
+            border-color: rgba(16, 185, 129, 0.5) !important;
+            color: #fff !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.2);
         }
 
         @keyframes pulse-red {
@@ -198,21 +200,67 @@
             }
         }
 
-        /* Adjust Markdown Elements */
-        .message-content-wrapper {
-            max-width: 85%;
-            min-width: 0;
+        .messages-area {
+            padding: 20px 10vw 120px 10vw; /* Margens laterais maiores para centralizar a leitura */
             display: flex;
             flex-direction: column;
+            gap: 24px;
         }
 
-        .message-bubble {
-            max-width: 100%;
-            overflow-wrap: break-word;
-            word-wrap: break-word;
-            word-break: break-word;
-            white-space: normal;
+        .message-row {
+            display: flex;
+            width: 100%;
+            animation: fadeIn 0.3s ease;
         }
+
+        /* MENSAGEM DA IA */
+        .ai-message {
+            justify-content: flex-start;
+        }
+        .ai-message .message-content-wrapper {
+            max-width: 85%;
+        }
+        .ai-message .message-bubble {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 15px;
+            color: #e5e7eb; /* Texto mais suave que o branco puro */
+            font-size: 1rem;
+            line-height: 1.7; /* Melhor leitura */
+        }
+        .ai-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px; /* Quadrado com bordas arredondadas ao invés de círculo */
+            background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+
+        /* MENSAGEM DO USUÁRIO */
+        .user-message {
+            justify-content: flex-end;
+        }
+        .user-message .message-content-wrapper {
+            max-width: 70%;
+            align-items: flex-end;
+        }
+        .user-message .message-bubble {
+            background: #2a2b36; /* Fundo contrastante elegante */
+            color: #ffffff;
+            padding: 12px 18px;
+            border-radius: 18px 18px 4px 18px; /* Canto inferior direito reto */
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
 
         .message-bubble pre {
             max-width: 100%;
@@ -446,6 +494,107 @@
             opacity: 1;
         }
 
+        /* ESTADOS DE POSICIONAMENTO DA BARRA DE INPUT (A Magia da Animação) */
+        /* Estado Base (Barra no fundo) */
+        .input-wrapper {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            transition: bottom 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), background 0.8s ease;
+            z-index: 200;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Estado Inicial (Barra no meio do ecrã) */
+        .chat-interface.is-initial-state .input-wrapper {
+            bottom: 50%;
+            transform: translateY(50%);
+            background: transparent !important; /* Sem gradiente no meio do ecrã */
+        }
+
+        /* Esconder a área de mensagens enquanto está no estado inicial para manter a estética limpa */
+        .chat-interface.is-initial-state .messages-area {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        .chat-interface:not(.is-initial-state) .messages-area {
+            opacity: 1;
+            transition: opacity 1s ease 0.3s; /* Delay para aparecer após a barra descer */
+        }
+
+        .input-box-styled {
+            width: 100%;
+            max-width: 800px;
+            background: #1e232b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 12px 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+            pointer-events: auto; /* Reabilita eventos no container pílula */
+        }
+
+        .input-box-styled:focus-within {
+            border-color: rgba(16, 185, 129, 0.5); /* var(--primary) com transparência */
+            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.1);
+        }
+
+        .input-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        #userInput {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            resize: none;
+            max-height: 200px;
+            padding: 8px 5px;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        #userInput:focus { outline: none; }
+        #userInput::placeholder { color: #6b7280; }
+
+        .action-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9ca3af;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 2px;
+        }
+        .action-icon:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+        }
+
+        #sendBtn {
+            background: var(--primary) !important;
+            border-radius: 50% !important;
+            width: 40px !important;
+            height: 40px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0;
+            color: black !important;
+        }
+        #sendBtn:hover {
+            transform: scale(1.05);
+        }
+
 
         .prompt-list-item strong,
         .sp-title {
@@ -519,21 +668,6 @@
                 <div class="messages-area" id="messagesArea"></div>
 
                 <div class="input-wrapper">
-                    <div id="slashMenu" class="slash-menu">
-                        <div class="slash-item" onclick="insertSlash('/resumir')"><i class="fas fa-compress-alt"></i>
-                            /resumir <span style="font-size:0.7rem; color:#666; margin-left:auto;">Resumir texto</span>
-                        </div>
-                        <div class="slash-item" onclick="insertSlash('/codigo')"><i class="fas fa-code"></i> /codigo
-                            <span style="font-size:0.7rem; color:#666; margin-left:auto;">Gerar código</span>
-                        </div>
-                        <div class="slash-item" onclick="insertSlash('/email')"><i class="fas fa-envelope"></i> /email
-                            <span style="font-size:0.7rem; color:#666; margin-left:auto;">Criar e-mail</span>
-                        </div>
-                        <div class="slash-item" onclick="insertSlash('/corrigir')"><i class="fas fa-check-double"></i>
-                            /corrigir <span style="font-size:0.7rem; color:#666; margin-left:auto;">Revisar texto</span>
-                        </div>
-                    </div>
-
                     <div class="input-box-styled">
                         <div class="attachments-preview" id="attachmentsPreview"></div>
                         <div class="input-container">
@@ -633,7 +767,6 @@
         const userInput = document.getElementById('userInput');
         const messagesArea = document.getElementById('messagesArea');
         const sendBtn = document.getElementById('sendBtn');
-        const slashMenu = document.getElementById('slashMenu');
 
         // Inicialização
         document.addEventListener('DOMContentLoaded', async () => {
@@ -660,11 +793,8 @@
                 recognition.onend = () => { document.getElementById('micBtn').style.color = ''; };
             }
 
-            // Setup Slash Commands
+            // Setup Input
             userInput.addEventListener('input', function () {
-                if (this.value === '/') slashMenu.style.display = 'block';
-                else if (!this.value.startsWith('/')) slashMenu.style.display = 'none';
-                
                 // Auto-resize logic
                 this.style.height = 'auto';
                 const newHeight = this.scrollHeight;
@@ -727,10 +857,38 @@
             messagesArea.innerHTML = "";
             loadSwitches(area);
 
+            const chatInterface = document.getElementById('chatInterface');
+
             if (params.get('sessionId')) {
+                chatInterface.classList.remove('is-initial-state');
                 loadSessionMessages(currentSessionId);
             } else {
-                addMessage('ai', `Olá! Sou seu ${name}. Como posso ajudar hoje?`, currentAgentIcon, false);
+                // É uma nova conversa, adicionamos a classe para centrar o input
+                chatInterface.classList.add('is-initial-state');
+                
+                // Nova Tela Inicial Elegante
+                const emptyStateHTML = `
+                    <div id="emptyState" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; margin-top: 10vh; opacity: 0; animation: fadeIn 0.8s forwards;">
+                        <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(16, 185, 129, 0.1); display:flex; align-items:center; justify-content:center; font-size: 2.5rem; color: var(--primary); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(16,185,129,0.2);">
+                            <i class="fas fa-${currentAgentIcon}"></i>
+                        </div>
+                        <h2 style="color: white; font-size: 1.8rem; font-weight: 600; margin-bottom: 10px;">Como posso ajudar hoje?</h2>
+                        <p style="color: #888; font-size: 1rem; margin-bottom: 40px;">Sou o seu ${currentAgentName}.</p>
+                        
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; max-width: 600px;">
+                            <button onclick="document.getElementById('userInput').value='Me ajude a resumir um texto.'; document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
+                                <i class="fas fa-compress-alt" style="color:var(--primary); margin-right:8px;"></i> Resumir Texto
+                            </button>
+                            <button onclick="document.getElementById('userInput').value='Pode revisar um documento para mim?'; document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
+                                <i class="fas fa-check-double" style="color:var(--primary); margin-right:8px;"></i> Revisar Documento
+                            </button>
+                            <button onclick="document.getElementById('userInput').value='Gere uma ideia criativa para...'; document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
+                                <i class="fas fa-lightbulb" style="color:var(--primary); margin-right:8px;"></i> Ideia Criativa
+                            </button>
+                        </div>
+                    </div>
+                `;
+                messagesArea.innerHTML = emptyStateHTML;
             }
 
             loadHistoryFromAPI();
@@ -752,15 +910,6 @@
             document.getElementById('micBtn').style.color = 'var(--neon-green)';
         }
 
-        function insertSlash(cmd) {
-            userInput.value = cmd + ' ';
-            slashMenu.style.display = 'none';
-            userInput.focus();
-            
-            // Refaz a altura
-            userInput.style.height = 'auto';
-            userInput.style.height = userInput.scrollHeight + 'px';
-        }
 
         function editUserMessage(text) {
             userInput.value = text;
@@ -790,7 +939,14 @@
             const text = userInput.value.trim();
             if (!text && !currentFile) return;
 
-            slashMenu.style.display = 'none';
+            const chatInterface = document.getElementById('chatInterface');
+            if (chatInterface.classList.contains('is-initial-state')) {
+                chatInterface.classList.remove('is-initial-state');
+            }
+
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) emptyState.remove();
+
             if (text) addMessage("user", text);
 
             if (currentFile) {
