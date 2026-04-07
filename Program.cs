@@ -12,17 +12,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. Liberar CORS (Permite Azure e seu ambiente local de desenvolvimento)
+// 2. Liberar CORS (Configurável via AppSettings/Azure)
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "*" };
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ProductionCors",
-        builder => builder
-            .WithOrigins(
-                "https://facility-ia-frg6cqbcggasdhea.centralus-01.azurewebsites.net", // Produção
-                "http://localhost:5217",   // Frontend local (Live Server padrão)
-                "http://127.0.0.1:5500",   // Frontend local IP
-                "http://localhost:5217"    // Backend local
-            )
+        policy => policy
+            .WithOrigins(allowedOrigins)
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
@@ -34,10 +31,19 @@ builder.Services.AddControllers();
 
 // 4. Configurar JWT
 var jwtKey = builder.Configuration["Jwt:Key"];
-if (string.IsNullOrEmpty(jwtKey) || jwtKey.Length < 32)
+
+// Em Produção, o sistema DEVE parar se não houver chave segura (mínimo 32 caracteres)
+if (!builder.Environment.IsDevelopment())
 {
-    // O sistema DEVE parar se não houver chave segura configurada na Azure
-    throw new InvalidOperationException("FATAL: A chave JWT não foi configurada nas variáveis de ambiente ou é muito curta!");
+    if (string.IsNullOrEmpty(jwtKey) || jwtKey.Length < 32)
+    {
+        throw new InvalidOperationException("ERRO FATAL: A chave 'Jwt:Key' de PRODUÇÃO não foi configurada no Azure (mínimo 32 caracteres)!");
+    }
+}
+else if (string.IsNullOrEmpty(jwtKey))
+{
+    // Fallback apenas para desenvolvimento local
+    jwtKey = "DEV_SECRET_KEY_FOR_LOCAL_TESTING_32_CHARS";
 }
 
 var key = Encoding.ASCII.GetBytes(jwtKey);
