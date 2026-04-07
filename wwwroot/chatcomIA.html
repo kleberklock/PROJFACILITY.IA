@@ -23,10 +23,23 @@
 
     <style>
         /* --- Scrollbar Customizada --- */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
 
         /* --- Styles Específicos para as Novas Funcionalidades --- */
 
@@ -129,21 +142,70 @@
 
         /* Animação suave do fundo do cabeçalho */
         @keyframes smoothGradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         .chat-header-bar {
-            background: linear-gradient(-45deg, rgba(22, 27, 34, 0.95), rgba(16, 185, 129, 0.15), rgba(22, 27, 34, 0.95)) !important;
-            background-size: 400% 400% !important;
-            animation: smoothGradient 15s ease infinite !important;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 15px 20px;
-            z-index: 100;
-            transition: all 0.5s ease;
+            background: rgba(10, 10, 10, 0.4) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 12px 25px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Status Pulsante */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            box-shadow: 0 0 10px var(--primary);
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+            }
+        }
+
+        .header-agent-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(0, 0, 0, 0.5));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.2rem;
+            box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.1);
         }
 
         /* Tipografia do Nome do Agente no Cabeçalho */
@@ -157,33 +219,41 @@
             letter-spacing: 0.5px;
         }
 
-        /* Botões de Exportação Premium */
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
         .header-actions {
             display: flex;
             gap: 12px;
-            margin-left: auto;
         }
+
         .export-btn {
-            background: rgba(255, 255, 255, 0.03) !important;
+            background: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid rgba(255, 255, 255, 0.1) !important;
-            color: #d1d5db !important;
+            color: #efefef !important;
             padding: 8px 16px !important;
-            border-radius: 20px !important; /* Estilo Pílula */
+            border-radius: 12px !important;
             cursor: pointer;
-            font-size: 0.85rem !important;
-            font-weight: 600;
-            transition: all 0.4s ease !important; /* Transição muito suave */
+            font-size: 0.8rem !important;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            backdrop-filter: blur(5px);
+            letter-spacing: 0.03em;
         }
+
         .export-btn:hover {
-            background: rgba(16, 185, 129, 0.15) !important;
-            border-color: rgba(16, 185, 129, 0.5) !important;
-            color: #fff !important;
+            background: rgba(16, 185, 129, 0.1) !important;
+            border-color: rgba(16, 185, 129, 0.4) !important;
+            color: var(--primary) !important;
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.15);
         }
 
         @keyframes pulse-red {
@@ -201,7 +271,8 @@
         }
 
         .messages-area {
-            padding: 20px 10vw 120px 10vw; /* Margens laterais maiores para centralizar a leitura */
+            padding: 20px 10vw 120px 10vw;
+            /* Margens laterais maiores para centralizar a leitura */
             display: flex;
             flex-direction: column;
             gap: 24px;
@@ -217,22 +288,28 @@
         .ai-message {
             justify-content: flex-start;
         }
+
         .ai-message .message-content-wrapper {
             max-width: 85%;
         }
+
         .ai-message .message-bubble {
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
             padding: 0 15px;
-            color: #e5e7eb; /* Texto mais suave que o branco puro */
+            color: #e5e7eb;
+            /* Texto mais suave que o branco puro */
             font-size: 1rem;
-            line-height: 1.7; /* Melhor leitura */
+            line-height: 1.7;
+            /* Melhor leitura */
         }
+
         .ai-avatar {
             width: 36px;
             height: 36px;
-            border-radius: 8px; /* Quadrado com bordas arredondadas ao invés de círculo */
+            border-radius: 8px;
+            /* Quadrado com bordas arredondadas ao invés de círculo */
             background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
             display: flex;
             align-items: center;
@@ -247,18 +324,22 @@
         .user-message {
             justify-content: flex-end;
         }
+
         .user-message .message-content-wrapper {
             max-width: 70%;
             align-items: flex-end;
         }
+
         .user-message .message-bubble {
-            background: #2a2b36; /* Fundo contrastante elegante */
+            background: #2a2b36;
+            /* Fundo contrastante elegante */
             color: #ffffff;
             padding: 12px 18px;
-            border-radius: 18px 18px 4px 18px; /* Canto inferior direito reto */
+            border-radius: 18px 18px 4px 18px;
+            /* Canto inferior direito reto */
             font-size: 0.95rem;
             line-height: 1.5;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
 
@@ -510,21 +591,12 @@
 
         /* Estado Inicial (Barra no meio do ecrã) */
         .chat-interface.is-initial-state .input-wrapper {
-            bottom: 50%;
+            bottom: 30%;
             transform: translateY(50%);
-            background: transparent !important; /* Sem gradiente no meio do ecrã */
+            background: transparent !important;
+            /* Sem gradiente no meio do ecrã */
         }
 
-        /* Esconder a área de mensagens enquanto está no estado inicial para manter a estética limpa */
-        .chat-interface.is-initial-state .messages-area {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-        }
-        .chat-interface:not(.is-initial-state) .messages-area {
-            opacity: 1;
-            transition: opacity 1s ease 0.3s; /* Delay para aparecer após a barra descer */
-        }
 
         .input-box-styled {
             width: 100%;
@@ -533,13 +605,15 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
             padding: 12px 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
             transition: all 0.3s ease;
-            pointer-events: auto; /* Reabilita eventos no container pílula */
+            pointer-events: auto;
+            /* Reabilita eventos no container pílula */
         }
 
         .input-box-styled:focus-within {
-            border-color: rgba(16, 185, 129, 0.5); /* var(--primary) com transparência */
+            border-color: rgba(16, 185, 129, 0.5);
+            /* var(--primary) com transparência */
             box-shadow: 0 10px 40px rgba(16, 185, 129, 0.1);
         }
 
@@ -560,8 +634,14 @@
             font-size: 1rem;
             line-height: 1.5;
         }
-        #userInput:focus { outline: none; }
-        #userInput::placeholder { color: #6b7280; }
+
+        #userInput:focus {
+            outline: none;
+        }
+
+        #userInput::placeholder {
+            color: #6b7280;
+        }
 
         .action-icon {
             width: 36px;
@@ -575,9 +655,10 @@
             transition: all 0.2s;
             margin-bottom: 2px;
         }
+
         .action-icon:hover {
             color: #fff;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
         }
 
         #sendBtn {
@@ -591,6 +672,7 @@
             margin-bottom: 0;
             color: black !important;
         }
+
         #sendBtn:hover {
             transform: scale(1.05);
         }
@@ -644,10 +726,9 @@
                 <header class="chat-header-bar">
                     <div class="header-top">
                         <div class="agent-info" style="display:flex; align-items:center; gap:15px;">
-                            <div class="agent-avatar" id="headerIcon">🤖</div>
+                            <div class="header-agent-avatar" id="headerIcon">🤖</div>
                             <div>
-                                <div style="font-weight:bold; color:white;" id="headerName">Carregando...</div>
-                                <div style="font-size:0.7rem; color:#666;">● ONLINE</div>
+                                <div style="font-weight:700; color:white; font-size: 1.1rem; letter-spacing: -0.02em;" id="headerName">Carregando...</div>
                             </div>
                         </div>
 
@@ -675,34 +756,46 @@
                                 <div class="action-icon" onclick="toggleMenu('attachMenu')" title="Anexar arquivo"><i
                                         class="fas fa-paperclip"></i></div>
 
-                                <div class="floating-menu" id="attachMenu" style="width: 250px; padding: 10px; border-radius: 12px; border: 1px solid rgba(0, 243, 255, 0.2);">
-                                    <div style="font-size: 0.75rem; color: #888; margin-bottom: 10px; padding-left: 5px; font-weight: bold; text-transform: uppercase;">Enviar Arquivos</div>
-                                    
-                                    <div class="menu-option" onclick="triggerFileUpload('.pdf, .txt, .docx')" style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; margin-bottom: 5px; transition: background 0.2s;">
-                                        <div style="width: 38px; height: 38px; background: rgba(0, 243, 255, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #00F3FF; flex-shrink: 0;">
+                                <div class="floating-menu" id="attachMenu"
+                                    style="width: 250px; padding: 10px; border-radius: 12px; border: 1px solid rgba(0, 243, 255, 0.2);">
+                                    <div
+                                        style="font-size: 0.75rem; color: #888; margin-bottom: 10px; padding-left: 5px; font-weight: bold; text-transform: uppercase;">
+                                        Enviar Arquivos</div>
+
+                                    <div class="menu-option" onclick="triggerFileUpload('.pdf, .txt, .docx')"
+                                        style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; margin-bottom: 5px; transition: background 0.2s;">
+                                        <div
+                                            style="width: 38px; height: 38px; background: rgba(0, 243, 255, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #00F3FF; flex-shrink: 0;">
                                             <i class="fas fa-file-alt" style="font-size: 1.2rem;"></i>
                                         </div>
                                         <div style="display: flex; flex-direction: column;">
-                                            <span style="font-weight: bold; color: white; line-height: 1.2; font-size: 0.95rem;">Documento</span>
-                                            <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">PDF, TXT ou DOCX</span>
+                                            <span
+                                                style="font-weight: bold; color: white; line-height: 1.2; font-size: 0.95rem;">Documento</span>
+                                            <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">PDF, TXT ou
+                                                DOCX</span>
                                         </div>
                                     </div>
-                                    
-                                    <div class="menu-option" onclick="triggerFileUpload('.jpg, .jpeg, .png, .webp')" style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; transition: background 0.2s;">
-                                        <div style="width: 38px; height: 38px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #10b981; flex-shrink: 0;">
+
+                                    <div class="menu-option" onclick="triggerFileUpload('.jpg, .jpeg, .png, .webp')"
+                                        style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; transition: background 0.2s;">
+                                        <div
+                                            style="width: 38px; height: 38px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #10b981; flex-shrink: 0;">
                                             <i class="fas fa-image" style="font-size: 1.2rem;"></i>
                                         </div>
                                         <div style="display: flex; flex-direction: column;">
-                                            <span style="font-weight: bold; color: white; line-height: 1.2; font-size: 0.95rem;">Imagem</span>
-                                            <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">JPG, PNG ou WEBP</span>
+                                            <span
+                                                style="font-weight: bold; color: white; line-height: 1.2; font-size: 0.95rem;">Imagem</span>
+                                            <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">JPG, PNG ou
+                                                WEBP</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div style="position:relative;">
-                                <div class="action-icon prompts" onclick="abrirMeusPromptsChat()" title="Biblioteca de Prompts"><i
-                                        class="fas fa-wand-magic-sparkles" style="color:var(--primary)"></i></div>
+                                <div class="action-icon prompts" onclick="abrirMeusPromptsChat()"
+                                    title="Biblioteca de Prompts"><i class="fas fa-wand-magic-sparkles"
+                                        style="color:var(--primary)"></i></div>
 
                                 <div class="floating-panel" id="promptsPanel" style="display:none;">
                                     <div class="panel-header"><span>Módulos de Contexto</span></div>
@@ -781,12 +874,12 @@
                     const text = event.results[0][0].transcript;
                     userInput.value += (userInput.value ? ' ' : '') + text;
                     userInput.focus();
-                    
+
                     // Auto-resize
                     userInput.style.height = 'auto';
                     userInput.style.height = userInput.scrollHeight + 'px';
                     userInput.style.overflowY = userInput.scrollHeight >= 300 ? 'auto' : 'hidden';
-                    
+
                     document.getElementById('micBtn').style.color = '';
                 };
                 recognition.onerror = () => { document.getElementById('micBtn').style.color = 'red'; };
@@ -799,7 +892,7 @@
                 this.style.height = 'auto';
                 const newHeight = this.scrollHeight;
                 this.style.height = newHeight + 'px';
-                
+
                 // Toggle scrollbar manually for better UX if needed
                 if (newHeight >= 300) {
                     this.style.overflowY = 'auto';
@@ -865,25 +958,37 @@
             } else {
                 // É uma nova conversa, adicionamos a classe para centrar o input
                 chatInterface.classList.add('is-initial-state');
-                
+
                 // Nova Tela Inicial Elegante
                 const emptyStateHTML = `
-                    <div id="emptyState" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; margin-top: 10vh; opacity: 0; animation: fadeIn 0.8s forwards;">
+                    <div id="emptyState" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; margin-top: -10vh; opacity: 0; animation: fadeIn 0.8s forwards;">
                         <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(16, 185, 129, 0.1); display:flex; align-items:center; justify-content:center; font-size: 2.5rem; color: var(--primary); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(16,185,129,0.2);">
                             <i class="fas fa-${currentAgentIcon}"></i>
                         </div>
                         <h2 style="color: white; font-size: 1.8rem; font-weight: 600; margin-bottom: 10px;">Como posso ajudar hoje?</h2>
                         <p style="color: #888; font-size: 1rem; margin-bottom: 40px;">Sou o seu ${currentAgentName}.</p>
                         
-                        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; max-width: 600px;">
-                            <button onclick="document.getElementById('userInput').value='Me ajude a resumir um texto.'; document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; max-width: 800px;">
+                            <button onclick="document.getElementById('userInput').value='Me ajude a resumir um texto.'; document.getElementById('userInput').dispatchEvent(new Event('input')); document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
                                 <i class="fas fa-compress-alt" style="color:var(--primary); margin-right:8px;"></i> Resumir Texto
                             </button>
-                            <button onclick="document.getElementById('userInput').value='Pode revisar um documento para mim?'; document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
+                            <button onclick="document.getElementById('userInput').value='Pode revisar um documento para mim?'; document.getElementById('userInput').dispatchEvent(new Event('input')); document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
                                 <i class="fas fa-check-double" style="color:var(--primary); margin-right:8px;"></i> Revisar Documento
                             </button>
-                            <button onclick="document.getElementById('userInput').value='Gere uma ideia criativa para...'; document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
+                            <button onclick="document.getElementById('userInput').value='Gere uma ideia criativa para...'; document.getElementById('userInput').dispatchEvent(new Event('input')); document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
                                 <i class="fas fa-lightbulb" style="color:var(--primary); margin-right:8px;"></i> Ideia Criativa
+                            </button>
+                            <button onclick="document.getElementById('userInput').value='Ajude-me com uma análise de dados.'; document.getElementById('userInput').dispatchEvent(new Event('input')); document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
+                                <i class="fas fa-chart-line" style="color:var(--primary); margin-right:8px;"></i> Análise de Dados
+                            </button>
+                            <button onclick="document.getElementById('userInput').value='Quais são as melhores dicas de estudo para este tema?'; document.getElementById('userInput').dispatchEvent(new Event('input')); document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
+                                <i class="fas fa-book-open" style="color:var(--primary); margin-right:8px;"></i> Dicas de Estudo
+                            </button>
+                            <button onclick="document.getElementById('userInput').value='Ajude-me a planear um projeto do zero.'; document.getElementById('userInput').dispatchEvent(new Event('input')); document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
+                                <i class="fas fa-calendar-check" style="color:var(--primary); margin-right:8px;"></i> Planeamento
+                            </button>
+                            <button onclick="document.getElementById('userInput').value='Pode traduzir o seguinte texto para português?'; document.getElementById('userInput').dispatchEvent(new Event('input')); document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
+                                <i class="fas fa-language" style="color:var(--primary); margin-right:8px;"></i> Traduzir Texto
                             </button>
                         </div>
                     </div>
@@ -914,7 +1019,7 @@
         function editUserMessage(text) {
             userInput.value = text;
             userInput.focus();
-            
+
             // Refaz a altura
             userInput.style.height = 'auto';
             userInput.style.height = userInput.scrollHeight + 'px';
@@ -964,7 +1069,7 @@
             userInput.value = "";
             userInput.style.height = '38px'; // Reseta altura inicial
             userInput.style.overflowY = 'hidden';
-            
+
             const fileToSend = currentFile;
             clearAttachments();
 
@@ -1150,7 +1255,7 @@
         function triggerFileUpload(accept) { toggleMenu('attachMenu'); const i = document.getElementById('realFileInput'); i.accept = accept; i.click(); }
 
         function handleFileSelected(e) {
-            const f = e.target.files[0]; if (!f) return; 
+            const f = e.target.files[0]; if (!f) return;
 
             const allowed = ['.pdf', '.txt', '.docx', '.jpg', '.jpeg', '.png', '.webp'];
             const fileExt = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
@@ -1432,7 +1537,7 @@
             });
 
             const sortedAreas = Object.keys(groups).sort();
-            
+
             const savedCategory = localStorage.getItem('selectedAgentCategory');
             let firstRendered = false;
 
@@ -1442,7 +1547,7 @@
                 const items = groups[area];
                 const accItem = document.createElement('div');
                 accItem.className = 'accordion-item';
-                
+
                 let isActive = false;
                 if (savedCategory) {
                     const catMap = {
@@ -1462,7 +1567,7 @@
                         isActive = true;
                     }
                 }
-                
+
                 // Se for a primeira aba e não houver um savedCategory que abra nenhuma aba, o fallback será mantê-la fechada (ou pode expandir a primeira)
                 // O usuário solicitou abrir a primeira como fallback caso não haja match
                 if (!firstRendered && Object.keys(groups).length > 0 && !savedCategory) {
