@@ -155,18 +155,7 @@
             }
         }
 
-        .chat-header-bar {
-            background: rgba(10, 10, 10, 0.4) !important;
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 12px 25px;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-        }
+        /* .chat-header-bar movido e ajustado acima para evitar duplicação */
 
         /* Status Pulsante */
         .status-dot {
@@ -604,11 +593,11 @@
             background: #1e232b;
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 24px;
-            padding: 12px 16px;
+            padding: 14px 20px;
+            /* Aumento da altura interna da pílula */
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
             transition: all 0.3s ease;
             pointer-events: auto;
-            /* Reabilita eventos no container pílula */
         }
 
         .input-box-styled:focus-within {
@@ -703,18 +692,292 @@
             margin-bottom: 5px;
             letter-spacing: 0.5px;
         }
+
+        /* --- Toggle Histórico Estático (Global) --- */
+        .global-toggle {
+            position: absolute;
+            top: 10px;
+            left: 12px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            color: #ccc;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2000;
+            cursor: pointer;
+        }
+
+        .global-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        .global-toggle:active {
+            transform: scale(0.9);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .global-toggle i {
+            font-size: 1.3rem;
+        }
+
+        .chat-header-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 64px;
+            background: rgba(10, 10, 10, 0.4) !important;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0 25px 0 60px;
+            /* Recuo inicial para o botão global */
+            z-index: 1500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .chat-header-bar .header-top {
+            width: 100%;
+            height: 100%;
+            /* Ocupar toda a altura para centralização perfeita */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Quando o histórico está ABERTO, empurramos apenas o CONTEÚDO do header */
+        .chat-layout:not(.history-collapsed) .chat-header-bar .header-top {
+            padding-left: 230px;
+            /* Sidebar (280) - recuo inicial (60) + ajuste visual */
+        }
+
+        /* Ajustes de Layout para o Estado Colapsado */
+        .chat-layout {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            padding-top: 64px;
+            /* Espaço para o header fixo */
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #mainSidebar {
+            width: 280px;
+            flex-shrink: 0;
+            position: relative;
+            height: 100%;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1100;
+            /* Abaixo do header */
+            background: #0b0d0f;
+            border-right: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            padding: 0 16px 0 60px;
+            height: 64px;
+            flex-shrink: 0;
+        }
+
+        .history-collapsed #mainSidebar {
+            width: 0;
+            min-width: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .new-chat-btn {
+            margin: 15px 20px 25px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 28px;
+            /* Pill shape */
+            color: #efefef;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .new-chat-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: var(--bg-deep);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 0;
+            /* Importante para flex item não estourar */
+        }
+
+        .chat-interface {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .messages-area {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px 15px 200px 15px;
+            /* Aumento do recuo final para 200px */
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .input-wrapper {
+            position: absolute;
+            bottom: 100px;
+            /* Elevado para 50px para realçar o efeito flutuante Gemini */
+            /* Elevação premium flutuante conforme usabilidade solicitada */
+            left: 0;
+            width: 100%;
+            padding: 0 20px;
+            z-index: 200;
+            display: flex;
+            justify-content: center;
+            background: linear-gradient(transparent, var(--bg-deep) 50%);
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            pointer-events: none;
+            /* Permite rolar o chat por trás do container */
+        }
+
+        .chat-interface.is-initial-state .input-wrapper {
+            bottom: 35% !important;
+            /* Harmonizado com as sugestões da tela inicial */
+            transform: translateY(50%);
+            background: transparent !important;
+        }
+
+        #emptyState {
+            margin: auto;
+            text-align: center;
+            max-width: 600px;
+            padding: 20px;
+            margin-top: -15vh;
+            /* Ajuste para não bater na barra */
+        }
+
+        /* Responsividade Mobile - Ajustes para o novo layout flex */
+        @media (max-width: 768px) {
+            #mainSidebar {
+                position: fixed;
+                left: -260px;
+                top: 0;
+                height: 100vh;
+                width: 260px;
+            }
+
+            #mainSidebar.active {
+                left: 0;
+                width: 260px;
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            .chat-layout {
+                width: 100%;
+            }
+
+            .history-toggle {
+                display: none;
+            }
+
+            .messages-area {
+                padding-bottom: 150px;
+            }
+
+            .input-box-styled {
+                width: calc(100% - 30px) !important;
+            }
+        }
     </style>
+
+
 </head>
 
 <body class="chat-mode">
     <input type="file" id="realFileInput" style="display: none;">
 
-    <div class="chat-layout">
+    <div class="chat-layout" style="position: relative;">
+        <!-- Botão Único Global Stilizado (Permanecerá parado) -->
+        <div class="global-toggle" id="globalToggle" onclick="toggleHistory()" title="Menu Principal">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <header class="chat-header-bar">
+            <div class="header-top">
+                <div class="agent-info" style="display:flex; align-items:center; height: 100%; padding-top: 3px;">
+                    <div id="dynamicHeaderInfo"
+                        style="display:flex; align-items:center; gap:15px; height: 100%; transition: all 0.3s ease;">
+                        <div class="header-agent-avatar" id="headerIcon"
+                            style="display: flex; align-items: center; justify-content: center;">🤖</div>
+                        <div style="display: flex; flex-direction: column; justify-content: center;">
+                            <div style="font-weight:700; color:white; font-size: 1.1rem; letter-spacing: -0.02em; line-height: 1.2;"
+                                id="headerName">Carregando...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="header-actions">
+                    <button class="export-btn" onclick="exportChat('txt')"><i class="fas fa-file-alt"></i>
+                        TXT</button>
+                    <button class="export-btn" onclick="exportChat('pdf')"><i class="fas fa-file-pdf"></i>
+                        PDF</button>
+                </div>
+
+                <i class="fas fa-bars mobile-only"
+                    style="color:#666; cursor:pointer; font-size:1.2rem; display:none; margin-left: 15px;"
+                    onclick="toggleSidebarMobile()"></i>
+            </div>
+            <div class="active-modules-container" id="activeModulesArea"></div>
+        </header>
+
         <aside class="sidebar" id="mainSidebar">
-            <div class="logo" style="margin-bottom: 30px;"><a href="dashboard.html"
-                    style="text-decoration:none; color:inherit;">
-                    <h1>FACILITY<span>.IA</span></h1>
-                </a></div>
+            <div class="sidebar-header">
+                <div class="logo" style="margin-bottom: 0;"><a href="dashboard.html"
+                        style="text-decoration:none; color:inherit;">
+                        <h1 style="font-size: 1.3rem;">FACILITY<span>.IA</span></h1>
+                    </a></div>
+            </div>
             <div class="new-chat-btn" onclick="window.location.href='escolher_agente.html'"><i
                     class="fas fa-arrow-left"></i> Trocar Agente</div>
 
@@ -723,29 +986,7 @@
 
         <main style="position: relative; width: 100%; height: 100%; overflow: hidden;">
             <div id="chatInterface" class="chat-interface">
-                <header class="chat-header-bar">
-                    <div class="header-top">
-                        <div class="agent-info" style="display:flex; align-items:center; gap:15px;">
-                            <div class="header-agent-avatar" id="headerIcon">🤖</div>
-                            <div>
-                                <div style="font-weight:700; color:white; font-size: 1.1rem; letter-spacing: -0.02em;"
-                                    id="headerName">Carregando...</div>
-                            </div>
-                        </div>
-
-                        <div class="header-actions">
-                            <button class="export-btn" onclick="exportChat('txt')"><i class="fas fa-file-alt"></i>
-                                TXT</button>
-                            <button class="export-btn" onclick="exportChat('pdf')"><i class="fas fa-file-pdf"></i>
-                                PDF</button>
-                        </div>
-
-                        <i class="fas fa-bars mobile-only"
-                            style="color:#666; cursor:pointer; font-size:1.2rem; display:none; margin-left: 15px;"
-                            onclick="toggleSidebarMobile()"></i>
-                    </div>
-                    <div class="active-modules-container" id="activeModulesArea"></div>
-                </header>
+                <!-- Header removido daqui para ser Global acima -->
 
                 <div class="messages-area" id="messagesArea"></div>
 
@@ -1441,6 +1682,26 @@
         }
 
         function toggleMenu(id) { const m = document.getElementById(id); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
+        function toggleHistory() {
+            const layout = document.querySelector('.chat-layout');
+            layout.classList.toggle('history-collapsed');
+
+            // Salvar no localStorage
+            const isCollapsed = layout.classList.contains('history-collapsed');
+            localStorage.setItem('chat_history_collapsed', isCollapsed);
+        }
+
+        // Recuperar estado inicial do histórico
+        (function () {
+            const isCollapsed = localStorage.getItem('chat_history_collapsed') === 'true';
+            if (isCollapsed) {
+                document.addEventListener('DOMContentLoaded', () => {
+                    const layout = document.querySelector('.chat-layout');
+                    if (layout) layout.classList.add('history-collapsed');
+                });
+            }
+        })();
+
         function toggleSidebarMobile() { document.getElementById('mainSidebar').classList.toggle('active'); }
 
         document.addEventListener('click', (e) => {
