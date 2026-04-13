@@ -8,9 +8,18 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.CaptureStartupErrors(true);
+builder.WebHost.UseSetting("detailedErrors", "true");
+
 // 1. Configurar Banco de Dados
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("FALTA A CONNECTION STRING NO AZURE!");
+}
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
 
 // 2. Liberar CORS (Configurável via AppSettings/Azure)
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "*" };

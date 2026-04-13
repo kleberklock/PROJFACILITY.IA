@@ -34,7 +34,7 @@ namespace PROJFACILITY.IA.Controllers
             var accessToken = _configuration["MercadoPago:AccessToken"];
             if (!string.IsNullOrEmpty(accessToken))
             {
-                MercadoPagoConfig.AccessToken = accessToken;
+                MercadoPago.Config.MercadoPagoConfig.AccessToken = accessToken;
             }
         }
 

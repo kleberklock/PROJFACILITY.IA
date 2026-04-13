@@ -186,7 +186,7 @@
         .header-agent-avatar {
             width: 42px;
             height: 42px;
-            border-radius: 12px;
+            border-radius: 50%;
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(0, 0, 0, 0.5));
             border: 1px solid rgba(16, 185, 129, 0.3);
             display: flex;
@@ -270,6 +270,7 @@
         .message-row {
             display: flex;
             width: 100%;
+            gap: 15px;
             animation: fadeIn 0.3s ease;
         }
 
@@ -297,8 +298,7 @@
         .ai-avatar {
             width: 36px;
             height: 36px;
-            border-radius: 8px;
-            /* Quadrado com bordas arredondadas ao invés de círculo */
+            border-radius: 50%;
             background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
             display: flex;
             align-items: center;
@@ -307,6 +307,27 @@
             font-size: 1.1rem;
             flex-shrink: 0;
             margin-top: 5px;
+            position: relative;
+        }
+
+        /* Animação Circular de Pensamento no Ícone do Chat */
+        .ai-avatar.thinking::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            padding: 2px;
+            background: conic-gradient(from 0deg, var(--primary), transparent, var(--primary));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: rotate-avatar 1.5s linear infinite;
+        }
+
+        @keyframes rotate-avatar {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
         }
 
         /* MENSAGEM DO USUÁRIO */
@@ -1414,6 +1435,9 @@
 
         function finalizeMessage(aiDiv, text) {
             const bubble = aiDiv.querySelector('.message-bubble');
+            const avatar = aiDiv.querySelector('.ai-avatar');
+            
+            if (avatar) avatar.classList.remove('thinking');
             bubble.innerHTML = marked.parse(text);
 
             bubble.querySelectorAll('pre code').forEach((block) => {
@@ -1476,7 +1500,7 @@
             const isAI = sender === 'ai';
             d.className = `message-row ${isAI ? 'ai-message' : 'user-message'}`;
 
-            const avatarHTML = isAI ? `<div class="ai-avatar"><i class="fas fa-${icon || 'robot'}"></i></div>` : '';
+            const avatarHTML = isAI ? `<div class="ai-avatar ${typing ? 'thinking' : ''}"><i class="fas fa-${icon || 'robot'}"></i></div>` : '';
             let content = typing ? '<i class="fas fa-circle-notch fa-spin"></i> Processando...' : (isHTML ? text : text.replace(/\n/g, '<br>'));
 
             const editBtn = (!isAI && !typing) ? `<i class="fas fa-pencil-alt edit-msg-btn" onclick="editUserMessage('${text.replace(/'/g, "\\'")}')" title="Editar e reenviar"></i>` : '';

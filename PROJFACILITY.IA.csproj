@@ -4,15 +4,12 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>6e377892-5040-4be1-83d0-51d8da9c1b9c</UserSecretsId>
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
   </PropertyGroup>
 
-  <!-- Mata o processo antes do build para evitar erro de arquivo bloqueado -->
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="taskkill /F /IM $(AssemblyName).exe /T" IgnoreExitCode="true" />
-  </Target>
 
   <ItemGroup>
+    <PackageReference Include="RestSharp" Version="112.0.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="mercadopago-sdk" Version="2.11.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
