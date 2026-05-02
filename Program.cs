@@ -13,13 +13,26 @@ builder.WebHost.UseSetting("detailedErrors", "true");
 
 // 1. Configurar Banco de Dados
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrEmpty(connectionString))
+
+if (!builder.Environment.IsDevelopment())
 {
-    throw new InvalidOperationException("FALTA A CONNECTION STRING NO AZURE!");
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("FALTA A CONNECTION STRING NO AZURE!");
+    }
+}
+else if (string.IsNullOrEmpty(connectionString))
+{
+    // Fallback apenas para desenvolvimento local
+    connectionString = "Server=(localdb)\\mssqllocaldb;Database=ProjFacilityIADb_Local_DB;Trusted_Connection=True;MultipleActiveResultSets=true";
 }
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, sqlServerOptions => 
+        sqlServerOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null)));
 
 // 2. Liberar CORS (Configurável via AppSettings/Azure)
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? new[] { "*" };
