@@ -54,7 +54,7 @@ namespace PROJFACILITY.IA.Services
             }
         }
 
-        public async Task<(string Response, int Tokens)> GetAIResponse(
+        public virtual async Task<(string Response, int Tokens)> GetAIResponse(
             string userMessage, 
             string agentId, 
             List<PROJFACILITY.IA.Models.ChatMessage> historicoDb, 

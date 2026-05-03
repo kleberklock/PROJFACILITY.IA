@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using PROJFACILITY.IA.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +47,7 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader());
 });
 // 3. Configurar Serviços
+builder.Services.Configure<EmailSettingsOptions>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<KnowledgeService>();

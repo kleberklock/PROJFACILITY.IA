@@ -416,12 +416,13 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 3000;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 999999 !important; /* Valor extremo para garantir sobreposição total */
             display: none;
             justify-content: center;
             align-items: center;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
         }
 
         .modal-content {
@@ -594,9 +595,13 @@
             width: 100%;
             padding: 20px;
             transition: bottom 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), background 0.8s ease;
-            z-index: 200;
+            z-index: 2000; /* Aumentado para ficar acima do toggle mas abaixo do modal */
             display: flex;
             justify-content: center;
+        }
+
+        .floating-panel, .floating-menu {
+            z-index: 2100;
         }
 
         /* Estado Inicial (Barra no meio do ecrã) */
@@ -714,6 +719,43 @@
             letter-spacing: 0.5px;
         }
 
+        /* --- Estilos dos Badges de Módulos Ativos --- */
+        .module-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            color: #a7f3d0;
+            white-space: nowrap;
+            animation: badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .module-badge:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        @keyframes badge-pop {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .active-modules-container {
+            display: flex;
+            flex-wrap: wrap; /* Agora quebra linha conforme solicitado */
+            gap: 8px;
+            margin-top: 6px;
+            max-width: 100%;
+            transition: all 0.3s ease;
+        }
+
         /* --- Toggle Histórico Estático (Global) --- */
         .global-toggle {
             position: absolute;
@@ -749,16 +791,17 @@
         }
 
         .chat-header-bar {
-            position: fixed;
+            position: sticky;
             top: 0;
             left: 0;
             width: 100%;
-            height: 64px;
+            min-height: 64px;
+            height: auto;
             background: rgba(10, 10, 10, 0.4) !important;
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 0 25px 0 60px;
+            padding: 10px 25px 10px 60px;
             /* Recuo inicial para o botão global */
             z-index: 1500;
             display: flex;
@@ -787,12 +830,20 @@
         /* Ajustes de Layout para o Estado Colapsado */
         .chat-layout {
             display: flex;
+            flex-direction: column; /* Organização vertical: Header no topo, resto abaixo */
             width: 100vw;
             height: 100vh;
-            padding-top: 64px;
-            /* Espaço para o header fixo */
+            padding-top: 0; /* Removido pois o header agora é sticky e ocupa espaço no fluxo */
             overflow: hidden;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .chat-main-container {
+            display: flex;
+            flex: 1;
+            width: 100%;
+            height: 0; /* Hack para flex-grow + overflow funcionar corretamente */
+            min-height: 0;
         }
 
         #mainSidebar {
@@ -974,6 +1025,7 @@
                         <div style="display: flex; flex-direction: column; justify-content: center;">
                             <div style="font-weight:700; color:white; font-size: 1.1rem; letter-spacing: -0.02em; line-height: 1.2;"
                                 id="headerName">Carregando...</div>
+                            <div class="active-modules-container" id="activeModulesArea"></div>
                         </div>
                     </div>
                 </div>
@@ -989,97 +1041,98 @@
                     style="color:#666; cursor:pointer; font-size:1.2rem; display:none; margin-left: 15px;"
                     onclick="toggleSidebarMobile()"></i>
             </div>
-            <div class="active-modules-container" id="activeModulesArea"></div>
         </header>
 
-        <aside class="sidebar" id="mainSidebar">
-            <div class="sidebar-header">
-                <div class="logo" style="margin-bottom: 0;"><a href="dashboard.html"
-                        style="text-decoration:none; color:inherit;">
-                        <h1 style="font-size: 1.3rem;">FACILITY<span>.IA</span></h1>
-                    </a></div>
-            </div>
-            <div class="new-chat-btn" onclick="window.location.href='escolher_agente.html'"><i
-                    class="fas fa-arrow-left"></i> Trocar Agente</div>
+        <div class="chat-main-container">
+            <aside class="sidebar" id="mainSidebar">
+                <div class="sidebar-header">
+                    <div class="logo" style="margin-bottom: 0;"><a href="dashboard.html"
+                            style="text-decoration:none; color:inherit;">
+                            <h1 style="font-size: 1.3rem;">FACILITY<span>.IA</span></h1>
+                        </a></div>
+                </div>
+                <div class="new-chat-btn" onclick="window.location.href='escolher_agente.html'"><i
+                        class="fas fa-arrow-left"></i> Trocar Agente</div>
 
-            <div class="history-list" id="historyList"></div>
-        </aside>
+                <div class="history-list" id="historyList"></div>
+            </aside>
 
-        <main style="position: relative; width: 100%; height: 100%; overflow: hidden;">
-            <div id="chatInterface" class="chat-interface">
-                <!-- Header removido daqui para ser Global acima -->
+            <main style="position: relative; width: 100%; height: 100%; overflow: hidden;">
+                <div id="chatInterface" class="chat-interface">
+                    <!-- Header removido daqui para ser Global acima -->
 
-                <div class="messages-area" id="messagesArea"></div>
+                    <div class="messages-area" id="messagesArea"></div>
 
-                <div class="input-wrapper">
-                    <div class="input-box-styled">
-                        <div class="attachments-preview" id="attachmentsPreview"></div>
-                        <div class="input-container">
-                            <div style="position:relative;">
-                                <div class="action-icon" onclick="toggleMenu('attachMenu')" title="Anexar arquivo"><i
-                                        class="fas fa-paperclip"></i></div>
+                    <div class="input-wrapper">
+                        <div class="input-box-styled">
+                            <div class="attachments-preview" id="attachmentsPreview"></div>
+                            <div class="input-container">
+                                <div style="position:relative;">
+                                    <div class="action-icon" onclick="toggleMenu('attachMenu')" title="Anexar arquivo"><i
+                                            class="fas fa-paperclip"></i></div>
 
-                                <div class="floating-menu" id="attachMenu"
-                                    style="width: 250px; padding: 10px; border-radius: 12px; border: 1px solid rgba(0, 243, 255, 0.2);">
-                                    <div
-                                        style="font-size: 0.75rem; color: #888; margin-bottom: 10px; padding-left: 5px; font-weight: bold; text-transform: uppercase;">
-                                        Enviar Arquivos</div>
-
-                                    <div class="menu-option" onclick="triggerFileUpload('.pdf, .txt, .docx')"
-                                        style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; margin-bottom: 5px; transition: background 0.2s;">
+                                    <div class="floating-menu" id="attachMenu"
+                                        style="width: 250px; padding: 10px; border-radius: 12px; border: 1px solid rgba(0, 243, 255, 0.2);">
                                         <div
-                                            style="width: 38px; height: 38px; background: rgba(0, 243, 255, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #00F3FF; flex-shrink: 0;">
-                                            <i class="fas fa-file-alt" style="font-size: 1.2rem;"></i>
-                                        </div>
-                                        <div style="display: flex; flex-direction: column;">
-                                            <span
-                                                style="font-weight: bold; color: white; line-height: 1.2; font-size: 0.95rem;">Documento</span>
-                                            <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">PDF, TXT ou
-                                                DOCX</span>
-                                        </div>
-                                    </div>
+                                            style="font-size: 0.75rem; color: #888; margin-bottom: 10px; padding-left: 5px; font-weight: bold; text-transform: uppercase;">
+                                            Enviar Arquivos</div>
 
-                                    <div class="menu-option" onclick="triggerFileUpload('.jpg, .jpeg, .png, .webp')"
-                                        style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; transition: background 0.2s;">
-                                        <div
-                                            style="width: 38px; height: 38px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #10b981; flex-shrink: 0;">
-                                            <i class="fas fa-image" style="font-size: 1.2rem;"></i>
+                                        <div class="menu-option" onclick="triggerFileUpload('.pdf, .txt, .docx')"
+                                            style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; margin-bottom: 5px; transition: background 0.2s;">
+                                            <div
+                                                style="width: 38px; height: 38px; background: rgba(0, 243, 255, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #00F3FF; flex-shrink: 0;">
+                                                <i class="fas fa-file-alt" style="font-size: 1.2rem;"></i>
+                                            </div>
+                                            <div style="display: flex; flex-direction: column;">
+                                                <span
+                                                    style="font-weight: bold; color: white; line-height: 1.2; font-size: 0.95rem;">Documento</span>
+                                                <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">PDF, TXT ou
+                                                    DOCX</span>
+                                            </div>
                                         </div>
-                                        <div style="display: flex; flex-direction: column;">
-                                            <span
-                                                style="font-weight: bold; color: white; line-height: 1.2; font-size: 0.95rem;">Imagem</span>
-                                            <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">JPG, PNG ou
-                                                WEBP</span>
+
+                                        <div class="menu-option" onclick="triggerFileUpload('.jpg, .jpeg, .png, .webp')"
+                                            style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; transition: background 0.2s;">
+                                            <div
+                                                style="width: 38px; height: 38px; background: rgba(16, 185, 129, 0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #10b981; flex-shrink: 0;">
+                                                <i class="fas fa-image" style="font-size: 1.2rem;"></i>
+                                            </div>
+                                            <div style="display: flex; flex-direction: column;">
+                                                <span
+                                                    style="font-weight: bold; color: white; line-height: 1.2; font-size: 0.95rem;">Imagem</span>
+                                                <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">JPG, PNG ou
+                                                    WEBP</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div style="position:relative;">
-                                <div class="action-icon prompts" onclick="abrirMeusPromptsChat()"
-                                    title="Biblioteca de Prompts"><i class="fas fa-wand-magic-sparkles"
-                                        style="color:var(--primary)"></i></div>
+                                <div style="position:relative;">
+                                    <div class="action-icon prompts" onclick="abrirMeusPromptsChat()"
+                                        title="Biblioteca de Prompts"><i class="fas fa-wand-magic-sparkles"
+                                            style="color:var(--primary)"></i></div>
 
-                                <div class="floating-panel" id="promptsPanel" style="display:none;">
-                                    <div class="panel-header"><span>Módulos de Contexto</span></div>
-                                    <div id="switchesContainer" style="padding:10px;"></div>
+                                    <div class="floating-panel" id="promptsPanel" style="display:none;">
+                                        <div class="panel-header"><span>Módulos de Contexto</span></div>
+                                        <div id="switchesContainer" style="padding:10px;"></div>
+                                    </div>
                                 </div>
+
+                                <div class="action-icon" id="micBtn" onclick="toggleRecording()" title="Digitar por voz"><i
+                                        class="fas fa-microphone"></i></div>
+
+                                <textarea id="userInput" placeholder="Digite aqui..." rows="1"></textarea>
+
+                                <button id="sendBtn" onclick="handleSendMessage()" title="Enviar mensagem"
+                                    style="background:var(--primary); border:none; width:40px; height:40px; border-radius:10px; cursor:pointer; color:black; transition: all 0.3s;">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
                             </div>
-
-                            <div class="action-icon" id="micBtn" onclick="toggleRecording()" title="Digitar por voz"><i
-                                    class="fas fa-microphone"></i></div>
-
-                            <textarea id="userInput" placeholder="Digite aqui..." rows="1"></textarea>
-
-                            <button id="sendBtn" onclick="handleSendMessage()" title="Enviar mensagem"
-                                style="background:var(--primary); border:none; width:40px; height:40px; border-radius:10px; cursor:pointer; color:black; transition: all 0.3s;">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
 
     <script>
@@ -1674,11 +1727,17 @@
         }
 
         function updateActiveBadges() {
-            document.getElementById('activeModulesArea').innerHTML = Array.from(activeContexts).map(c =>
-                `<div class="module-badge" style="display:inline-flex; align-items:center; gap:5px; background:rgba(16, 185, 129, 0.2); border:1px solid var(--primary); padding:3px 10px; border-radius:12px; font-size:0.75rem; color:#fff; margin-right:5px;">
-                <i class="fas fa-bolt" style="color:var(--primary)"></i> ${c.label}
-                <i class="fas fa-times" style="cursor:pointer; margin-left:5px; color:#ff4444;" onclick="removerContexto('${c.id}')"></i>
-            </div>`
+            const container = document.getElementById('activeModulesArea');
+            if (!container) return;
+            
+            container.innerHTML = Array.from(activeContexts).map(c =>
+                `<div class="module-badge" title="${c.content.substring(0, 100)}...">
+                    <i class="fas fa-bolt" style="color:var(--primary); font-size:0.6rem;"></i>
+                    <span>${c.label}</span>
+                    <i class="fas fa-times" style="cursor:pointer; margin-left:4px; font-size:0.65rem; opacity:0.6; transition:opacity 0.2s;" 
+                       onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'"
+                       onclick="removerContexto('${c.id}')"></i>
+                </div>`
             ).join('');
         }
 
@@ -1988,7 +2047,7 @@
         });
     </script>
 
-    <div id="modalPromptsChat" class="modal-overlay" style="z-index: 3000;">
+    <div id="modalPromptsChat" class="modal-overlay">
         <div class="modal-content">
             <div
                 style="padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center; background-color: rgba(0,0,0,0.2);">
