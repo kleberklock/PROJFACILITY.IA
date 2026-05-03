@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    RESPONSIVE.CSS - FACILITY.IA
    Responsividade mobile para todo o site.
    Breakpoints: 768px (tablet), 480px (mobile), 360px (mobile pequeno)
@@ -1676,7 +1676,107 @@
    Apenas elementos exclusivos: search, agent-tabs, page-header.
    ========================================================================== */
 
-/* --- CORREÇÃO GLOBAL DE CAIXA (Obrigatório para os cards não vazarem a tela) --- */
+/* --- FIX AZURE: Correção Global de Caixa (impede overflow horizontal dos cards) ---
+   Necessário para evitar que minmax(280px,1fr) estoure a viewport no Azure/IIS.
+   No localhost o Kestrel compensa; no Azure o IIS não aplica a mesma correção.     */
+.card-grid {
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    /* Garante que o grid quebre colunas em vez de vazar lateralmente */
+    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+}
+
+/* --- Tablet (768px) --- */
+@media (max-width: 768px) {
+
+    /* Barra de busca full-width no mobile */
+    .search-container {
+        max-width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .search-input {
+        font-size: 0.9rem;
+        padding: 12px 15px 12px 44px;
+    }
+
+    /* Abas de navegação: mantém scroll horizontal mas não vaza */
+    .agent-tabs-wrapper {
+        margin-left: -15px;
+        margin-right: -15px;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    /* Page header compacto */
+    .page-header h2 {
+        font-size: 1.4rem;
+    }
+
+    .page-header p {
+        font-size: 0.85rem;
+    }
+
+    /* Card grid: 2 colunas em tablet */
+    .card-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+}
+
+/* --- Mobile (480px) --- */
+@media (max-width: 480px) {
+
+    /* Card grid: 1 coluna em mobile para garantir que nada vaze */
+    .card-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    /* Abas em linha única com scroll horizontal */
+    .agent-tabs {
+        justify-content: flex-start;
+    }
+
+    .agent-tab-btn {
+        padding: 7px 14px;
+        font-size: 0.82rem;
+    }
+
+    .search-input {
+        font-size: 0.85rem;
+        padding: 11px 12px 11px 40px;
+    }
+
+    .page-header {
+        margin-bottom: 20px;
+    }
+
+    .page-header h2 {
+        font-size: 1.2rem;
+    }
+}
+
+/* --- Mobile Pequeno (360px) --- */
+@media (max-width: 360px) {
+
+    .card-grid {
+        gap: 8px;
+    }
+
+    .agent-tab-btn {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+
+    .page-header h2 {
+        font-size: 1.05rem;
+    }
+}
+
+
 
 /* ==========================================================================
    13. CHATCOMIA.HTML - RESPONSIVIDADE DO CHAT DA IA

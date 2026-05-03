@@ -46,7 +46,28 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod()
             .AllowAnyHeader());
 });
-// 3. Configurar Serviços
+// 3. Validar chaves de API obrigatórias ANTES de construir o contêiner IoC
+//    Formato no Azure: OpenAI__ApiKey e Pinecone__ApiKey (duplo underscore = separador de seção)
+if (!builder.Environment.IsDevelopment())
+{
+    var openAiKey = builder.Configuration["OpenAI:ApiKey"];
+    if (string.IsNullOrWhiteSpace(openAiKey))
+    {
+        var msg = "ERRO FATAL [IoC]: A variável de ambiente 'OpenAI__ApiKey' não foi configurada no Azure App Service. O processo será encerrado.";
+        Console.Error.WriteLine(msg);
+        throw new InvalidOperationException(msg);
+    }
+
+    var pineconeKey = builder.Configuration["Pinecone:ApiKey"];
+    if (string.IsNullOrWhiteSpace(pineconeKey))
+    {
+        var msg = "ERRO FATAL [IoC]: A variável de ambiente 'Pinecone__ApiKey' não foi configurada no Azure App Service. O processo será encerrado.";
+        Console.Error.WriteLine(msg);
+        throw new InvalidOperationException(msg);
+    }
+}
+
+// 4. Configurar Serviços
 builder.Services.Configure<EmailSettingsOptions>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ChatService>();
@@ -90,8 +111,27 @@ builder.Services.AddAuthentication(x =>
 });
 
 // ==========================================
-// LINHA CRÍTICA QUE ESTAVA A FALTAR
-var app = builder.Build();
+// CONSTRUÇÃO DO CONTÊINER IoC — BLINDADA COM TRY-CATCH
+// Exceções aqui são silenciosas no Azure sem este bloco.
+WebApplication app;
+try
+{
+    app = builder.Build();
+    Console.WriteLine("[STARTUP] Contêiner IoC construído com sucesso.");
+}
+catch (Exception ex)
+{
+    // Garante que o erro apareça nos logs stdout/stderr da Azure ANTES do processo morrer
+    Console.Error.WriteLine("================================================");
+    Console.Error.WriteLine("ERRO FATAL NA CONSTRUÇÃO DO CONTÊINER IoC (DI):");
+    Console.Error.WriteLine($"Tipo    : {ex.GetType().FullName}");
+    Console.Error.WriteLine($"Mensagem: {ex.Message}");
+    Console.Error.WriteLine($"Inner   : {ex.InnerException?.Message}");
+    Console.Error.WriteLine($"Stack   : {ex.StackTrace}");
+    Console.Error.WriteLine("================================================");
+    // Re-lança para encerrar com código de saída diferente de zero
+    throw;
+}
 // ==========================================
 
 // 5. Pipeline
@@ -151,4 +191,18 @@ using (var scope = app.Services.CreateScope())
 }
 // ------------------------------------------------
 
-app.Run();
+try
+{
+    Console.WriteLine("[STARTUP] Iniciando servidor HTTP...");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Console.Error.WriteLine("================================================");
+    Console.Error.WriteLine("ERRO FATAL DURANTE EXECUÇÃO DO SERVIDOR:");
+    Console.Error.WriteLine($"Tipo    : {ex.GetType().FullName}");
+    Console.Error.WriteLine($"Mensagem: {ex.Message}");
+    Console.Error.WriteLine($"Stack   : {ex.StackTrace}");
+    Console.Error.WriteLine("================================================");
+    throw;
+}

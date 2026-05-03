@@ -442,6 +442,10 @@ input:checked+.slider:before {
     border-radius: 8px;
     cursor: pointer;
     transition: 0.2s;
+    /* Compatibilidade com <a>: remove sublinhado e centraliza o texto */
+    display: block;
+    text-align: center;
+    text-decoration: none;
 }
 
 .card-btn:hover {
@@ -692,6 +696,9 @@ footer {
 .layout {
     display: flex;
     min-height: 100vh;
+    /* FIX AZURE: impede que filhos com width:100% + margin-left causem overflow horizontal */
+    overflow-x: hidden;
+    max-width: 100vw;
 }
 
 .sidebar {
@@ -798,7 +805,12 @@ footer {
 .content {
     margin-left: var(--sidebar-width);
     padding: 40px;
-    width: 100%;
+    /* FIX AZURE: width: 100% dentro de flex pode somar com margin-left e vazar a viewport.
+       Usar calc() garante que a soma nunca ultrapasse 100vw em qualquer ambiente de servidor. */
+    width: calc(100% - var(--sidebar-width));
+    max-width: calc(100vw - var(--sidebar-width));
+    box-sizing: border-box;
+    overflow-x: hidden;
     padding-top: 40px;
     /* Reset do padding do index */
 }
@@ -907,6 +919,10 @@ footer {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: 20px;
     margin-bottom: 40px;
+    /* FIX AZURE: garante que o grid nunca ultrapasse o container pai em nenhum servidor */
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .app-card,
@@ -924,6 +940,12 @@ footer {
     text-decoration: none;
     align-items: flex-start;
     animation: fadeIn 0.5s ease;
+    /* FIX AZURE: impede que min-width implícito do flex/grid expanda além do container */
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .agent-card {

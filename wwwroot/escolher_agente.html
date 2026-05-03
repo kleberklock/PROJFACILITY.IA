@@ -157,9 +157,14 @@
         /* Grid de Cards */
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            /* FIX AZURE: min(280px, 100%) garante que as colunas nunca sejam maiores
+               que o container, independente do ambiente de servidor (IIS/Azure vs Kestrel/localhost) */
+            grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
             gap: 20px;
             padding-bottom: 50px;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow-x: hidden;
         }
 
         /* --- ESTILOS DE ÍCONES E GRADIENTES --- */
