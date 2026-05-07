@@ -47,8 +47,22 @@ namespace PROJFACILITY.IA.Controllers
         [HttpPost("create-checkout-session")]
         public async Task<IActionResult> CriarSessaoCheckout([FromBody] CheckoutRequest request)
         {
+            // ── PROTEÇÃO CONTRA NULL REFERENCE ──────────
+            if (request == null || string.IsNullOrWhiteSpace(request.Plan))
+            {
+                return BadRequest(new { message = "Request inválido ou plano não fornecido." });
+            }
+
             try
             {
+                // ── VALIDAÇÃO RESTRITA DO TOKEN NO AZURE ──────────
+                var accessToken = _configuration["MercadoPago:AccessToken"];
+                if (string.IsNullOrEmpty(accessToken))
+                {
+                    return StatusCode(500, new { message = "ERRO AZURE: O AccessToken do Mercado Pago não foi encontrado nas variáveis de ambiente do servidor." });
+                }
+                MercadoPagoConfig.AccessToken = accessToken;
+
                 // Extrai o ID do utilizador autenticado a partir do token JWT
                 var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst(ClaimTypes.Name)?.Value;
                 if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int userId))
@@ -57,7 +71,12 @@ namespace PROJFACILITY.IA.Controllers
                 var user = await _context.Users.FindAsync(userId);
                 if (user == null) return NotFound(new { message = "Usuário não encontrado." });
 
-                var domain = _configuration["App:Domain"] ?? "http://localhost:5217";
+                // ── FALLBACK DE DOMÍNIO DINÂMICO ──────────
+                var domain = _configuration["App:Domain"];
+                if (string.IsNullOrEmpty(domain) || domain.Contains("localhost"))
+                {
+                    domain = $"{Request.Scheme}://{Request.Host}";
+                }
 
                 // ── PREÇOS OFICIAIS (sincronizados com o front-end) ──────────
                 // Plus: R$ 49,90/mês | Pro: R$ 99,90/mês
@@ -81,7 +100,6 @@ namespace PROJFACILITY.IA.Controllers
 
                 // ── EXTERNAL REFERENCE ESTRUTURADA ──────────────────────────
                 // Formato: "{userId}|{plano}|{ciclo}"
-                // Isso garante que o webhook identifique o plano sem depender da descrição textual.
                 string externalReference = $"{userId}|{request.Plan}|{request.Cycle}";
 
                 var preferenceRequest = new PreferenceRequest
@@ -125,10 +143,15 @@ namespace PROJFACILITY.IA.Controllers
                 // Retorna a URL (InitPoint) para o front-end redirecionar o utilizador
                 return Ok(new { url = preference.InitPoint });
             }
+            catch (MercadoPago.Error.MercadoPagoApiException mpEx)
+            {
+                _logger.LogError(mpEx, "Erro na API do Mercado Pago ao criar sessão.");
+                return StatusCode(500, new { message = $"Mercado Pago recusou a conexão: {mpEx.Message} (Status: {mpEx.ApiResponse?.StatusCode})" });
+            }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro interno ao criar sessão do Mercado Pago");
-                return StatusCode(500, new { message = "Ocorreu um erro interno ao processar o checkout." });
+                _logger.LogError(ex, "Erro interno ao processar o checkout.");
+                return StatusCode(500, new { message = $"Erro interno real: {ex.Message} | {ex.InnerException?.Message}" });
             }
         }
 
