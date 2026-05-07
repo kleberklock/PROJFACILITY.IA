@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" type="image/jpeg" href="/favicon.png">
     <title>Estúdio | Facility.IA</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -71,9 +71,19 @@
             background: rgba(22, 27, 34, 0.7);
             border-radius: 24px;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            padding: 40px;
+            padding: 30px;
             min-height: 400px;
             position: relative;
+            box-sizing: border-box;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        @media (max-width: 480px) {
+            .studio-content { padding: 18px 14px; border-radius: 16px; }
+            .studio-wrapper { padding: 10px; }
+            .studio-tabs { width: 100%; }
+            .tab-btn { padding: 10px 16px; font-size: 0.85rem; flex: 1; justify-content: center; }
         }
 
         /* Inputs */
@@ -148,7 +158,7 @@
         /* --- CARDS COM MENU DROPDOWN (Novo Design) --- */
         .items-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
             gap: 20px;
         }
 
@@ -407,7 +417,7 @@
     <div id="particles-js" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></div>
 
     <div class="mobile-header">
-        <i class="fas fa-bars menu-trigger-mobile" onclick="toggleSidebar()"></i>
+        <i class="fas fa-bars menu-trigger-icon" onclick="toggleSidebar()"></i>
         <div class="mobile-title">ESTÚDIO</div>
         <div class="header-spacer"></div>
     </div>
@@ -894,7 +904,19 @@
         }
 
         async function excluirAgente(id) {
-            if (!confirm('Tem certeza? Isso apaga o agente e todo o conhecimento dele.')) return;
+            const confirmado = await Swal.fire({
+                title: 'Excluir Agente?',
+                text: 'Isso apaga o agente e todo o conhecimento dele. Esta ação é irreversível.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff5555',
+                cancelButtonColor: '#444',
+                confirmButtonText: 'Sim, excluir',
+                cancelButtonText: 'Cancelar',
+                background: '#1a1a2e',
+                color: '#fff'
+            });
+            if (!confirmado.isConfirmed) return;
             try {
                 await fetch(`${baseUrl}/api/agents/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
                 showToast('Agente excluído.', 'success');
@@ -1116,7 +1138,19 @@
 
         // 4. Excluir Prompt (DELETE)
         async function excluirPrompt(id) {
-            if (!confirm('Tem certeza que deseja apagar este prompt?')) return;
+            const confirmado = await Swal.fire({
+                title: 'Excluir Prompt?',
+                text: 'Esta ação é irreversível.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff5555',
+                cancelButtonColor: '#444',
+                confirmButtonText: 'Sim, excluir',
+                cancelButtonText: 'Cancelar',
+                background: '#1a1a2e',
+                color: '#fff'
+            });
+            if (!confirmado.isConfirmed) return;
             try {
                 const response = await fetch(`${baseUrl}/api/prompts/${id}`, {
                     method: 'DELETE',
@@ -1138,22 +1172,33 @@
         // --- INICIALIZAÇÃO ---
         document.addEventListener('DOMContentLoaded', () => {
             carregarAgentes();
-            const btnNovo = document.querySelector("button[onclick*='novoPromptModal']");
-            if (btnNovo) btnNovo.onclick = novoPromptModal;
         });
 
-        // Gestos Mobile
+        // Gestos Mobile (swipe entre abas)
         document.addEventListener('DOMContentLoaded', () => {
             const touchArea = document.querySelector('.studio-content');
             if (!touchArea) return;
-            let touchStartX = 0; let touchEndX = 0;
+            let touchStartX = 0;
             touchArea.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].screenX, { passive: true });
             touchArea.addEventListener('touchend', e => {
-                touchEndX = e.changedTouches[0].screenX;
-                if (touchEndX - touchStartX < -60) switchMainTab('prompts', document.querySelectorAll('.tab-btn')[1]);
-                if (touchEndX - touchStartX > 60) switchMainTab('agents', document.querySelectorAll('.tab-btn')[0]);
+                const diff = e.changedTouches[0].screenX - touchStartX;
+                if (diff < -60) switchMainTab('prompts', document.querySelectorAll('.tab-btn')[1]);
+                if (diff > 60)  switchMainTab('agents',  document.querySelectorAll('.tab-btn')[0]);
             }, { passive: true });
         });
+
+        // Garante que toggleSidebar e fazerLogout funcionem mesmo sem script.js
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        function fazerLogout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userData');
+            localStorage.removeItem('userPlan');
+            window.location.href = 'index.html';
+        }
     </script>
 </body>
 

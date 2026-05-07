@@ -140,8 +140,8 @@
 
         async function carregarAgentes() {
             try {
-                // Busca todos os agentes (O backend já filtra o que o user pode ver)
-                const res = await fetch(`${API_URL}/api/agents`, {
+                // manageAll=true: retorna TODOS os agentes do banco para gestão administrativa.
+                const res = await fetch(`${API_URL}/api/agents?manageAll=true`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 

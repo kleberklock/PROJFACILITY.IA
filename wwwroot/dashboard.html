@@ -246,30 +246,20 @@
         // Configuração inicial
         const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : '';
 
-        // 1. MAPEAMENTO DE CATEGORIAS (IGUAL AO ESCOLHER AGENTE)
-        // Converte o que vem do banco ("tecnologia") para o CSS ("tech")
+        // 1. MAPEAMENTO DE CATEGORIAS
         const categoryMap = {
-            'tecnologia': 'tech',
-            'tech': 'tech',
-            'juridico': 'juridico',
-            'saude': 'saude',
-            'engenharia': 'engenharia',
-            'negocios': 'negocios',
-            'operacional': 'operacional',
-            'criativos': 'criativo',
-            'criativo': 'criativo',
-            'educacao': 'educacao',
-            'estudante': 'educacao',
-            'personalizado': 'meus',
-            'outros': 'negocios'
+            'tecnologia': 'tech', 'tech': 'tech',
+            'juridico': 'juridico', 'saude': 'saude',
+            'engenharia': 'engenharia', 'negocios': 'negocios',
+            'operacional': 'operacional', 'criativos': 'criativo',
+            'criativo': 'criativo', 'educacao': 'educacao',
+            'estudante': 'educacao', 'personalizado': 'meus', 'outros': 'negocios'
         };
 
-        // 2. FUNÇÃO DE ÍCONES INTELIGENTES
+        // 2. ÍCONES INTELIGENTES
         function getCreativeIcon(name, originalIcon, area) {
             const n = (name || "").toLowerCase();
             if (originalIcon && originalIcon !== 'fa-robot') return originalIcon;
-
-            // Mapeamento por palavra-chave
             if (n.includes('advogad') || n.includes('jurid')) return 'fa-scale-balanced';
             if (n.includes('juiz') || n.includes('promotor')) return 'fa-gavel';
             if (n.includes('medic') || n.includes('doutor') || n.includes('clinic')) return 'fa-user-doctor';
@@ -288,30 +278,31 @@
             if (n.includes('fitness') || n.includes('personal')) return 'fa-dumbbell';
             if (n.includes('cozinha') || n.includes('chef')) return 'fa-utensils';
             if (n.includes('motorista') || n.includes('piloto')) return 'fa-id-card';
-
-            // Fallback por Área Mapeada
             if (area === 'tech') return 'fa-microchip';
             if (area === 'juridico') return 'fa-book-open';
             if (area === 'saude') return 'fa-heart-pulse';
             if (area === 'educacao') return 'fa-graduation-cap';
             if (area === 'criativo') return 'fa-wand-magic-sparkles';
             if (area === 'operacional') return 'fa-cogs';
-
             return 'fa-robot';
         }
 
-        // 3. CARREGAMENTO DOS AGENTES (COM CORREÇÃO DE COR)
+        // FLAG: protege filterApps de agir antes do fetch terminar
+        let cardsCarregados = false;
+        let filtroAtivo = 'all';
+
+        // 3. CARREGAMENTO DOS AGENTES
         async function renderCards() {
             const grid = document.getElementById('appsGrid');
             if (!grid) return;
 
-            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #888;"><i class="fas fa-circle-notch fa-spin"></i> Carregando agentes...</div>';
+            cardsCarregados = false;
+            grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;"><i class="fas fa-circle-notch fa-spin"></i> Carregando agentes...</div>';
 
             try {
-                const token = localStorage.getItem('token');
-
+                const tkn = localStorage.getItem('token');
                 const response = await fetch(`${baseUrl}/api/agents`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                    headers: { 'Authorization': `Bearer ${tkn}` }
                 });
 
                 if (response.ok) {
@@ -319,94 +310,97 @@
                     grid.innerHTML = '';
 
                     if (agentes.length === 0) {
-                        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #666;">Nenhum agente encontrado.</div>';
+                        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#666;">Nenhum agente encontrado.</div>';
                         return;
                     }
 
-                    // Ordena: Meus Agentes primeiro
-                    agentes.sort((a, b) => {
-                        const myA = (a.userId && a.userId > 0) ? 1 : 0;
-                        const myB = (b.userId && b.userId > 0) ? 1 : 0;
-                        return myB - myA;
-                    });
+                    agentes.sort((a, b) => ((b.userId > 0 ? 1 : 0) - (a.userId > 0 ? 1 : 0)));
 
                     agentes.forEach((agent, index) => {
                         const isMyAgent = (agent.userId && agent.userId > 0);
-
-                        // Normaliza a especialidade vinda do banco (ex: "Tecnologia" -> "tecnologia")
-                        let rawArea = agent.specialty ? agent.specialty.toLowerCase() : 'geral';
+                        let rawArea = (agent.specialty || 'geral').toLowerCase();
                         if (rawArea === 'personalizado') rawArea = 'meus';
 
-                        // Mapeia para a categoria correta (ex: "tecnologia" vira "tech")
-                        // Isso garante que o filtro e a cor funcionem juntos
-                        let categoryForFilter = isMyAgent ? 'meus' : (categoryMap[rawArea] || 'negocios');
-
-                        // A classe visual usa o nome mapeado ("tech"), não o cru ("tecnologia")
+                        const categoryForFilter = isMyAgent ? 'meus' : (categoryMap[rawArea] || 'negocios');
                         const visualClass = isMyAgent ? 'meus' : categoryForFilter;
-
                         const iconName = getCreativeIcon(agent.name, agent.icon, rawArea);
 
                         const card = document.createElement('a');
-                        // Passa visualClass na URL também para o chat manter a cor
                         card.href = `chatcomIA.html?agent=${encodeURIComponent(agent.name)}&area=${visualClass}&icon=${iconName}`;
                         card.className = 'app-card fade-in';
                         card.style.animationDelay = `${index * 0.05}s`;
                         card.setAttribute('data-category', categoryForFilter);
                         card.onclick = () => localStorage.setItem('selectedAgentCategory', visualClass);
-
                         if (isMyAgent) card.classList.add('my-agent-card');
 
-                        let desc = agent.description;
-                        if (!desc) {
-                            if (isMyAgent) desc = "Agente personalizado.";
-                            else if (visualClass === 'tech') desc = "Tecnologia e Desenvolvimento.";
-                            else if (visualClass === 'operacional') desc = "Logística e Serviços Gerais.";
-                            else desc = "Assistente especializado.";
-                        }
+                        let desc = agent.description || (
+                            isMyAgent ? "Agente personalizado." :
+                            visualClass === 'tech' ? "Tecnologia e Desenvolvimento." :
+                            visualClass === 'operacional' ? "Logística e Serviços Gerais." :
+                            "Assistente especializado."
+                        );
 
-                        // Aplica a classe icon-${visualClass} que corresponde ao CSS correto
                         card.innerHTML = `
-                            <div class="card-icon icon-${visualClass}">
-                                <i class="fas ${iconName}"></i>
-                            </div>
+                            <div class="card-icon icon-${visualClass}"><i class="fas ${iconName}"></i></div>
                             <div class="card-title">${agent.name}</div>
                             <div class="card-desc">${desc}</div>
                             <div class="card-arrow"><i class="fas fa-arrow-right"></i></div>
-                            ${isMyAgent ? '<div style="position:absolute; top:15px; right:15px; font-size:0.6rem; background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px; color:white;">MEU</div>' : ''}
+                            ${isMyAgent ? '<div style="position:absolute;top:15px;right:15px;font-size:0.6rem;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;color:white;">MEU</div>' : ''}
                         `;
                         grid.appendChild(card);
                     });
+
+                    cardsCarregados = true;
+                    // Aplica filtro pendente caso usuário tivesse clicado antes do fetch
+                    if (filtroAtivo !== 'all') aplicarFiltro(filtroAtivo);
+
                 } else {
-                    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #ff5555;">Erro ao carregar catálogo.</div>';
+                    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#ff5555;">Erro ao carregar catálogo.</div>';
                 }
             } catch (e) {
                 console.error("Erro fetch:", e);
-                grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #ff5555;">Erro de conexão.</div>';
+                grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#ff5555;">
+                    <i class="fas fa-exclamation-triangle" style="font-size:1.8rem;margin-bottom:12px;display:block;"></i>
+                    Erro de conexão.<br>
+                    <button onclick="renderCards()" style="margin-top:12px;background:transparent;border:1px solid #ff5555;color:#ff5555;padding:8px 18px;border-radius:8px;cursor:pointer;">
+                        <i class="fas fa-redo"></i> Tentar novamente
+                    </button>
+                </div>`;
             }
         }
 
-        // 4. FUNÇÃO DE FILTRO
+        // 4. FILTRO — salva estado e só age após o carregamento concluir
         function filterApps(category, btnElement) {
-            const buttons = document.querySelectorAll('.cat-tab');
-            buttons.forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
+            filtroAtivo = category;
+            if (cardsCarregados) aplicarFiltro(category);
+        }
 
+        function aplicarFiltro(category) {
+            const grid = document.getElementById('appsGrid');
             const cards = document.querySelectorAll('.app-card');
+
+            const avisoAnterior = document.getElementById('semResultados');
+            if (avisoAnterior) avisoAnterior.remove();
+
+            let visiveis = 0;
             cards.forEach(card => {
-                const cardCat = card.getAttribute('data-category');
-
-                let shouldShow = false;
-                if (category === 'all') shouldShow = true;
-                else if (category === cardCat) shouldShow = true;
-
-                if (shouldShow) {
-                    card.style.display = 'flex';
-                    setTimeout(() => card.style.opacity = '1', 50);
-                } else {
-                    card.style.display = 'none';
-                    card.style.opacity = '0';
-                }
+                const mostrar = category === 'all' || card.getAttribute('data-category') === category;
+                card.style.display = mostrar ? 'flex' : 'none';
+                if (mostrar) { setTimeout(() => card.style.opacity = '1', 30); visiveis++; }
+                else card.style.opacity = '0';
             });
+
+            if (visiveis === 0 && grid) {
+                const aviso = document.createElement('div');
+                aviso.id = 'semResultados';
+                aviso.style.cssText = 'grid-column:1/-1;text-align:center;padding:50px;color:#555;';
+                aviso.innerHTML = `<i class="fas fa-robot" style="font-size:2rem;margin-bottom:12px;opacity:0.3;display:block;"></i>
+                    Nenhum agente nessa categoria.<br>
+                    <small style="color:#444;">Acesse <a href="escolher_agente.html" style="color:#00F3FF;">Assistentes</a> ou crie em <a href="meus_prompts.html" style="color:#00F3FF;">Prompts/Agentes</a>.</small>`;
+                grid.appendChild(aviso);
+            }
         }
 
         function toggleSidebar() {
@@ -414,17 +408,25 @@
             document.querySelector('.overlay').classList.toggle('active');
         }
 
-
         function fazerLogout() {
             localStorage.removeItem('token');
             localStorage.removeItem('userData');
-            window.location.href = 'login.html';
+            localStorage.removeItem('userPlan');
+            window.location.href = 'index.html';
         }
 
+        // 5. INICIALIZAÇÃO — data exibida imediatamente, sem depender do fetch de sessão
         document.addEventListener('DOMContentLoaded', () => {
+            const dateEl = document.getElementById('dateDisplay');
+            if (dateEl) {
+                const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                dateEl.innerText = new Date().toLocaleDateString('pt-BR', opts);
+            }
             renderCards();
         });
     </script>
+
+
 </body>
 
 </html>

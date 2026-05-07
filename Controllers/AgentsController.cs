@@ -75,28 +75,26 @@ namespace PROJFACILITY.IA.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Agent>>> GetAgents([FromQuery] int? userId)
+        public async Task<ActionResult<IEnumerable<Agent>>> GetAgents([FromQuery] int? userId, [FromQuery] bool manageAll = false)
         {
             int currentUserId = GetUserId();
-            // Se userId for passado (filtro), usa ele, senão usa o atual
-            if (userId == null || userId == 0) userId = currentUserId;
 
-            // Admin vê tudo? Depende da regra. Aqui vou manter que usuário vê os seus + públicos.
-            // Se quiser que o admin veja LITERALMENTE TODOS no painel, a query muda um pouco.
-            
             var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
             bool isAdmin = roleClaim != null && roleClaim.Value == "admin";
 
-            if (isAdmin)
+            // Modo gerenciamento total: apenas admins com manageAll=true retornam todos os agentes do banco.
+            if (isAdmin && manageAll)
             {
-                 return await _context.Agents
+                return await _context.Agents
                     .OrderByDescending(a => a.Id)
                     .ToListAsync();
             }
 
+            // Comportamento padrão (chat e demais telas): retorna apenas agentes visíveis ao usuário atual.
+            // Regra: IsPublic == true OU UserId == null (globais do sistema) OU UserId == currentUserId (próprios).
             return await _context.Agents
-                .Where(a => a.IsPublic || a.UserId == null || (a.UserId == currentUserId))
-                .OrderByDescending(a => a.Id) 
+                .Where(a => a.IsPublic || a.UserId == null || a.UserId == currentUserId)
+                .OrderByDescending(a => a.Id)
                 .ToListAsync();
         }
 

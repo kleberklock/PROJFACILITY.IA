@@ -117,11 +117,11 @@
                             <div style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Plano Atual</div>
                         </div>
                         <div>
-                            <div id="promptsCount" style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">0</div>
+                            <div id="promptsCount" style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">—</div>
                             <div style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Prompts Criados</div>
                         </div>
                         <div>
-                            <div id="agentsCount" style="font-size: 1.5rem; font-weight: bold; color: #00F3FF;">0</div>
+                            <div id="agentsCount" style="font-size: 1.5rem; font-weight: bold; color: #00F3FF;">—</div>
                             <div style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Agentes Criados</div>
                         </div>
                     </div>
@@ -258,36 +258,48 @@
         }
 
         async function loadProfileStats() {
+            const elPrompts = document.getElementById('promptsCount');
+            const elAgents  = document.getElementById('agentsCount');
+
             try {
                 const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:5217';
-                
+
                 // Carregar Prompts
                 const resPrompts = await fetch(`${baseUrl}/api/prompts`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
                 if (resPrompts.ok) {
                     const prompts = await resPrompts.json();
-                    document.getElementById('promptsCount').innerText = prompts.length;
+                    if (elPrompts) elPrompts.innerText = prompts.length;
+                } else {
+                    if (elPrompts) elPrompts.innerText = '0';
                 }
 
-                // Carregar Agentes
+                // Carregar Agentes (filtra só os do usuário atual)
                 const resAgents = await fetch(`${baseUrl}/api/agents`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                
                 if (resAgents.ok) {
                     const allAgents = await resAgents.json();
-                    const base64Url = token.split('.')[1];
-                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                    const payload = JSON.parse(window.atob(base64));
-                    const currentUserId = payload.id || payload.nameid || parseInt(payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]);
-                    
-                    const myAgents = allAgents.filter(a => a.userId == currentUserId);
-                    document.getElementById('agentsCount').innerText = myAgents.length;
+                    try {
+                        const base64Url = token.split('.')[1];
+                        const base64    = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                        const payload   = JSON.parse(window.atob(base64));
+                        const currentUserId = payload.id || payload.nameid ||
+                            parseInt(payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"]);
+                        const myAgents = allAgents.filter(a => a.userId == currentUserId);
+                        if (elAgents) elAgents.innerText = myAgents.length;
+                    } catch (_) {
+                        if (elAgents) elAgents.innerText = allAgents.length;
+                    }
+                } else {
+                    if (elAgents) elAgents.innerText = '0';
                 }
+
             } catch (err) {
                 console.error("Erro ao carregar os totais:", err);
+                if (elPrompts) elPrompts.innerText = '—';
+                if (elAgents)  elAgents.innerText  = '—';
             }
         }
 

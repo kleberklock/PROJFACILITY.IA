@@ -211,9 +211,18 @@
             }
         }
 
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); document.querySelector('.overlay').classList.toggle('active'); }
-        function fazerLogout() { localStorage.removeItem('token'); localStorage.removeItem('userData'); window.location.href = 'index.html'; }
-        if (typeof particlesJS !== 'undefined') { particlesJS("particles-js", { "particles": { "number": { "value": 20 }, "color": { "value": "#ffffff" }, "opacity": { "value": 0.1 }, "size": { "value": 2 }, "move": { "enable": true, "speed": 0.5 } } }); }
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.overlay').classList.toggle('active');
+        }
+
+        function fazerLogout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userData');
+            localStorage.removeItem('userPlan');
+            window.location.href = 'index.html';
+        }
+        // Partículas gerenciadas pelo script.js (initParticles no DOMContentLoaded)
     </script>
 </body>
 

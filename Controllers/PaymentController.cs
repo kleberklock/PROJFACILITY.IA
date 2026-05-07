@@ -13,7 +13,9 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
+using System.Text;
 using System.Text.Json;
+using System.Security.Cryptography;
 
 namespace PROJFACILITY.IA.Controllers
 {
@@ -38,7 +40,9 @@ namespace PROJFACILITY.IA.Controllers
             }
         }
 
+        // ─────────────────────────────────────────────────────────────────────
         // 1. ENDPOINT PARA CRIAR A SESSÃO DE CHECKOUT (Restrito a usuários logados)
+        // ─────────────────────────────────────────────────────────────────────
         [Authorize]
         [HttpPost("create-checkout-session")]
         public async Task<IActionResult> CriarSessaoCheckout([FromBody] CheckoutRequest request)
@@ -55,20 +59,30 @@ namespace PROJFACILITY.IA.Controllers
 
                 var domain = _configuration["App:Domain"] ?? "http://localhost:5217";
 
-                decimal basePrice = request.Plan.ToLower() == "pro" ? 149.90m : 59.90m;
+                // ── PREÇOS OFICIAIS (sincronizados com o front-end) ──────────
+                // Plus: R$ 49,90/mês | Pro: R$ 99,90/mês
+                decimal basePrice = request.Plan.ToLower() == "pro" ? 99.90m : 49.90m;
+
                 decimal finalPrice = basePrice;
                 string descCiclo = "Mensal";
 
+                // Desconto de 10% no trimestral (paga 3 meses de uma vez)
                 if (request.Cycle == "quarterly")
                 {
                     finalPrice = (basePrice * 3) * 0.9m;
                     descCiclo = "Trimestral";
                 }
+                // Desconto de 20% no anual (paga 12 meses de uma vez)
                 else if (request.Cycle == "annual")
                 {
                     finalPrice = (basePrice * 12) * 0.8m;
                     descCiclo = "Anual";
                 }
+
+                // ── EXTERNAL REFERENCE ESTRUTURADA ──────────────────────────
+                // Formato: "{userId}|{plano}|{ciclo}"
+                // Isso garante que o webhook identifique o plano sem depender da descrição textual.
+                string externalReference = $"{userId}|{request.Plan}|{request.Cycle}";
 
                 var preferenceRequest = new PreferenceRequest
                 {
@@ -77,7 +91,7 @@ namespace PROJFACILITY.IA.Controllers
                         new PreferenceItemRequest
                         {
                             Title = $"Facility.IA - Plano {request.Plan} ({descCiclo})",
-                            Description = "Assinatura Premium PROJFACILITY.IA",
+                            Description = "Assinatura Premium FACILITY.IA",
                             Quantity = 1,
                             CurrencyId = "BRL",
                             UnitPrice = finalPrice,
@@ -94,17 +108,21 @@ namespace PROJFACILITY.IA.Controllers
                     {
                         ExcludedPaymentTypes = new List<PreferencePaymentTypeRequest>
                         {
-                            new PreferencePaymentTypeRequest { Id = "ticket" } // Exclui boleto, aceita apenas Cartão e PIX
+                            new PreferencePaymentTypeRequest { Id = "ticket" } // Exclui boleto; aceita Cartão e PIX
                         }
                     },
-                    ExternalReference = userId.ToString(), // Super importante para identificar quem pagou no webhook
-                    NotificationUrl = $"{domain}/api/payment/webhook" // MP enviará POST pra cá intermitentemente
+                    // ExternalReference estruturada para identificação confiável no webhook
+                    ExternalReference = externalReference,
+                    NotificationUrl = $"{domain}/api/payment/webhook"
                 };
 
                 var client = new PreferenceClient();
                 Preference preference = await client.CreateAsync(preferenceRequest);
 
-                // Retorna a URL (InitPoint) para o front-end redirecionar o utilizador para a página do Mercado Pago
+                _logger.LogInformation("[CHECKOUT] Preferência criada. UserId={UserId} | Plano={Plan} | Ciclo={Cycle} | Valor=R${Price:F2}",
+                    userId, request.Plan, request.Cycle, finalPrice);
+
+                // Retorna a URL (InitPoint) para o front-end redirecionar o utilizador
                 return Ok(new { url = preference.InitPoint });
             }
             catch (Exception ex)
@@ -114,76 +132,170 @@ namespace PROJFACILITY.IA.Controllers
             }
         }
 
-        // 2. ENDPOINT DE WEBHOOK DO MERCADO PAGO 
+        // ─────────────────────────────────────────────────────────────────────
+        // 2. ENDPOINT DE WEBHOOK DO MERCADO PAGO
+        // ─────────────────────────────────────────────────────────────────────
         [HttpPost("webhook")]
         public async Task<IActionResult> MercadoPagoWebhook()
         {
+            // Lê o corpo bruto da requisição para validação HMAC e parsing
+            string json;
+            using (var reader = new StreamReader(HttpContext.Request.Body, Encoding.UTF8))
+            {
+                json = await reader.ReadToEndAsync();
+            }
+
+            _logger.LogInformation("[MP Webhook] JSON recebido: {Json}", json);
+
+            if (string.IsNullOrEmpty(json))
+                return BadRequest(new { message = "Payload vazio." });
+
+            // ── VALIDAÇÃO DE ASSINATURA HMAC SHA256 (Segurança Oficial MP) ─────
+            var webhookSecret = _configuration["MercadoPago:WebhookSecret"];
+            if (!string.IsNullOrEmpty(webhookSecret))
+            {
+                // O MP envia o cabeçalho x-signature no formato: "ts=<timestamp>,v1=<hash>"
+                var signatureHeader = Request.Headers["x-signature"].ToString();
+                var requestId       = Request.Headers["x-request-id"].ToString();
+
+                if (string.IsNullOrEmpty(signatureHeader))
+                {
+                    _logger.LogWarning("[MP Webhook] Requisição rejeitada: cabeçalho x-signature ausente.");
+                    return Unauthorized(new { message = "Assinatura ausente." });
+                }
+
+                // Extrai o timestamp e o hash do cabeçalho
+                string? ts = null;
+                string? v1 = null;
+                foreach (var part in signatureHeader.Split(','))
+                {
+                    var kv = part.Split('=', 2);
+                    if (kv.Length == 2)
+                    {
+                        if (kv[0].Trim() == "ts") ts = kv[1].Trim();
+                        if (kv[0].Trim() == "v1") v1 = kv[1].Trim();
+                    }
+                }
+
+                if (string.IsNullOrEmpty(ts) || string.IsNullOrEmpty(v1))
+                {
+                    _logger.LogWarning("[MP Webhook] Cabeçalho x-signature malformado: {Header}", signatureHeader);
+                    return BadRequest(new { message = "Formato de assinatura inválido." });
+                }
+
+                // Monta a string de manifesto conforme a documentação oficial do Mercado Pago:
+                // "id:<data.id>;request-id:<x-request-id>;ts:<ts>;"
+                string? dataId = null;
+                try
+                {
+                    using JsonDocument docTemp = JsonDocument.Parse(json);
+                    if (docTemp.RootElement.TryGetProperty("data", out var dataEl) &&
+                        dataEl.TryGetProperty("id", out var idEl))
+                    {
+                        dataId = idEl.ToString();
+                    }
+                }
+                catch { /* ignora erro de parse no pré-check */ }
+
+                var manifest = $"id:{dataId};request-id:{requestId};ts:{ts};";
+                var keyBytes = Encoding.UTF8.GetBytes(webhookSecret);
+                var dataBytes = Encoding.UTF8.GetBytes(manifest);
+
+                using var hmac = new HMACSHA256(keyBytes);
+                var computedHash = BitConverter.ToString(hmac.ComputeHash(dataBytes))
+                                               .Replace("-", "")
+                                               .ToLowerInvariant();
+
+                if (!string.Equals(computedHash, v1, StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning("[MP Webhook] Assinatura HMAC inválida. Esperado={Expected} | Recebido={Received}", computedHash, v1);
+                    return Unauthorized(new { message = "Assinatura inválida." });
+                }
+
+                _logger.LogInformation("[MP Webhook] Assinatura HMAC validada com sucesso.");
+            }
+            else
+            {
+                _logger.LogWarning("[MP Webhook] WebhookSecret não configurado — validação HMAC ignorada.");
+            }
+
+            // ── PROCESSAMENTO DO EVENTO ──────────────────────────────────────
             try
             {
-                var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
-                _logger.LogInformation($"[MP Webhook] JSON recebido: {json}");
-
-                // Se houver uma secret de assinatura configurada no seu appsettings,
-                // você também pode ler Request.Headers["x-signature"] para validar a origem via HMAC (código não ilustrado aqui).
-                
-                if (string.IsNullOrEmpty(json)) return BadRequest();
-
                 using JsonDocument doc = JsonDocument.Parse(json);
                 var root = doc.RootElement;
 
-                // O Mercado Pago pode mandar eventos de 'payment' nestes dois formatos principais
-                bool isPaymentEvent = (root.TryGetProperty("type", out var typeElement) && typeElement.GetString() == "payment") ||
-                                      (root.TryGetProperty("action", out var actionElement) && actionElement.GetString() != null && actionElement.GetString()!.StartsWith("payment"));
+                bool isPaymentEvent =
+                    (root.TryGetProperty("type", out var typeElement) && typeElement.GetString() == "payment") ||
+                    (root.TryGetProperty("action", out var actionElement) &&
+                     actionElement.GetString() is string action && action.StartsWith("payment"));
 
                 if (isPaymentEvent)
                 {
                     string? paymentIdStr = null;
-                    if (root.TryGetProperty("data", out var dataElement) && dataElement.TryGetProperty("id", out var idElement))
+                    if (root.TryGetProperty("data", out var dataElement) &&
+                        dataElement.TryGetProperty("id", out var idElement))
                     {
                         paymentIdStr = idElement.ToString();
                     }
 
                     if (!string.IsNullOrEmpty(paymentIdStr) && long.TryParse(paymentIdStr, out long paymentId))
                     {
-                        // Consulta a API do MP usando o PaymentClient para verificar o status real
-                        // Isso previne que chamadas fakes com payloads de "approved" invadam o banco
-                        var client = new PaymentClient();
+                        // Consulta o status REAL na API do MP (previne payloads falsos com status "approved")
+                        var client  = new PaymentClient();
                         Payment payment = await client.GetAsync(paymentId);
 
                         if (payment.Status == "approved")
                         {
-                            // A ExternalReference carrega o ID do usuário que injetamos na criação
-                            if (!string.IsNullOrEmpty(payment.ExternalReference) && int.TryParse(payment.ExternalReference, out int userId))
+                            // ── PARSE SEGURO DA EXTERNAL REFERENCE ──────────
+                            // Formato esperado: "{userId}|{plano}|{ciclo}"
+                            var externalRef = payment.ExternalReference ?? string.Empty;
+                            var parts = externalRef.Split('|');
+
+                            if (parts.Length == 3 && int.TryParse(parts[0], out int userId))
                             {
+                                string planoComprado = parts[1]; // "Plus" ou "Pro"
+                                string cicloRaw      = parts[2]; // "monthly", "quarterly" ou "annual"
+
+                                // Normaliza o ciclo para o valor em português armazenado no banco
+                                string cicloComprado = cicloRaw switch
+                                {
+                                    "quarterly" => "Trimestral",
+                                    "annual"    => "Anual",
+                                    _           => "Mensal"
+                                };
+
                                 var user = await _context.Users.FindAsync(userId);
                                 if (user != null)
                                 {
-                                    // Determina o plano que ele pagou baseado no Title gerado na payment.Description
-                                    // ou fazemos um upgrade padrão:
-                                    string planoComprado = "Pro";
-                                    if (payment.Description != null && payment.Description.Contains("Plus")) planoComprado = "Plus";
-                                    
-                                    string cicloComprado = "Mensal";
-                                    if (payment.Description != null)
-                                    {
-                                        if (payment.Description.Contains("Anual")) cicloComprado = "Anual";
-                                        if (payment.Description.Contains("Trimestral")) cicloComprado = "Trimestral";
-                                    }
-
-                                    user.Plan = planoComprado; 
-                                    user.IsActive = true;
+                                    user.Plan             = planoComprado;
+                                    user.IsActive         = true;
                                     user.SubscriptionCycle = cicloComprado;
 
                                     await _context.SaveChangesAsync();
-                                    _logger.LogInformation($"[WEBHOOK] Pagamento Aprovado. Assinatura ativada para UserId: {userId} - Plano: {planoComprado}");
+                                    _logger.LogInformation(
+                                        "[WEBHOOK] Pagamento aprovado. UserId={UserId} | Plano={Plan} | Ciclo={Cycle} | PaymentId={PaymentId}",
+                                        userId, planoComprado, cicloComprado, paymentId);
+                                }
+                                else
+                                {
+                                    _logger.LogWarning("[WEBHOOK] Pagamento aprovado mas UserId={UserId} não encontrado no banco.", userId);
                                 }
                             }
+                            else
+                            {
+                                _logger.LogWarning("[WEBHOOK] ExternalReference malformada ou inválida: '{ExternalRef}'", externalRef);
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogInformation("[WEBHOOK] Pagamento PaymentId={PaymentId} com status '{Status}' — ignorado.", paymentId, payment.Status);
                         }
                     }
                 }
 
-                // O Mercado Pago ESPERA um StatusCode 200/201 para saber que você recebeu a msg. Senão, tenta reenviar.
-                return Ok(); 
+                // O Mercado Pago ESPERA um 200/201 para confirmar o recebimento, senão tentará reenviar.
+                return Ok();
             }
             catch (Exception ex)
             {
@@ -195,7 +307,7 @@ namespace PROJFACILITY.IA.Controllers
 
     public class CheckoutRequest
     {
-        public string Plan { get; set; } = "Plus";
+        public string Plan  { get; set; } = "Plus";
         public string Cycle { get; set; } = "monthly";
     }
 }

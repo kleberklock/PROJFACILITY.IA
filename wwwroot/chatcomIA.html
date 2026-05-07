@@ -22,24 +22,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body.chat-mode { font-family: 'Inter', sans-serif; }
+
         /* --- Scrollbar Customizada --- */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.4);
-        }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(16,185,129,0.4); }
 
         /* --- Styles Específicos para as Novas Funcionalidades --- */
 
@@ -261,53 +252,52 @@
 
         .messages-area {
             padding: 20px 10vw 120px 10vw;
-            /* Margens laterais maiores para centralizar a leitura */
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 28px;
         }
 
         .message-row {
             display: flex;
             width: 100%;
-            gap: 15px;
-            animation: fadeIn 0.3s ease;
+            gap: 14px;
+            animation: msgSlideIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+        }
+
+        @keyframes msgSlideIn {
+            from { opacity: 0; transform: translateY(14px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         /* MENSAGEM DA IA */
-        .ai-message {
-            justify-content: flex-start;
-        }
-
-        .ai-message .message-content-wrapper {
-            max-width: 85%;
-        }
-
+        .ai-message { justify-content: flex-start; }
+        .ai-message .message-content-wrapper { max-width: 82%; }
         .ai-message .message-bubble {
             background: transparent !important;
             border: none !important;
             box-shadow: none !important;
-            padding: 0 15px;
-            color: #e5e7eb;
-            /* Texto mais suave que o branco puro */
+            padding: 4px 4px 4px 2px;
+            color: #dde3ec;
             font-size: 1rem;
-            line-height: 1.7;
-            /* Melhor leitura */
+            line-height: 1.8;
+            letter-spacing: 0.01em;
         }
 
         .ai-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #0d3d2a 0%, #0a2e20 100%);
+            border: 1px solid rgba(16,185,129,0.35);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #000;
-            font-size: 1.1rem;
+            color: var(--primary);
+            font-size: 1rem;
             flex-shrink: 0;
-            margin-top: 5px;
+            margin-top: 4px;
             position: relative;
+            box-shadow: 0 0 12px rgba(16,185,129,0.15);
         }
 
         /* Animação Circular de Pensamento no Ícone do Chat */
@@ -331,25 +321,20 @@
         }
 
         /* MENSAGEM DO USUÁRIO */
-        .user-message {
-            justify-content: flex-end;
-        }
-
+        .user-message { justify-content: flex-end; }
         .user-message .message-content-wrapper {
-            max-width: 70%;
+            max-width: 68%;
             align-items: flex-end;
         }
-
         .user-message .message-bubble {
-            background: #2a2b36;
-            /* Fundo contrastante elegante */
-            color: #ffffff;
-            padding: 12px 18px;
+            background: linear-gradient(135deg, #1a2e25 0%, #1e3329 100%);
+            border: 1px solid rgba(16,185,129,0.2);
+            color: #e2f5ee;
+            padding: 13px 18px;
             border-radius: 18px 18px 4px 18px;
-            /* Canto inferior direito reto */
             font-size: 0.95rem;
-            line-height: 1.5;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            line-height: 1.6;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.05);
         }
 
 
@@ -586,50 +571,44 @@
             opacity: 1;
         }
 
-        /* ESTADOS DE POSICIONAMENTO DA BARRA DE INPUT (A Magia da Animação) */
-        /* Estado Base (Barra no fundo) */
+        /* INPUT WRAPPER */
         .input-wrapper {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            padding: 20px;
-            transition: bottom 0.8s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), background 0.8s ease;
-            z-index: 2000; /* Aumentado para ficar acima do toggle mas abaixo do modal */
+            padding: 16px 20px 24px;
+            transition: bottom 0.7s cubic-bezier(0.25,1,0.5,1), transform 0.7s cubic-bezier(0.25,1,0.5,1), background 0.7s ease;
+            z-index: 2000;
             display: flex;
             justify-content: center;
+            background: linear-gradient(to top, var(--bg-deep) 40%, transparent);
         }
 
-        .floating-panel, .floating-menu {
-            z-index: 2100;
-        }
+        .floating-panel, .floating-menu { z-index: 2100; }
 
-        /* Estado Inicial (Barra no meio do ecrã) */
         .chat-interface.is-initial-state .input-wrapper {
             bottom: 30%;
             transform: translateY(50%);
             background: transparent !important;
-            /* Sem gradiente no meio do ecrã */
         }
-
 
         .input-box-styled {
             width: 100%;
-            max-width: 800px;
-            background: #1e232b;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 14px 20px;
-            /* Aumento da altura interna da pílula */
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-            transition: all 0.3s ease;
+            max-width: 780px;
+            background: rgba(22,27,36,0.95);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 12px 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 0 rgba(16,185,129,0);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
             pointer-events: auto;
+            backdrop-filter: blur(12px);
         }
 
         .input-box-styled:focus-within {
-            border-color: rgba(16, 185, 129, 0.5);
-            /* var(--primary) com transparência */
-            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.1);
+            border-color: rgba(16,185,129,0.45);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 3px rgba(16,185,129,0.08);
         }
 
         .input-container {
@@ -678,19 +657,21 @@
 
         #sendBtn {
             background: var(--primary) !important;
-            border-radius: 50% !important;
+            border-radius: 12px !important;
             width: 40px !important;
             height: 40px !important;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 0;
-            color: black !important;
+            color: #000 !important;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 14px rgba(16,185,129,0.4);
+            transition: all 0.2s ease;
+            border: none;
         }
-
-        #sendBtn:hover {
-            transform: scale(1.05);
-        }
+        #sendBtn:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(16,185,129,0.55); }
+        #sendBtn.stop-btn { background: #ff4444 !important; box-shadow: 0 4px 14px rgba(255,68,68,0.4); }
 
 
         .prompt-list-item strong,
@@ -719,42 +700,49 @@
             letter-spacing: 0.5px;
         }
 
-        /* --- Estilos dos Badges de Módulos Ativos --- */
+        /* --- Badges --- */
         .module-badge {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            padding: 2px 10px;
+            gap: 5px;
+            background: rgba(16,185,129,0.08);
+            border: 1px solid rgba(16,185,129,0.25);
+            padding: 2px 9px;
             border-radius: 20px;
-            font-size: 0.7rem;
-            color: #a7f3d0;
+            font-size: 0.68rem;
+            color: #6ee7b7;
             white-space: nowrap;
-            animation: badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.05);
+            animation: badge-pop 0.3s cubic-bezier(0.175,0.885,0.32,1.275) both;
             transition: all 0.2s ease;
         }
+        .module-badge:hover { background: rgba(16,185,129,0.18); transform: translateY(-1px); }
+        @keyframes badge-pop { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
+        .active-modules-container { display:flex; flex-wrap:wrap; gap:6px; margin-top:5px; max-width:100%; }
 
-        .module-badge:hover {
-            background: rgba(16, 185, 129, 0.2);
-            border-color: var(--primary);
-            transform: translateY(-1px);
-        }
-
-        @keyframes badge-pop {
-            from { transform: scale(0.5); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        .active-modules-container {
+        /* --- Action Row (Copiar / Regerar) --- */
+        .action-row {
             display: flex;
-            flex-wrap: wrap; /* Agora quebra linha conforme solicitado */
-            gap: 8px;
-            margin-top: 6px;
-            max-width: 100%;
-            transition: all 0.3s ease;
+            gap: 6px;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
         }
+        .message-row:hover .action-row { opacity: 1; }
+        .icon-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: #888;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+        .icon-btn:hover { background: rgba(16,185,129,0.12); color: var(--primary); border-color: rgba(16,185,129,0.3); }
 
         /* --- Toggle Histórico Estático (Global) --- */
         .global-toggle {
@@ -795,20 +783,19 @@
             top: 0;
             left: 0;
             width: 100%;
-            min-height: 64px;
+            min-height: 60px;
             height: auto;
-            background: rgba(10, 10, 10, 0.4) !important;
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 10px 25px 10px 60px;
-            /* Recuo inicial para o botão global */
+            background: rgba(8,10,14,0.75) !important;
+            backdrop-filter: blur(24px) saturate(200%);
+            -webkit-backdrop-filter: blur(24px) saturate(200%);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 10px 20px 10px 60px;
             z-index: 1500;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.4);
+            transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
         }
 
         .chat-header-bar .header-top {
@@ -1169,7 +1156,9 @@
         let currentSessionId = null;
         let isGenerating = false;
         let currentAbortController = null;
-        let recognition = null; // Speech API
+        let recognition = null;
+        let cachedSystemPrompts = null;
+        let cachedUserPrompts = null;
 
 
         // Elementos DOM
@@ -1236,14 +1225,17 @@
                 const campoInput = document.getElementById('userInput');
                 if (campoInput) {
                     campoInput.value = promptPendente;
+                    campoInput.dispatchEvent(new Event('input'));
                     campoInput.focus();
-                    if (campoInput.style) {
-                        campoInput.style.height = 'auto';
-                        campoInput.style.height = campoInput.scrollHeight + 'px';
-                        campoInput.style.overflowY = campoInput.scrollHeight >= 300 ? 'auto' : 'hidden';
-                    }
                 }
                 localStorage.removeItem('prompt_pendente');
+            }
+
+            // Restaura estado do histórico colapsado
+            const isCollapsed = localStorage.getItem('chat_history_collapsed') === 'true';
+            if (isCollapsed) {
+                const layout = document.querySelector('.chat-layout');
+                if (layout) layout.classList.add('history-collapsed');
             }
         });
 
@@ -1277,35 +1269,36 @@
 
                 // Nova Tela Inicial Elegante
                 const emptyStateHTML = `
-                    <div id="emptyState" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; margin-top: -10vh; opacity: 0; animation: fadeIn 0.8s forwards;">
-                        <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(16, 185, 129, 0.1); display:flex; align-items:center; justify-content:center; font-size: 2.5rem; color: var(--primary); margin-bottom: 20px; box-shadow: 0 10px 30px rgba(16,185,129,0.2);">
-                            <i class="fas fa-${currentAgentIcon}"></i>
+                    <div id="emptyState" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; padding: 20px; opacity:0; animation: fadeIn 0.8s 0.2s forwards;">
+
+                        <div style="position:relative; margin-bottom:24px;">
+                            <div style="width:88px;height:88px;border-radius:22px;background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.05));display:flex;align-items:center;justify-content:center;font-size:2.6rem;color:var(--primary);box-shadow:0 0 40px rgba(16,185,129,0.2),inset 0 0 20px rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);">
+                                <i class="fas fa-${currentAgentIcon}"></i>
+                            </div>
+                            <div style="position:absolute;bottom:-4px;right:-4px;width:22px;height:22px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                                <i class="fas fa-bolt" style="font-size:0.6rem;color:#000;"></i>
+                            </div>
                         </div>
-                        <h2 style="color: white; font-size: 1.8rem; font-weight: 600; margin-bottom: 10px;">Como posso ajudar hoje?</h2>
-                        <p style="color: #888; font-size: 1rem; margin-bottom: 40px;">Sou o seu ${currentAgentName}.</p>
-                        
-                        <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; max-width: 800px;">
-                            <button onclick="document.getElementById('userInput').value='Me ajude a resumir um texto.'; document.getElementById('userInput').dispatchEvent(new Event('input')); document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
-                                <i class="fas fa-compress-alt" style="color:var(--primary); margin-right:8px;"></i> Resumir Texto
-                            </button>
-                            <button onclick="document.getElementById('userInput').value='Pode revisar um documento para mim?'; document.getElementById('userInput').dispatchEvent(new Event('input')); document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
-                                <i class="fas fa-check-double" style="color:var(--primary); margin-right:8px;"></i> Revisar Documento
-                            </button>
-                            <button onclick="document.getElementById('userInput').value='Gere uma ideia criativa para...'; document.getElementById('userInput').dispatchEvent(new Event('input')); document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
-                                <i class="fas fa-lightbulb" style="color:var(--primary); margin-right:8px;"></i> Ideia Criativa
-                            </button>
-                            <button onclick="document.getElementById('userInput').value='Ajude-me com uma análise de dados.'; document.getElementById('userInput').dispatchEvent(new Event('input')); document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
-                                <i class="fas fa-chart-line" style="color:var(--primary); margin-right:8px;"></i> Análise de Dados
-                            </button>
-                            <button onclick="document.getElementById('userInput').value='Quais são as melhores dicas de estudo para este tema?'; document.getElementById('userInput').dispatchEvent(new Event('input')); document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
-                                <i class="fas fa-book-open" style="color:var(--primary); margin-right:8px;"></i> Dicas de Estudo
-                            </button>
-                            <button onclick="document.getElementById('userInput').value='Ajude-me a planear um projeto do zero.'; document.getElementById('userInput').dispatchEvent(new Event('input')); document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
-                                <i class="fas fa-calendar-check" style="color:var(--primary); margin-right:8px;"></i> Planeamento
-                            </button>
-                            <button onclick="document.getElementById('userInput').value='Pode traduzir o seguinte texto para português?'; document.getElementById('userInput').dispatchEvent(new Event('input')); document.getElementById('userInput').focus();" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; color: #ccc; cursor: pointer; transition: all 0.2s; font-size: 0.9rem;">
-                                <i class="fas fa-language" style="color:var(--primary); margin-right:8px;"></i> Traduzir Texto
-                            </button>
+
+                        <h2 style="color:white;font-size:1.7rem;font-weight:600;margin:0 0 6px;letter-spacing:-0.03em;">Como posso ajudar?</h2>
+                        <p style="color:#6b7280;font-size:0.95rem;margin:0 0 36px;">${currentAgentName} &mdash; pronto para trabalhar</p>
+
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:10px;width:100%;max-width:680px;">
+                            ${[
+                                { icon:'fa-compress-alt', text:'Resumir Texto', prompt:'Me ajude a resumir um texto.' },
+                                { icon:'fa-check-double', text:'Revisar Documento', prompt:'Pode revisar um documento para mim?' },
+                                { icon:'fa-lightbulb',    text:'Ideia Criativa',   prompt:'Gere uma ideia criativa para...' },
+                                { icon:'fa-chart-line',  text:'Análise de Dados', prompt:'Ajude-me com uma análise de dados.' },
+                                { icon:'fa-book-open',   text:'Dicas de Estudo',  prompt:'Quais são as melhores dicas de estudo?' },
+                                { icon:'fa-language',    text:'Traduzir Texto',   prompt:'Pode traduzir o seguinte texto?' },
+                            ].map(s => `
+                                <button onclick="preencherInput('${s.prompt}')" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);padding:14px 16px;border-radius:14px;color:#9ca3af;cursor:pointer;transition:all 0.2s;font-size:0.87rem;text-align:left;display:flex;align-items:center;gap:10px;">
+                                    <span style="width:30px;height:30px;background:rgba(16,185,129,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <i class="fas ${s.icon}" style="color:var(--primary);font-size:0.8rem;"></i>
+                                    </span>
+                                    ${s.text}
+                                </button>
+                            `).join('')}
                         </div>
                     </div>
                 `;
@@ -1313,6 +1306,13 @@
             }
 
             loadHistoryFromAPI();
+        }
+
+        // --- PREENCHER INPUT (botões do empty state) ---
+        function preencherInput(texto) {
+            userInput.value = texto;
+            userInput.dispatchEvent(new Event('input'));
+            userInput.focus();
         }
 
         // --- INTERAÇÃO UX ---
@@ -1344,14 +1344,23 @@
         // --- ENVIO DE MENSAGEM COM STOP REAL ---
         async function handleSendMessage() {
             if (isGenerating) {
+                // PARAR a geração
                 if (currentAbortController) {
                     currentAbortController.abort();
                     currentAbortController = null;
                 }
                 isGenerating = false;
 
-                const loadingMsg = messagesArea.querySelector('.ai-message:last-child .message-bubble');
-                if (loadingMsg) loadingMsg.innerHTML += " <br><i>[Interrompido pelo usuário]</i>";
+                // Remove thinking do avatar
+                const avatarThinking = messagesArea.querySelector('.ai-avatar.thinking');
+                if (avatarThinking) avatarThinking.classList.remove('thinking');
+
+                // Marca mensagem como interrompida
+                const loadingBubble = messagesArea.querySelector('.ai-message:last-child .message-bubble');
+                if (loadingBubble && loadingBubble.classList.contains('typing-cursor')) {
+                    loadingBubble.classList.remove('typing-cursor');
+                    loadingBubble.innerHTML += "\u003cbr\u003e\u003cem style='color:#888; font-size:0.85rem;'\u003e[Interrompido pelo usuário]\u003c/em\u003e";
+                }
 
                 setSendButtonState('send');
                 return;
@@ -1383,8 +1392,9 @@
 
             const aiDiv = addMessage("ai", "", currentAgentIcon, true);
             userInput.value = "";
-            userInput.style.height = '38px'; // Reseta altura inicial
+            userInput.style.height = '38px';
             userInput.style.overflowY = 'hidden';
+            userInput.blur(); // Remove foco para o teclado mobile fechar
 
             const fileToSend = currentFile;
             clearAttachments();
@@ -1515,10 +1525,29 @@
                 actionsDiv.className = 'action-row';
                 actionsDiv.innerHTML = `
                 <button class="icon-btn" onclick="copiarTexto(this, decodeURIComponent('${encodeURIComponent(text)}'))" title="Copiar Resposta"><i class="far fa-copy"></i></button>
-                <button class="icon-btn" title="Regerar resposta"><i class="fas fa-redo"></i></button>
+                <button class="icon-btn" title="Regerar resposta" onclick="regerarResposta(this)"><i class="fas fa-redo"></i></button>
             `;
                 contentWrapper.appendChild(actionsDiv);
             }
+        }
+
+        // Regera a última mensagem do usuário
+        function regerarResposta(btn) {
+            // Pega a mensagem do usuário anterior a este bloco AI
+            const allRows = Array.from(messagesArea.querySelectorAll('.message-row'));
+            const aiRow = btn.closest('.message-row');
+            const aiIndex = allRows.indexOf(aiRow);
+            let lastUserText = '';
+            for (let i = aiIndex - 1; i >= 0; i--) {
+                if (allRows[i].classList.contains('user-message')) {
+                    lastUserText = allRows[i].querySelector('.message-bubble').innerText;
+                    break;
+                }
+            }
+            if (!lastUserText) return;
+            userInput.value = lastUserText;
+            userInput.dispatchEvent(new Event('input'));
+            handleSendMessage();
         }
 
         function setSendButtonState(state) {
@@ -1764,7 +1793,15 @@
             fecharModalPromptsChat();
         }
 
-        function toggleMenu(id) { const m = document.getElementById(id); m.style.display = m.style.display === 'block' ? 'none' : 'block'; }
+        function toggleMenu(id) {
+            const allMenus = document.querySelectorAll('.floating-menu');
+            const target = document.getElementById(id);
+            const isOpen = target.style.display === 'block';
+            // Fecha todos
+            allMenus.forEach(m => m.style.display = 'none');
+            // Abre o alvo se estava fechado
+            if (!isOpen) target.style.display = 'block';
+        }
         function toggleHistory() {
             const layout = document.querySelector('.chat-layout');
             layout.classList.toggle('history-collapsed');
@@ -1774,21 +1811,23 @@
             localStorage.setItem('chat_history_collapsed', isCollapsed);
         }
 
-        // Recuperar estado inicial do histórico
-        (function () {
-            const isCollapsed = localStorage.getItem('chat_history_collapsed') === 'true';
-            if (isCollapsed) {
-                document.addEventListener('DOMContentLoaded', () => {
-                    const layout = document.querySelector('.chat-layout');
-                    if (layout) layout.classList.add('history-collapsed');
-                });
-            }
-        })();
+        // Estado do histórico: gerenciado no DOMContentLoaded
 
-        function toggleSidebarMobile() { document.getElementById('mainSidebar').classList.toggle('active'); }
+        function toggleSidebarMobile() {
+            document.getElementById('mainSidebar').classList.toggle('active');
+        }
+
+        function fazerLogout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userData');
+            localStorage.removeItem('userPlan');
+            window.location.href = 'index.html';
+        }
 
         document.addEventListener('click', (e) => {
-            if (!e.target.closest('.action-icon') && !e.target.closest('.floating-menu')) document.querySelectorAll('.floating-menu').forEach(m => m.style.display = 'none');
+            if (!e.target.closest('.action-icon') && !e.target.closest('.floating-menu')) {
+                document.querySelectorAll('.floating-menu').forEach(m => m.style.display = 'none');
+            }
             if (!e.target.closest('.prompts') && !e.target.closest('.floating-panel')) {
                 const panel = document.getElementById('promptsPanel');
                 if (panel) panel.style.display = 'none';
@@ -1796,7 +1835,10 @@
         });
 
         userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSendMessage(); // funciona tanto para enviar quanto para PARAR
+            }
         });
 
         /* --- LÓGICA DO MODAL DE PROMPTS (SISTEMA E USUÁRIO) --- */

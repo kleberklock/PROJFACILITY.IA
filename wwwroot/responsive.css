@@ -1437,9 +1437,16 @@
         display: block;
     }
 
-    /* Content sem margin do sidebar */
+    /* Layout vira block no mobile — sidebar é fixed/off-canvas, não ocupa espaço no flow */
+    .layout {
+        display: block;
+    }
+
+    /* Content sem margin do sidebar — sobrescreve o calc() do fix Azure */
     .content {
         margin-left: 0;
+        width: 100%;
+        max-width: 100%;
         padding: 20px 15px;
         padding-top: calc(var(--header-mobile-height) + 15px);
     }
@@ -1561,6 +1568,8 @@
 @media (max-width: 480px) {
 
     .content {
+        width: 100%;
+        max-width: 100%;
         padding: 15px 12px;
         padding-top: calc(var(--header-mobile-height) + 12px);
     }
@@ -1640,6 +1649,8 @@
 @media (max-width: 360px) {
 
     .content {
+        width: 100%;
+        max-width: 100%;
         padding: 12px 10px;
         padding-top: calc(var(--header-mobile-height) + 10px);
     }
