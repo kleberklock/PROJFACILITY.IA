@@ -15,7 +15,7 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
 
     <script src="config.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
@@ -24,13 +24,28 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-        body.chat-mode { font-family: 'Inter', sans-serif; }
+        body.chat-mode {
+            font-family: 'Inter', sans-serif;
+        }
 
         /* --- Scrollbar Customizada --- */
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(16,185,129,0.4); }
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.4);
+        }
 
         /* --- Styles Específicos para as Novas Funcionalidades --- */
 
@@ -261,17 +276,30 @@
             display: flex;
             width: 100%;
             gap: 14px;
-            animation: msgSlideIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+            animation: msgSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
         }
 
         @keyframes msgSlideIn {
-            from { opacity: 0; transform: translateY(14px) scale(0.98); }
-            to   { opacity: 1; transform: translateY(0) scale(1); }
+            from {
+                opacity: 0;
+                transform: translateY(14px) scale(0.98);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         /* MENSAGEM DA IA */
-        .ai-message { justify-content: flex-start; }
-        .ai-message .message-content-wrapper { max-width: 82%; }
+        .ai-message {
+            justify-content: flex-start;
+        }
+
+        .ai-message .message-content-wrapper {
+            max-width: 82%;
+        }
+
         .ai-message .message-bubble {
             background: transparent !important;
             border: none !important;
@@ -288,7 +316,7 @@
             height: 38px;
             border-radius: 12px;
             background: linear-gradient(135deg, #0d3d2a 0%, #0a2e20 100%);
-            border: 1px solid rgba(16,185,129,0.35);
+            border: 1px solid rgba(16, 185, 129, 0.35);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -297,7 +325,7 @@
             flex-shrink: 0;
             margin-top: 4px;
             position: relative;
-            box-shadow: 0 0 12px rgba(16,185,129,0.15);
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
         }
 
         /* Animação Circular de Pensamento no Ícone do Chat */
@@ -316,25 +344,34 @@
         }
 
         @keyframes rotate-avatar {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* MENSAGEM DO USUÁRIO */
-        .user-message { justify-content: flex-end; }
+        .user-message {
+            justify-content: flex-end;
+        }
+
         .user-message .message-content-wrapper {
             max-width: 68%;
             align-items: flex-end;
         }
+
         .user-message .message-bubble {
             background: linear-gradient(135deg, #1a2e25 0%, #1e3329 100%);
-            border: 1px solid rgba(16,185,129,0.2);
+            border: 1px solid rgba(16, 185, 129, 0.2);
             color: #e2f5ee;
             padding: 13px 18px;
             border-radius: 18px 18px 4px 18px;
             font-size: 0.95rem;
             line-height: 1.6;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
 
@@ -402,7 +439,8 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.85);
-            z-index: 999999 !important; /* Valor extremo para garantir sobreposição total */
+            z-index: 999999 !important;
+            /* Valor extremo para garantir sobreposição total */
             display: none;
             justify-content: center;
             align-items: center;
@@ -571,44 +609,86 @@
             opacity: 1;
         }
 
-        /* INPUT WRAPPER */
+        /* INPUT WRAPPER - Flutua centralizado no estado inicial, desce ao enviar */
         .input-wrapper {
             position: absolute;
-            bottom: 0;
+            bottom: 150px;
+            /* pequena margem da borda inferior */
             left: 0;
             width: 100%;
-            padding: 16px 20px 24px;
-            transition: bottom 0.7s cubic-bezier(0.25,1,0.5,1), transform 0.7s cubic-bezier(0.25,1,0.5,1), background 0.7s ease;
+            padding: 8px 20px 0;
             z-index: 2000;
             display: flex;
             justify-content: center;
-            background: linear-gradient(to top, var(--bg-deep) 40%, transparent);
+            background: linear-gradient(to top, var(--bg-deep) 55%, transparent);
+            transition: bottom 0.65s cubic-bezier(0.25, 1, 0.5, 1),
+                transform 0.65s cubic-bezier(0.25, 1, 0.5, 1),
+                background 0.65s ease;
+            pointer-events: none;
         }
 
-        .floating-panel, .floating-menu { z-index: 2100; }
+        .floating-panel,
+        .floating-menu {
+            z-index: 2100;
+        }
 
+        /* Estado inicial desktop: input centralizado verticalmente */
         .chat-interface.is-initial-state .input-wrapper {
-            bottom: 30%;
+            bottom: 35%;
             transform: translateY(50%);
             background: transparent !important;
         }
 
+        /* Empty state: centralizado na messages-area */
+        #emptyState {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px 20px 160px;
+            /* espaço para o input flutuante */
+            text-align: center;
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+
+        /* Fade-out ao enviar mensagem */
+        #emptyState.fade-out {
+            opacity: 0 !important;
+            transform: translateY(-16px);
+        }
+
+        /* Grid de sugestões responsivo */
+        .suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
+            gap: 10px;
+            width: 100%;
+            max-width: 680px;
+        }
+
+        /* Responsividade mobile realocada para o fim do estilo para melhor organização */
+
+        /* ---- ESTRUTURA PRINCIPAL DO CHAT ---- */
         .input-box-styled {
             width: 100%;
             max-width: 780px;
-            background: rgba(22,27,36,0.95);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(22, 27, 36, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 20px;
             padding: 12px 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 0 rgba(16,185,129,0);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             transition: border-color 0.3s ease, box-shadow 0.3s ease;
             pointer-events: auto;
             backdrop-filter: blur(12px);
         }
 
         .input-box-styled:focus-within {
-            border-color: rgba(16,185,129,0.45);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 3px rgba(16,185,129,0.08);
+            border-color: rgba(16, 185, 129, 0.45);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 3px rgba(16, 185, 129, 0.08);
         }
 
         .input-container {
@@ -666,13 +746,20 @@
             margin-bottom: 0;
             color: #000 !important;
             font-size: 0.95rem;
-            box-shadow: 0 4px 14px rgba(16,185,129,0.4);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
             transition: all 0.2s ease;
             border: none;
         }
-        #sendBtn:hover { transform: scale(1.08); box-shadow: 0 6px 20px rgba(16,185,129,0.55); }
-        #sendBtn.stop-btn { background: #ff4444 !important; box-shadow: 0 4px 14px rgba(255,68,68,0.4); }
 
+        #sendBtn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.55);
+        }
+
+        #sendBtn.stop-btn {
+            background: #ff4444 !important;
+            box-shadow: 0 4px 14px rgba(255, 68, 68, 0.4);
+        }
 
         .prompt-list-item strong,
         .sp-title {
@@ -705,19 +792,41 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            background: rgba(16,185,129,0.08);
-            border: 1px solid rgba(16,185,129,0.25);
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
             padding: 2px 9px;
             border-radius: 20px;
             font-size: 0.68rem;
             color: #6ee7b7;
             white-space: nowrap;
-            animation: badge-pop 0.3s cubic-bezier(0.175,0.885,0.32,1.275) both;
+            animation: badge-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
             transition: all 0.2s ease;
         }
-        .module-badge:hover { background: rgba(16,185,129,0.18); transform: translateY(-1px); }
-        @keyframes badge-pop { from{transform:scale(0.5);opacity:0} to{transform:scale(1);opacity:1} }
-        .active-modules-container { display:flex; flex-wrap:wrap; gap:6px; margin-top:5px; max-width:100%; }
+
+        .module-badge:hover {
+            background: rgba(16, 185, 129, 0.18);
+            transform: translateY(-1px);
+        }
+
+        @keyframes badge-pop {
+            from {
+                transform: scale(0.5);
+                opacity: 0
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1
+            }
+        }
+
+        .active-modules-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 5px;
+            max-width: 100%;
+        }
 
         /* --- Action Row (Copiar / Regerar) --- */
         .action-row {
@@ -727,10 +836,14 @@
             opacity: 0;
             transition: opacity 0.25s ease;
         }
-        .message-row:hover .action-row { opacity: 1; }
+
+        .message-row:hover .action-row {
+            opacity: 1;
+        }
+
         .icon-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             color: #888;
             width: 30px;
             height: 30px;
@@ -742,9 +855,14 @@
             font-size: 0.75rem;
             transition: all 0.2s;
         }
-        .icon-btn:hover { background: rgba(16,185,129,0.12); color: var(--primary); border-color: rgba(16,185,129,0.3); }
 
-        /* --- Toggle Histórico Estático (Global) --- */
+        .icon-btn:hover {
+            background: rgba(16, 185, 129, 0.12);
+            color: var(--primary);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        /* --- Botão Hambúrguer Global --- */
         .global-toggle {
             position: absolute;
             top: 10px;
@@ -778,6 +896,7 @@
             font-size: 1.3rem;
         }
 
+        /* --- Header --- */
         .chat-header-bar {
             position: sticky;
             top: 0;
@@ -785,42 +904,39 @@
             width: 100%;
             min-height: 60px;
             height: auto;
-            background: rgba(8,10,14,0.75) !important;
+            background: rgba(8, 10, 14, 0.75) !important;
             backdrop-filter: blur(24px) saturate(200%);
             -webkit-backdrop-filter: blur(24px) saturate(200%);
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             padding: 10px 20px 10px 60px;
             z-index: 1500;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.4);
-            transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 32px rgba(0, 0, 0, 0.4);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
         }
 
         .chat-header-bar .header-top {
             width: 100%;
             height: 100%;
-            /* Ocupar toda a altura para centralização perfeita */
             display: flex;
             align-items: center;
             justify-content: space-between;
             transition: padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Quando o histórico está ABERTO, empurramos apenas o CONTEÚDO do header */
         .chat-layout:not(.history-collapsed) .chat-header-bar .header-top {
             padding-left: 230px;
-            /* Sidebar (280) - recuo inicial (60) + ajuste visual */
         }
 
-        /* Ajustes de Layout para o Estado Colapsado */
+        /* --- Layout Principal --- */
         .chat-layout {
             display: flex;
-            flex-direction: column; /* Organização vertical: Header no topo, resto abaixo */
+            flex-direction: column;
             width: 100vw;
-            height: 100vh;
-            padding-top: 0; /* Removido pois o header agora é sticky e ocupa espaço no fluxo */
+            height: 100dvh;
             overflow: hidden;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -829,10 +945,12 @@
             display: flex;
             flex: 1;
             width: 100%;
-            height: 0; /* Hack para flex-grow + overflow funcionar corretamente */
+            height: 0;
             min-height: 0;
+            /* hack flex+overflow */
         }
 
+        /* --- Sidebar --- */
         #mainSidebar {
             width: 280px;
             flex-shrink: 0;
@@ -840,7 +958,6 @@
             height: 100%;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1100;
-            /* Abaixo do header */
             background: #0b0d0f;
             border-right: 1px solid rgba(255, 255, 255, 0.03);
             display: flex;
@@ -869,7 +986,6 @@
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 28px;
-            /* Pill shape */
             color: #efefef;
             display: flex;
             align-items: center;
@@ -887,6 +1003,7 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
+        /* --- Main + Chat Interface --- */
         main {
             flex: 1;
             display: flex;
@@ -897,7 +1014,6 @@
             background: var(--bg-deep);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             min-width: 0;
-            /* Importante para flex item não estourar */
         }
 
         .chat-interface {
@@ -909,12 +1025,12 @@
             overflow: hidden;
         }
 
+        /* --- Área de Mensagens --- */
         .messages-area {
             width: 100%;
             max-width: 900px;
             margin: 0 auto;
-            padding: 20px 15px 200px 15px;
-            /* Aumento do recuo final para 200px */
+            padding: 20px 15px 180px;
             flex: 1;
             overflow-y: auto;
             display: flex;
@@ -922,70 +1038,163 @@
             gap: 24px;
         }
 
-        .input-wrapper {
-            position: absolute;
-            bottom: 100px;
-            /* Elevado para 50px para realçar o efeito flutuante Gemini */
-            /* Elevação premium flutuante conforme usabilidade solicitada */
-            left: 0;
-            width: 100%;
-            padding: 0 20px;
-            z-index: 200;
-            display: flex;
-            justify-content: center;
-            background: linear-gradient(transparent, var(--bg-deep) 50%);
-            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
-            pointer-events: none;
-            /* Permite rolar o chat por trás do container */
-        }
-
-        .chat-interface.is-initial-state .input-wrapper {
-            bottom: 35% !important;
-            /* Harmonizado com as sugestões da tela inicial */
-            transform: translateY(50%);
-            background: transparent !important;
-        }
-
-        #emptyState {
-            margin: auto;
-            text-align: center;
-            max-width: 600px;
-            padding: 20px;
-            margin-top: -15vh;
-            /* Ajuste para não bater na barra */
-        }
-
-        /* Responsividade Mobile - Ajustes para o novo layout flex */
+        /* ==========================================================================
+           RESPONSIVIDADE MOBILE ABRANGENTE E ELEGANTE (CHAT INTERFACE)
+           ========================================================================== */
         @media (max-width: 768px) {
-            #mainSidebar {
-                position: fixed;
-                left: -260px;
-                top: 0;
-                height: 100vh;
-                width: 260px;
+            /* 1. Header do Chat */
+            .chat-header-bar {
+                padding: 10px 15px 10px 55px !important;
+            }
+            #headerName {
+                font-size: 1.05rem !important;
+                max-width: 150px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .header-agent-avatar {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 1rem !important;
             }
 
+            /* 2. Sidebar / Menu Lateral (Mobile) e Overlay */
+            #sidebarOverlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0, 0, 0, 0.6);
+                backdrop-filter: blur(5px);
+                -webkit-backdrop-filter: blur(5px);
+                z-index: 2000;
+                display: none; /* Controlado via JS inline inicialmente */
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            #sidebarOverlay.active {
+                display: block;
+                opacity: 1;
+            }
+            #mainSidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                height: 100vh;
+                width: 280px;
+                z-index: 2001; /* Fica acima de tudo, inclusive header */
+                box-shadow: 5px 0 25px rgba(0,0,0,0.5);
+            }
             #mainSidebar.active {
                 left: 0;
-                width: 260px;
                 opacity: 1;
                 pointer-events: auto;
             }
-
             .chat-layout {
                 width: 100%;
             }
-
             .history-toggle {
-                display: none;
+                display: none !important;
             }
 
+            /* 3. Área de Mensagens */
             .messages-area {
-                padding-bottom: 150px;
+                padding-bottom: 140px !important; /* Espaço para input */
             }
 
+            /* 4. Input Wrapper e Input Box (Efeito Flutuante) */
+            .chat-interface.is-initial-state .input-wrapper {
+                bottom: 12% !important;
+                transform: none !important;
+                background: linear-gradient(to top, var(--bg-deep) 60%, transparent) !important;
+            }
+            .input-wrapper {
+                bottom: 12px !important; /* Margem da base */
+                padding: 0 15px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+                background: linear-gradient(to top, var(--bg-deep) 70%, transparent) !important;
+                pointer-events: none; /* Deixa clicar no que estiver atrás do degradê */
+            }
             .input-box-styled {
-                width: calc(100% - 30px) !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                border-radius: 24px;
+                padding: 10px 14px;
+                pointer-events: auto; /* Permite interagir com o input */
+                background: rgba(22, 27, 36, 0.98);
+            }
+
+            /* 5. Menus Flutuantes (Anexos / Prompts Rápidos) */
+            .floating-menu, .floating-panel {
+                position: fixed !important;
+                bottom: calc(85px + env(safe-area-inset-bottom, 0px)) !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                width: calc(100vw - 30px) !important;
+                max-width: 400px;
+                z-index: 2100;
+                border-radius: 20px !important;
+                box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+                background: rgba(18, 22, 30, 0.95) !important;
+                backdrop-filter: blur(20px);
+            }
+
+            /* 6. Modais (Estilo Bottom Sheet / Gaveta Inferior) */
+            .modal-overlay {
+                align-items: flex-end !important; /* Alinha o modal na base */
+            }
+            .modal-content {
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 85vh !important;
+                border-radius: 28px 28px 0 0 !important;
+                animation: slideUpModal 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+                border: none !important;
+                border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+                margin: 0 !important;
+            }
+            @keyframes slideUpModal {
+                from { transform: translateY(100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+
+            /* 7. Empty State (Tela Inicial) */
+            #emptyState {
+                padding: 20px 15px 200px !important;
+            }
+            .suggestions-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .suggestions-grid {
+                grid-template-columns: 1fr !important;
+                gap: 8px !important;
+            }
+            #emptyState h2 {
+                font-size: 1.4rem !important;
+            }
+            #headerName {
+                max-width: 120px;
+            }
+            .floating-menu, .floating-panel {
+                bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+            }
+        }
+
+        @media (max-width: 360px) {
+            #headerName {
+                max-width: 90px;
+            }
+            .input-box-styled {
+                padding: 8px 12px;
+            }
+            .suggestions-grid button {
+                font-size: 0.8rem;
+                padding: 10px 12px;
             }
         }
     </style>
@@ -996,9 +1205,12 @@
 <body class="chat-mode">
     <input type="file" id="realFileInput" style="display: none;">
 
+    <!-- Overlay escuro ao abrir sidebar no mobile -->
+    <div id="sidebarOverlay" onclick="closeSidebarMobile()"></div>
+
     <div class="chat-layout" style="position: relative;">
         <!-- Botão Único Global Stilizado (Permanecerá parado) -->
-        <div class="global-toggle" id="globalToggle" onclick="toggleHistory()" title="Menu Principal">
+        <div class="global-toggle" id="globalToggle" onclick="handleMenuToggle()" title="Menu Principal">
             <i class="fas fa-bars"></i>
         </div>
 
@@ -1017,16 +1229,9 @@
                     </div>
                 </div>
 
-                <div class="header-actions">
-                    <button class="export-btn" onclick="exportChat('txt')"><i class="fas fa-file-alt"></i>
-                        TXT</button>
-                    <button class="export-btn" onclick="exportChat('pdf')"><i class="fas fa-file-pdf"></i>
-                        PDF</button>
+                <div class="header-actions" style="gap:0;">
+                    <!-- TXT e PDF movidos para o menu de anexos -->
                 </div>
-
-                <i class="fas fa-bars mobile-only"
-                    style="color:#666; cursor:pointer; font-size:1.2rem; display:none; margin-left: 15px;"
-                    onclick="toggleSidebarMobile()"></i>
             </div>
         </header>
 
@@ -1055,11 +1260,12 @@
                             <div class="attachments-preview" id="attachmentsPreview"></div>
                             <div class="input-container">
                                 <div style="position:relative;">
-                                    <div class="action-icon" onclick="toggleMenu('attachMenu')" title="Anexar arquivo"><i
-                                            class="fas fa-paperclip"></i></div>
+                                    <div class="action-icon" onclick="toggleMenu('attachMenu')" title="Anexar arquivo">
+                                        <i class="fas fa-paperclip"></i>
+                                    </div>
 
                                     <div class="floating-menu" id="attachMenu"
-                                        style="width: 250px; padding: 10px; border-radius: 12px; border: 1px solid rgba(0, 243, 255, 0.2);">
+                                        style="width: 260px; padding: 10px; border-radius: 12px; border: 1px solid rgba(0, 243, 255, 0.2);">
                                         <div
                                             style="font-size: 0.75rem; color: #888; margin-bottom: 10px; padding-left: 5px; font-weight: bold; text-transform: uppercase;">
                                             Enviar Arquivos</div>
@@ -1073,7 +1279,8 @@
                                             <div style="display: flex; flex-direction: column;">
                                                 <span
                                                     style="font-weight: bold; color: white; line-height: 1.2; font-size: 0.95rem;">Documento</span>
-                                                <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">PDF, TXT ou
+                                                <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">PDF, TXT
+                                                    ou
                                                     DOCX</span>
                                             </div>
                                         </div>
@@ -1087,8 +1294,46 @@
                                             <div style="display: flex; flex-direction: column;">
                                                 <span
                                                     style="font-weight: bold; color: white; line-height: 1.2; font-size: 0.95rem;">Imagem</span>
-                                                <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">JPG, PNG ou
+                                                <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">JPG, PNG
+                                                    ou
                                                     WEBP</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Separador Exportar -->
+                                        <div style="border-top: 1px solid rgba(255,255,255,0.07); margin: 10px 0 8px;">
+                                        </div>
+                                        <div
+                                            style="font-size: 0.75rem; color: #888; margin-bottom: 8px; padding-left: 5px; font-weight: bold; text-transform: uppercase;">
+                                            Exportar Conversa</div>
+
+                                        <div class="menu-option" onclick="exportChat('txt'); toggleMenu('attachMenu')"
+                                            style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; margin-bottom: 5px; transition: background 0.2s;">
+                                            <div
+                                                style="width: 38px; height: 38px; background: rgba(255,255,255,0.06); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #ccc; flex-shrink: 0;">
+                                                <i class="fas fa-file-alt" style="font-size: 1.1rem;"></i>
+                                            </div>
+                                            <div style="display: flex; flex-direction: column;">
+                                                <span
+                                                    style="font-weight: bold; color: white; line-height: 1.2; font-size: 0.95rem;">Exportar
+                                                    TXT</span>
+                                                <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">Salva o
+                                                    chat em texto simples</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="menu-option" onclick="exportChat('pdf'); toggleMenu('attachMenu')"
+                                            style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; transition: background 0.2s;">
+                                            <div
+                                                style="width: 38px; height: 38px; background: rgba(239,68,68,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #f87171; flex-shrink: 0;">
+                                                <i class="fas fa-file-pdf" style="font-size: 1.1rem;"></i>
+                                            </div>
+                                            <div style="display: flex; flex-direction: column;">
+                                                <span
+                                                    style="font-weight: bold; color: white; line-height: 1.2; font-size: 0.95rem;">Exportar
+                                                    PDF</span>
+                                                <span style="font-size: 0.75rem; color: #aaa; margin-top: 2px;">Gera um
+                                                    PDF formatado do chat</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1105,8 +1350,8 @@
                                     </div>
                                 </div>
 
-                                <div class="action-icon" id="micBtn" onclick="toggleRecording()" title="Digitar por voz"><i
-                                        class="fas fa-microphone"></i></div>
+                                <div class="action-icon" id="micBtn" onclick="toggleRecording()"
+                                    title="Digitar por voz"><i class="fas fa-microphone"></i></div>
 
                                 <textarea id="userInput" placeholder="Digite aqui..." rows="1"></textarea>
 
@@ -1157,8 +1402,7 @@
         let isGenerating = false;
         let currentAbortController = null;
         let recognition = null;
-        let cachedSystemPrompts = null;
-        let cachedUserPrompts = null;
+        // cachedSystemPrompts e cachedUserPrompts declarados em script.js
 
 
         // Elementos DOM
@@ -1269,32 +1513,32 @@
 
                 // Nova Tela Inicial Elegante
                 const emptyStateHTML = `
-                    <div id="emptyState" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; padding: 20px; opacity:0; animation: fadeIn 0.8s 0.2s forwards;">
+                    <div id="emptyState" style="opacity:0; animation: fadeIn 0.8s 0.2s forwards;">
 
                         <div style="position:relative; margin-bottom:24px;">
-                            <div style="width:88px;height:88px;border-radius:22px;background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.05));display:flex;align-items:center;justify-content:center;font-size:2.6rem;color:var(--primary);box-shadow:0 0 40px rgba(16,185,129,0.2),inset 0 0 20px rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);">
+                            <div style="width:80px;height:80px;border-radius:22px;background:linear-gradient(135deg,rgba(16,185,129,0.15),rgba(5,150,105,0.05));display:flex;align-items:center;justify-content:center;font-size:2.4rem;color:var(--primary);box-shadow:0 0 40px rgba(16,185,129,0.2),inset 0 0 20px rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);">
                                 <i class="fas fa-${currentAgentIcon}"></i>
                             </div>
-                            <div style="position:absolute;bottom:-4px;right:-4px;width:22px;height:22px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;">
-                                <i class="fas fa-bolt" style="font-size:0.6rem;color:#000;"></i>
+                            <div style="position:absolute;bottom:-4px;right:-4px;width:20px;height:20px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                                <i class="fas fa-bolt" style="font-size:0.55rem;color:#000;"></i>
                             </div>
                         </div>
 
-                        <h2 style="color:white;font-size:1.7rem;font-weight:600;margin:0 0 6px;letter-spacing:-0.03em;">Como posso ajudar?</h2>
-                        <p style="color:#6b7280;font-size:0.95rem;margin:0 0 36px;">${currentAgentName} &mdash; pronto para trabalhar</p>
+                        <h2 style="color:white;font-size:1.6rem;font-weight:600;margin:0 0 6px;letter-spacing:-0.03em;">Como posso ajudar?</h2>
+                        <p style="color:#6b7280;font-size:0.9rem;margin:0 0 28px;">${currentAgentName} &mdash; pronto para trabalhar</p>
 
-                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:10px;width:100%;max-width:680px;">
+                        <div class="suggestions-grid">
                             ${[
-                                { icon:'fa-compress-alt', text:'Resumir Texto', prompt:'Me ajude a resumir um texto.' },
-                                { icon:'fa-check-double', text:'Revisar Documento', prompt:'Pode revisar um documento para mim?' },
-                                { icon:'fa-lightbulb',    text:'Ideia Criativa',   prompt:'Gere uma ideia criativa para...' },
-                                { icon:'fa-chart-line',  text:'Análise de Dados', prompt:'Ajude-me com uma análise de dados.' },
-                                { icon:'fa-book-open',   text:'Dicas de Estudo',  prompt:'Quais são as melhores dicas de estudo?' },
-                                { icon:'fa-language',    text:'Traduzir Texto',   prompt:'Pode traduzir o seguinte texto?' },
-                            ].map(s => `
-                                <button onclick="preencherInput('${s.prompt}')" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);padding:14px 16px;border-radius:14px;color:#9ca3af;cursor:pointer;transition:all 0.2s;font-size:0.87rem;text-align:left;display:flex;align-items:center;gap:10px;">
-                                    <span style="width:30px;height:30px;background:rgba(16,185,129,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                                        <i class="fas ${s.icon}" style="color:var(--primary);font-size:0.8rem;"></i>
+                        { icon: 'fa-compress-alt', text: 'Resumir Texto', prompt: 'Me ajude a resumir um texto.' },
+                        { icon: 'fa-check-double', text: 'Revisar Documento', prompt: 'Pode revisar um documento para mim?' },
+                        { icon: 'fa-lightbulb', text: 'Ideia Criativa', prompt: 'Gere uma ideia criativa para...' },
+                        { icon: 'fa-chart-line', text: 'Análise de Dados', prompt: 'Ajude-me com uma análise de dados.' },
+                        { icon: 'fa-book-open', text: 'Dicas de Estudo', prompt: 'Quais são as melhores dicas de estudo?' },
+                        { icon: 'fa-language', text: 'Traduzir Texto', prompt: 'Pode traduzir o seguinte texto?' },
+                    ].map(s => `
+                                <button onclick="preencherInput('${s.prompt}')" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);padding:12px 14px;border-radius:14px;color:#9ca3af;cursor:pointer;transition:all 0.2s;font-size:0.85rem;text-align:left;display:flex;align-items:center;gap:10px;">
+                                    <span style="width:28px;height:28px;background:rgba(16,185,129,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <i class="fas ${s.icon}" style="color:var(--primary);font-size:0.78rem;"></i>
                                     </span>
                                     ${s.text}
                                 </button>
@@ -1370,12 +1614,19 @@
             if (!text && !currentFile) return;
 
             const chatInterface = document.getElementById('chatInterface');
-            if (chatInterface.classList.contains('is-initial-state')) {
+            const isInitial = chatInterface.classList.contains('is-initial-state');
+
+            if (isInitial) {
                 chatInterface.classList.remove('is-initial-state');
             }
 
+            // Remove o emptyState imediatamente para evitar layout shift (bug de mensagens subindo/descendo)
+            // O emptyState tem flex:1 e ocupa todo o espaço — se removido com delay,
+            // a mensagem aparece abaixo dele por 350ms e depois salta para o topo.
             const emptyState = document.getElementById('emptyState');
-            if (emptyState) emptyState.remove();
+            if (emptyState) {
+                messagesArea.innerHTML = ''; // limpa tudo de uma vez, sem delay
+            }
 
             if (text) addMessage("user", text);
 
@@ -1499,7 +1750,7 @@
         function finalizeMessage(aiDiv, text) {
             const bubble = aiDiv.querySelector('.message-bubble');
             const avatar = aiDiv.querySelector('.ai-avatar');
-            
+
             if (avatar) avatar.classList.remove('thinking');
             bubble.innerHTML = marked.parse(text);
 
@@ -1758,7 +2009,7 @@
         function updateActiveBadges() {
             const container = document.getElementById('activeModulesArea');
             if (!container) return;
-            
+
             container.innerHTML = Array.from(activeContexts).map(c =>
                 `<div class="module-badge" title="${c.content.substring(0, 100)}...">
                     <i class="fas fa-bolt" style="color:var(--primary); font-size:0.6rem;"></i>
@@ -1811,10 +2062,40 @@
             localStorage.setItem('chat_history_collapsed', isCollapsed);
         }
 
+        // Decide o comportamento do botão hamburger conforme o dispositivo
+        function handleMenuToggle() {
+            if (window.innerWidth <= 768) {
+                toggleSidebarMobile();
+            } else {
+                toggleHistory();
+            }
+        }
+
         // Estado do histórico: gerenciado no DOMContentLoaded
 
         function toggleSidebarMobile() {
-            document.getElementById('mainSidebar').classList.toggle('active');
+            const sidebar = document.getElementById('mainSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const isOpen = sidebar.classList.toggle('active');
+            if (overlay) {
+                if (isOpen) {
+                    overlay.style.display = 'block';
+                    requestAnimationFrame(() => overlay.classList.add('active'));
+                } else {
+                    overlay.classList.remove('active');
+                    setTimeout(() => { overlay.style.display = 'none'; }, 300);
+                }
+            }
+        }
+
+        function closeSidebarMobile() {
+            const sidebar = document.getElementById('mainSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.remove('active');
+            if (overlay) {
+                overlay.classList.remove('active');
+                setTimeout(() => { overlay.style.display = 'none'; }, 300);
+            }
         }
 
         function fazerLogout() {
@@ -1837,249 +2118,9 @@
         userInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                handleSendMessage(); // funciona tanto para enviar quanto para PARAR
+                handleSendMessage();
             }
         });
-
-        /* --- LÓGICA DO MODAL DE PROMPTS (SISTEMA E USUÁRIO) --- */
-
-        function abrirMeusPromptsChat() {
-            document.getElementById('attachMenu').style.display = 'none';
-            const modal = document.getElementById('modalPromptsChat');
-            if (modal) {
-                modal.style.display = 'flex';
-                switchModalTab('system');
-            }
-        }
-
-        function fecharModalPromptsChat() {
-            document.getElementById('modalPromptsChat').style.display = 'none';
-        }
-
-        function switchModalTab(tabName) {
-            document.getElementById('tabBtnSystem').classList.remove('active');
-            document.getElementById('tabBtnUser').classList.remove('active');
-
-            document.getElementById('tabContentSystem').style.display = 'none';
-            document.getElementById('tabContentUser').style.display = 'none';
-
-            if (tabName === 'system') {
-                document.getElementById('tabBtnSystem').classList.add('active');
-                document.getElementById('tabContentSystem').style.display = 'block';
-                loadSystemPrompts();
-            } else {
-                document.getElementById('tabBtnUser').classList.add('active');
-                document.getElementById('tabContentUser').style.display = 'block';
-                loadUserPrompts();
-            }
-        }
-
-        async function loadSystemPrompts() {
-            const container = document.getElementById('systemPromptsContainer');
-            const loader = document.getElementById('systemPromptsLoader');
-
-            if (cachedSystemPrompts) {
-                renderSystemPrompts(cachedSystemPrompts);
-                if (loader) loader.style.display = 'none';
-                return;
-            }
-
-            if (loader) loader.style.display = 'block';
-
-            try {
-                const token = localStorage.getItem('token');
-                const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
-
-                const res = await fetch(`${apiUrl}/api/prompts/system`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (res.ok) {
-                    cachedSystemPrompts = await res.json();
-                    renderSystemPrompts(cachedSystemPrompts);
-                } else {
-                    container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro ao carregar prompts do sistema.</div>';
-                }
-            } catch (e) {
-                console.error(e);
-                container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro de conexão.</div>';
-            } finally {
-                if (loader) loader.style.display = 'none';
-            }
-        }
-
-        function renderSystemPrompts(prompts) {
-            const container = document.getElementById('systemPromptsContainer');
-            container.innerHTML = '';
-
-            if (!prompts || prompts.length === 0) {
-                container.innerHTML = '<p style="padding:20px; color:#999;">Nenhum prompt de sistema encontrado.</p>';
-                return;
-            }
-
-            const groups = {};
-            prompts.forEach(p => {
-                if (!groups[p.area]) groups[p.area] = [];
-                groups[p.area].push(p);
-            });
-
-            const sortedAreas = Object.keys(groups).sort();
-
-            const savedCategory = localStorage.getItem('selectedAgentCategory');
-            let firstRendered = false;
-
-            let activeItemElement = null;
-
-            for (const area of sortedAreas) {
-                const items = groups[area];
-                const accItem = document.createElement('div');
-                accItem.className = 'accordion-item';
-
-                let isActive = false;
-                if (savedCategory) {
-                    const catMap = {
-                        'tech': ['tecnologia', 'tech'],
-                        'juridico': ['jurídico', 'juridico'],
-                        'saude': ['saúde', 'saude', 'medicina', 'médico'],
-                        'engenharia': ['engenharia'],
-                        'negocios': ['negócios', 'negocios'],
-                        'operacional': ['operacional'],
-                        'criativo': ['criatividade', 'criativo', 'criativos'],
-                        'educacao': ['educação', 'estudante', 'educacao'],
-                        'meus': ['personalizado']
-                    };
-                    const possibleMappings = catMap[savedCategory] || [savedCategory];
-                    const loweredArea = area.toLowerCase();
-                    if (possibleMappings.some(m => loweredArea.includes(m))) {
-                        isActive = true;
-                    }
-                }
-
-                // Se for a primeira aba e não houver um savedCategory que abra nenhuma aba, o fallback será mantê-la fechada (ou pode expandir a primeira)
-                // O usuário solicitou abrir a primeira como fallback caso não haja match
-                if (!firstRendered && Object.keys(groups).length > 0 && !savedCategory) {
-                    isActive = true;
-                }
-
-                if (isActive) {
-                    accItem.classList.add('active');
-                    firstRendered = true; // só o primeiro será o fallback ou o que logrou sucesso
-                    activeItemElement = accItem;
-                }
-
-                let iconClass = 'fa-layer-group';
-                if (area.toLowerCase().includes('juridico')) iconClass = 'fa-scale-balanced';
-                if (area.toLowerCase().includes('tech')) iconClass = 'fa-laptop-code';
-                if (area.toLowerCase().includes('saude')) iconClass = 'fa-heart-pulse';
-                if (area.toLowerCase().includes('negocios')) iconClass = 'fa-briefcase';
-
-                accItem.innerHTML = `
-                <div class="accordion-header" onclick="this.parentElement.classList.toggle('active')">
-                    <span style="display:flex; align-items:center;">
-                        <i class="fas ${iconClass}" style="margin-right:10px; width:20px;"></i> 
-                        ${area}
-                    </span>
-                    <i class="fas fa-chevron-down" style="transition: transform 0.3s;"></i>
-                </div>
-                <div class="accordion-body"></div>
-            `;
-
-                const body = accItem.querySelector('.accordion-body');
-
-                items.forEach(p => {
-                    const card = document.createElement('div');
-                    card.className = 'system-prompt-card sp-has-tooltip';
-
-                    // Correção de Casing para C# API
-                    const titulo = p.buttonTitle || p.ButtonTitle || p.profession || p.Profession || 'Sistema';
-                    const conteudo = p.content || p.Content || '';
-                    const descricao = p.shortDescription || p.ShortDescription || '';
-
-                    card.onclick = () => selecionarPromptChat(encodeURIComponent(titulo), encodeURIComponent(conteudo));
-
-                    card.innerHTML = `
-                    <div class="sp-prof">${p.profession || p.Profession || ''}</div>
-                    <div class="sp-title">${p.buttonTitle || p.ButtonTitle || ''}</div>
-                    ${descricao ? `<div class="sp-tooltip">${descricao}</div>` : ''}
-                `;
-                    body.appendChild(card);
-                });
-
-                container.appendChild(accItem);
-            }
-
-            if (activeItemElement) {
-                setTimeout(() => {
-                    activeItemElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 150);
-            }
-        }
-
-        async function loadUserPrompts() {
-            const container = document.getElementById('listaPromptsChatContent');
-            const loader = document.getElementById('userPromptsLoader');
-
-            if (cachedUserPrompts) {
-                renderUserPrompts(cachedUserPrompts);
-                if (loader) loader.style.display = 'none';
-                return;
-            }
-
-            if (loader) loader.style.display = 'block';
-
-            try {
-                const token = localStorage.getItem('token');
-                const apiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : '';
-
-                const res = await fetch(`${apiUrl}/api/prompts`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (res.ok) {
-                    cachedUserPrompts = await res.json();
-                    renderUserPrompts(cachedUserPrompts);
-                } else {
-                    container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro ao carregar prompts.</div>';
-                }
-            } catch (e) {
-                console.error(e);
-                container.innerHTML = '<div style="color:#ff6b6b; padding:20px; text-align:center;">Erro de conexão.</div>';
-            } finally {
-                if (loader) loader.style.display = 'none';
-            }
-        }
-
-        function renderUserPrompts(prompts) {
-            const container = document.getElementById('listaPromptsChatContent');
-            container.innerHTML = '';
-
-            if (!prompts || prompts.length === 0) {
-                container.innerHTML = `
-                <div style="text-align:center; color:#888; padding:30px;">
-                    <i class="fas fa-folder-open" style="font-size:2rem; margin-bottom:10px;"></i><br>
-                    Você não tem prompts salvos.<br>
-                    <a href="meus_prompts.html" style="color:var(--primary); text-decoration:none; font-size:0.9rem;">Criar prompts</a>
-                </div>`;
-                return;
-            }
-
-            prompts.forEach(p => {
-                const item = document.createElement('div');
-                item.className = 'prompt-list-item';
-
-                // --- A SOLUÇÃO: À prova de falhas para maiúsculas/minúsculas vindas do C# ---
-                const titulo = p.title || p.Title || 'Meu Prompt';
-                const conteudo = p.content || p.Content || '...';
-
-                item.onclick = () => selecionarPromptChat(encodeURIComponent(titulo), encodeURIComponent(conteudo));
-
-                item.innerHTML = `
-                <strong>${titulo}</strong>
-                <p>${conteudo}</p>
-            `;
-                container.appendChild(item);
-            });
-        }
 
         window.addEventListener('click', function (e) {
             const modal = document.getElementById('modalPromptsChat');

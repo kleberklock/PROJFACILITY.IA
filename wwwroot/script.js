@@ -586,6 +586,26 @@ function renderSystemPrompts(prompts) {
         accItem.appendChild(header);
         accItem.appendChild(body);
         container.appendChild(accItem);
+
+        // Lógica para abrir automaticamente a aba se corresponder à área do agente atual
+        if (typeof currentAgentArea !== 'undefined' && currentAgentArea) {
+            // Normaliza as strings para comparação (ex: 'Operacional' e 'operacional')
+            const normalizedAccArea = area.toLowerCase().trim();
+            const normalizedAgentArea = currentAgentArea.toLowerCase().trim();
+            
+            // Verifica se as áreas correspondem de alguma forma. 
+            // O agentArea geralmente vem do visualClass ('tech', 'saude', 'operacional', etc.)
+            if (normalizedAccArea === normalizedAgentArea || 
+                normalizedAccArea.includes(normalizedAgentArea) || 
+                normalizedAgentArea.includes(normalizedAccArea)) {
+                accItem.classList.add('active');
+                
+                // Rola para a aba ativa para que o usuário não precise procurar
+                setTimeout(() => {
+                    accItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
     }
 }
 
