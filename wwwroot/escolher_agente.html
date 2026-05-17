@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -12,12 +12,12 @@
         if (!token) window.location.href = 'login.html';
     </script>
     <script>
-        // Token já foi lido no script acima, sem const para evitar erro 'Cannot redeclare block-scoped variable'
+        // Token jÃ¡ foi lido no script acima, sem const para evitar erro 'Cannot redeclare block-scoped variable'
         if (typeof token === 'undefined') {
             var token = localStorage.getItem('token');
         }
 
-        // 1. Redireciona se não tiver token
+        // 1. Redireciona se nÃ£o tiver token
         if (!token) {
             window.location.href = 'login.html';
         } else {
@@ -27,7 +27,7 @@
                 const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
                 const payload = JSON.parse(window.atob(base64));
 
-                // 3. Verifica se é Admin
+                // 3. Verifica se Ã© Admin
                 const role = payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 
                 // 4. Aguarda o DOM carregar para exibir o menu
@@ -35,9 +35,9 @@
                     const adminArea = document.getElementById('adminArea');
                     if (adminArea) {
                         if (role === 'admin') {
-                            adminArea.style.display = 'flex'; // MOSTRA SÓ SE FOR ADMIN
+                            adminArea.style.display = 'flex'; // MOSTRA SÃ“ SE FOR ADMIN
                         } else {
-                            adminArea.remove(); // REMOVE DO HTML SE NÃO FOR ADMIN
+                            adminArea.remove(); // REMOVE DO HTML SE NÃƒO FOR ADMIN
                         }
                     }
                 });
@@ -93,7 +93,7 @@
             color: #888;
         }
 
-        /* --- ABAS DE NAVEGAÇÃO --- */
+        /* --- ABAS DE NAVEGAÃ‡ÃƒO --- */
         .agent-tabs-wrapper {
             /* Corrigido: Removido o ponto duplo inicial */
             overflow-x: auto;
@@ -113,10 +113,10 @@
         .agent-tabs {
             display: flex;
             justify-content: center;
-            /* No mobile, o JS ou flex pode precisar de flex-start dependendo do número de abas */
+            /* No mobile, o JS ou flex pode precisar de flex-start dependendo do nÃºmero de abas */
             gap: 10px;
             min-width: max-content;
-            /* MAGIA ATUALIZADA: 15px em cima para o pulo + brilho da sombra não cortarem! */
+            /* MAGIA ATUALIZADA: 15px em cima para o pulo + brilho da sombra nÃ£o cortarem! */
             padding: 15px 20px 25px 20px;
         }
 
@@ -167,7 +167,7 @@
             overflow-x: hidden;
         }
 
-        /* --- ESTILOS DE ÍCONES E GRADIENTES --- */
+        /* --- ESTILOS DE ÃCONES E GRADIENTES --- */
         .card-icon i {
             color: white !important;
             filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
@@ -186,13 +186,13 @@
             box-shadow: 0 8px 20px -5px rgba(0, 243, 255, 0.4);
         }
 
-        /* Jurídico */
+        /* JurÃ­dico */
         .icon-juridico {
             background: linear-gradient(135deg, #2b32b2 0%, #1488cc 100%) !important;
             box-shadow: 0 8px 20px -5px rgba(20, 136, 204, 0.4);
         }
 
-        /* Saúde */
+        /* SaÃºde */
         .icon-saude {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
             box-shadow: 0 8px 20px -5px rgba(56, 239, 125, 0.4);
@@ -204,13 +204,13 @@
             box-shadow: 0 8px 20px -5px rgba(255, 81, 47, 0.4);
         }
 
-        /* Negócios */
+        /* NegÃ³cios */
         .icon-negocios {
             background: linear-gradient(135deg, #F2994A 0%, #F2C94C 100%) !important;
             box-shadow: 0 8px 20px -5px rgba(242, 201, 76, 0.4);
         }
 
-        /* Educação */
+        /* EducaÃ§Ã£o */
         .icon-educacao {
             background: linear-gradient(135deg, #56CCF2 0%, #2F80ED 100%) !important;
             box-shadow: 0 8px 20px -5px rgba(47, 128, 237, 0.4);
@@ -222,7 +222,7 @@
             box-shadow: 0 8px 20px -5px rgba(255, 0, 204, 0.4);
         }
 
-        /* Operacional - Vermelho Tijolo / Bordô Quente */
+        /* Operacional - Vermelho Tijolo / BordÃ´ Quente */
         .icon-operacional {
             background: linear-gradient(135deg, #EC4E3A 0%, #7B1C1C 100%) !important;
             box-shadow: 0 8px 20px -5px rgba(236, 78, 58, 0.5);
@@ -260,18 +260,19 @@
         <nav class="sidebar" id="sidebar">
             <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
 
-            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> InÃ­cio</a>
             <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
             <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Prompts/Agentes</a>
+            <a href="workspace_admin.html" class="nav-btn"><i class="fas fa-microchip"></i> Workspace</a>
             <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
             <a href="prompts.html" class="nav-btn"><i class="fas fa-lightbulb"></i> Como Funciona</a>
-            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
+            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> ConfiguraÃ§Ãµes</a>
 
             <div id="adminArea"
                 style="display: none; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
                 <div
                     style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
-                    Administração</div>
+                    AdministraÃ§Ã£o</div>
 
 
                 <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i>
@@ -305,7 +306,7 @@
                 <div class="avatar" id="sidebarAvatar">U</div>
                 <div style="font-size:0.85rem; color:#ccc; overflow:hidden;">
                     <div id="sidebarUserName"
-                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">Usuário
+                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">UsuÃ¡rio
                     </div>
                     <div style="color:#666; font-size:0.75rem;">Ver Perfil</div>
                 </div>
@@ -320,14 +321,14 @@
         <main class="content">
 
             <div class="page-header">
-                <h2>Catálogo de Inteligência</h2>
+                <h2>CatÃ¡logo de InteligÃªncia</h2>
                 <p style="color:#888;">Encontre o especialista ideal para sua tarefa.</p>
             </div>
 
             <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" id="inputBusca" class="search-input"
-                    placeholder="Busque por nome, profissão ou área..." oninput="executarBusca()">
+                    placeholder="Busque por nome, profissÃ£o ou Ã¡rea..." oninput="executarBusca()">
             </div>
 
             <div class="agent-tabs-wrapper">
@@ -345,22 +346,22 @@
                         <i class="fas fa-cogs"></i> Operacional
                     </button>
                     <button class="agent-tab-btn" onclick="filtrarAba('juridico', this)">
-                        <i class="fas fa-scale-balanced"></i> Jurídico
+                        <i class="fas fa-scale-balanced"></i> JurÃ­dico
                     </button>
                     <button class="agent-tab-btn" onclick="filtrarAba('saude', this)">
-                        <i class="fas fa-user-doctor"></i> Saúde
+                        <i class="fas fa-user-doctor"></i> SaÃºde
                     </button>
                     <button class="agent-tab-btn" onclick="filtrarAba('engenharia', this)">
                         <i class="fas fa-hard-hat"></i> Engenharia
                     </button>
                     <button class="agent-tab-btn" onclick="filtrarAba('negocios', this)">
-                        <i class="fas fa-briefcase"></i> Negócios
+                        <i class="fas fa-briefcase"></i> NegÃ³cios
                     </button>
                     <button class="agent-tab-btn" onclick="filtrarAba('criativo', this)">
                         <i class="fas fa-palette"></i> Criativos
                     </button>
                     <button class="agent-tab-btn" onclick="filtrarAba('educacao', this)">
-                        <i class="fas fa-graduation-cap"></i> Educação
+                        <i class="fas fa-graduation-cap"></i> EducaÃ§Ã£o
                     </button>
                 </div>
             </div>
@@ -368,7 +369,7 @@
             <div id="gridAgentes" class="card-grid">
                 <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #7B1C1C;">
                     <i class="fas fa-circle-notch fa-spin fa-2x"></i>
-                    <p style="margin-top:10px">Sincronizando inteligências...</p>
+                    <p style="margin-top:10px">Sincronizando inteligÃªncias...</p>
                 </div>
             </div>
 
@@ -384,7 +385,7 @@
         const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : '';
         let todosAgentes = [];
 
-        // Mesma lógica de categorias do Dashboard
+        // Mesma lÃ³gica de categorias do Dashboard
         const categoryMap = {
             'tecnologia': 'tech',
             'tech': 'tech',
@@ -401,7 +402,7 @@
             'outros': 'negocios'
         };
 
-        // Mesma função de ícones do Dashboard
+        // Mesma funÃ§Ã£o de Ã­cones do Dashboard
         function getCreativeIcon(name, originalIcon, area) {
             const n = name.toLowerCase();
             if (originalIcon && originalIcon !== 'fa-robot') return originalIcon;
@@ -432,7 +433,7 @@
             grid.innerHTML = `
                 <div style="grid-column: 1/-1; text-align: center; padding: 60px; color: #666;">
                     <i class="fas fa-circle-notch fa-spin fa-2x"></i>
-                    <p style="margin-top:10px">Sincronizando inteligências...</p>
+                    <p style="margin-top:10px">Sincronizando inteligÃªncias...</p>
                 </div>`;
 
             try {
@@ -459,7 +460,7 @@
                         let rawArea = a.specialty ? a.specialty.toLowerCase() : 'geral';
                         if (rawArea === 'personalizado') rawArea = 'meus';
 
-                        // Lógica de Filtro igual ao Dashboard
+                        // LÃ³gica de Filtro igual ao Dashboard
                         let filterCategory = isMyAgent ? 'meus' : (categoryMap[rawArea] || 'negocios');
 
                         // Classe Visual

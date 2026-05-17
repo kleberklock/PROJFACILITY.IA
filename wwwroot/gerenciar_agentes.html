@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -23,15 +23,15 @@
                 const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
                 const payload = JSON.parse(window.atob(base64));
 
-                // Verifica se é admin (suporta o formato curto ou o formato longo da Microsoft)
+                // Verifica se Ã© admin (suporta o formato curto ou o formato longo da Microsoft)
                 const role = payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
 
                 if (role !== 'admin') {
-                    alert("Acesso Negado: Área restrita para administradores.");
+                    alert("Acesso Negado: Ãrea restrita para administradores.");
                     window.location.href = 'dashboard.html';
                 }
             } catch (e) {
-                console.error("Erro ao validar permissões:", e);
+                console.error("Erro ao validar permissÃµes:", e);
                 window.location.href = 'login.html';
             }
         }
@@ -45,18 +45,19 @@
         <nav class="sidebar" id="sidebar">
             <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
 
-            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> InÃ­cio</a>
             <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
             <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Prompts/Agentes</a>
+            <a href="workspace_admin.html" class="nav-btn"><i class="fas fa-microchip"></i> Workspace</a>
             <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
             <a href="prompts.html" class="nav-btn"><i class="fas fa-lightbulb"></i> Como Funciona</a>
-            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
+            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> ConfiguraÃ§Ãµes</a>
 
             <div id="adminArea"
                 style="display: none; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
                 <div
                     style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
-                    Administração</div>
+                    AdministraÃ§Ã£o</div>
 
 
                 <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i>
@@ -90,7 +91,7 @@
                 <div class="avatar" id="sidebarAvatar">U</div>
                 <div style="font-size:0.85rem; color:#ccc; overflow:hidden;">
                     <div id="sidebarUserName"
-                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">Usuário
+                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">UsuÃ¡rio
                     </div>
                     <div style="color:#666; font-size:0.75rem;">Ver Perfil</div>
                 </div>
@@ -107,7 +108,7 @@
                 style="background: linear-gradient(135deg, #062c26 0%, #1a1a1a 100%); border-color: rgba(0, 243, 255, 0.2);">
                 <div class="hero-content">
                     <h2 class="hero-title" style="color: #00F3FF;">Gerenciar Agentes</h2>
-                    <p class="hero-desc">Edite prompts, ícones e exclua agentes do sistema.</p>
+                    <p class="hero-desc">Edite prompts, Ã­cones e exclua agentes do sistema.</p>
                 </div>
             </div>
 
@@ -115,11 +116,11 @@
                 <table class="admin-table">
                     <thead>
                         <tr>
-                            <th width="50">Ícone</th>
+                            <th width="50">Ãcone</th>
                             <th>Nome</th>
                             <th>Especialidade</th>
                             <th>Tipo</th>
-                            <th width="120">Ações</th>
+                            <th width="120">AÃ§Ãµes</th>
                         </tr>
                     </thead>
                     <tbody id="agentsTableBody">
@@ -140,7 +141,7 @@
 
         async function carregarAgentes() {
             try {
-                // manageAll=true: retorna TODOS os agentes do banco para gestão administrativa.
+                // manageAll=true: retorna TODOS os agentes do banco para gestÃ£o administrativa.
                 const res = await fetch(`${API_URL}/api/agents?manageAll=true`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -182,7 +183,7 @@
         async function deletarAgente(id) {
             const result = await Swal.fire({
                 title: 'Tem certeza?',
-                text: "Isso apagará o agente e todo o conhecimento treinado dele!",
+                text: "Isso apagarÃ¡ o agente e todo o conhecimento treinado dele!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ff5555',
@@ -200,13 +201,13 @@
                     });
 
                     if (res.ok) {
-                        Swal.fire('Excluído!', 'Agente removido.', 'success');
+                        Swal.fire('ExcluÃ­do!', 'Agente removido.', 'success');
                         carregarAgentes();
                     } else {
-                        throw new Error('Falha na exclusão');
+                        throw new Error('Falha na exclusÃ£o');
                     }
                 } catch (e) {
-                    Swal.fire('Erro', 'Não foi possível excluir o agente.', 'error');
+                    Swal.fire('Erro', 'NÃ£o foi possÃ­vel excluir o agente.', 'error');
                 }
             }
         }

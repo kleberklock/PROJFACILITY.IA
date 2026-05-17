@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -156,7 +156,7 @@
         .table-wrapper::-webkit-scrollbar-thumb { background: rgba(255,204,0,0.4); border-radius: 8px; }
         .table-wrapper::-webkit-scrollbar-thumb:hover { background: rgba(255,204,0,0.7); }
 
-        /* Ajustes Estruturais para Scroll Vertical Perfeito na Página */
+        /* Ajustes Estruturais para Scroll Vertical Perfeito na PÃ¡gina */
         html, body {
             overflow: hidden !important; 
             height: 100vh;
@@ -248,7 +248,7 @@
             flex-shrink: 0;
         }
 
-        /* Badges genéricos */
+        /* Badges genÃ©ricos */
         .badge {
             display: inline-flex;
             align-items: center;
@@ -432,17 +432,18 @@
         <nav class="sidebar" id="sidebar">
             <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
 
-            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> InÃ­cio</a>
             <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
             <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Prompts/Agentes</a>
+            <a href="workspace_admin.html" class="nav-btn"><i class="fas fa-microchip"></i> Workspace</a>
             <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
             <a href="prompts.html" class="nav-btn"><i class="fas fa-lightbulb"></i> Como Funciona</a>
-            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
+            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> ConfiguraÃ§Ãµes</a>
 
             <div id="adminArea"
                 style="display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
                 <div style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
-                    Administração</div>
+                    AdministraÃ§Ã£o</div>
                 <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i> Agentes</a>
                 <a href="admin.html" class="nav-btn" style="color: #ffcc00;"><i class="fas fa-lock"></i> Painel Admin</a>
             </div>
@@ -478,42 +479,42 @@
 
             <!-- Header Banner -->
             <div class="admin-header">
-                <h2><i class="fas fa-shield-halved"></i> Painel de Controle · Admin Console</h2>
-                <div style="color:#888; font-size:0.8rem;" id="lastUpdated">—</div>
+                <h2><i class="fas fa-shield-halved"></i> Painel de Controle Â· Admin Console</h2>
+                <div style="color:#888; font-size:0.8rem;" id="lastUpdated">â€”</div>
             </div>
 
             <!-- Stat Cards -->
             <div class="stat-grid" id="statGrid">
                 <div class="stat-card">
-                    <div class="stat-value" id="statTotal">—</div>
-                    <div class="stat-label">Total Usuários</div>
+                    <div class="stat-value" id="statTotal">â€”</div>
+                    <div class="stat-label">Total UsuÃ¡rios</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="statActive" style="color:#00ff88;">—</div>
+                    <div class="stat-value" id="statActive" style="color:#00ff88;">â€”</div>
                     <div class="stat-label">Ativos</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="statPro" style="color:#FFD700;">—</div>
+                    <div class="stat-value" id="statPro" style="color:#FFD700;">â€”</div>
                     <div class="stat-label">Plano Pro</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="statPlus" style="color:#00ff88;">—</div>
+                    <div class="stat-value" id="statPlus" style="color:#00ff88;">â€”</div>
                     <div class="stat-label">Plano Plus</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="statVerified" style="color:#00F3FF;">—</div>
+                    <div class="stat-value" id="statVerified" style="color:#00F3FF;">â€”</div>
                     <div class="stat-label">Email Verificado</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="statTokens" style="color:#a78bfa;">—</div>
-                    <div class="stat-label">Tokens Usados (mês)</div>
+                    <div class="stat-value" id="statTokens" style="color:#a78bfa;">â€”</div>
+                    <div class="stat-label">Tokens Usados (mÃªs)</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="statHours" style="color:#EC4E3A;">—</div>
+                    <div class="stat-value" id="statHours" style="color:#EC4E3A;">â€”</div>
                     <div class="stat-label">Horas Economizadas</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value" id="statMsgs" style="color:#f59e0b;">—</div>
+                    <div class="stat-value" id="statMsgs" style="color:#f59e0b;">â€”</div>
                     <div class="stat-label">Total Mensagens</div>
                 </div>
             </div>
@@ -521,9 +522,9 @@
             <!-- Tabela -->
             <div class="table-container">
                 <div class="table-toolbar">
-                    <h3><i class="fas fa-users" style="color:#ffcc00; margin-right:8px;"></i> Usuários Cadastrados</h3>
+                    <h3><i class="fas fa-users" style="color:#ffcc00; margin-right:8px;"></i> UsuÃ¡rios Cadastrados</h3>
                     <div class="toolbar-right">
-                        <input type="text" id="searchInput" class="search-admin" placeholder="🔍  Buscar nome ou email..." oninput="filterTable()">
+                        <input type="text" id="searchInput" class="search-admin" placeholder="ðŸ”  Buscar nome ou email..." oninput="filterTable()">
                         <button onclick="loadData()" class="btn-refresh">
                             <i class="fas fa-sync" id="syncIcon"></i> Atualizar
                         </button>
@@ -546,7 +547,7 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Usuário</th>
+                                <th>UsuÃ¡rio</th>
                                 <th>Email</th>
                                 <th>Role</th>
                                 <th>Plano</th>
@@ -554,13 +555,13 @@
                                 <th>Ativo</th>
                                 <th>Email Verif.</th>
                                 <th>Cadastro</th>
-                                <th>Último Login</th>
+                                <th>Ãšltimo Login</th>
                                 <th>Reset Tokens</th>
                                 <th>Agente Favorito</th>
                                 <th>Tokens Usados</th>
                                 <th>Mensagens</th>
                                 <th>Horas Salvas</th>
-                                <th>Ações</th>
+                                <th>AÃ§Ãµes</th>
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
@@ -578,13 +579,13 @@
         </main>
     </div>
 
-    <!-- Modal de Edição -->
+    <!-- Modal de EdiÃ§Ã£o -->
     <div id="editModal" class="modal-backdrop">
         <div class="modal-content">
             <h3 style="color:white; margin-top:0; display:flex; align-items:center; gap:10px;">
-                <i class="fas fa-user-edit" style="color:#ffcc00;"></i> Editar Usuário
+                <i class="fas fa-user-edit" style="color:#ffcc00;"></i> Editar UsuÃ¡rio
             </h3>
-            <div style="color:#555; font-size:0.78rem; margin-bottom:20px;" id="editEmailDisplay">—</div>
+            <div style="color:#555; font-size:0.78rem; margin-bottom:20px;" id="editEmailDisplay">â€”</div>
             <input type="hidden" id="editEmail">
 
             <label class="modal-label">Novo Plano</label>
@@ -596,7 +597,7 @@
 
             <label class="modal-label">Acesso / Role</label>
             <select id="editRole" class="modal-input">
-                <option value="user">Usuário Comum</option>
+                <option value="user">UsuÃ¡rio Comum</option>
                 <option value="admin">Administrador</option>
             </select>
 
@@ -615,7 +616,7 @@
 
             <div style="margin-bottom:20px;">
                 <label style="color:#888; font-size:0.8rem; display:flex; align-items:center; gap:10px; cursor:pointer;">
-                    <input type="checkbox" id="resetTokens"> Resetar Tokens para o padrão do plano
+                    <input type="checkbox" id="resetTokens"> Resetar Tokens para o padrÃ£o do plano
                 </label>
             </div>
 
@@ -654,7 +655,7 @@
 
             try {
                 const authToken = localStorage.getItem('token');
-                if (!authToken) throw new Error("Token não encontrado");
+                if (!authToken) throw new Error("Token nÃ£o encontrado");
 
                 const response = await fetch(`${API_URL}/users`, {
                     headers: {
@@ -675,12 +676,12 @@
                 renderTable();
 
                 document.getElementById('lastUpdated').textContent =
-                    'Última atualização: ' + new Date().toLocaleTimeString('pt-BR');
+                    'Ãšltima atualizaÃ§Ã£o: ' + new Date().toLocaleTimeString('pt-BR');
 
             } catch (error) {
                 tbody.innerHTML = `<tr><td colspan="16" class="table-msg" style="color:#ff5555;">
                     <i class="fas fa-triangle-exclamation"></i> Erro: ${error.message}
-                    <br><small>Verifique se o backend está rodando.</small>
+                    <br><small>Verifique se o backend estÃ¡ rodando.</small>
                 </td></tr>`;
             } finally {
                 if (syncIcon) syncIcon.classList.remove('fa-spin');
@@ -688,7 +689,7 @@
         }
 
         // ============================================================
-        // RENDERIZAÇÃO DAS STATS
+        // RENDERIZAÃ‡ÃƒO DAS STATS
         // ============================================================
         function renderStats(users) {
             document.getElementById('statTotal').textContent = users.length;
@@ -712,7 +713,7 @@
         }
 
         // ============================================================
-        // RENDERIZAÇÃO DA TABELA
+        // RENDERIZAÃ‡ÃƒO DA TABELA
         // ============================================================
         function renderTable() {
             const tbody = document.getElementById('usersTableBody');
@@ -737,10 +738,10 @@
                 return true;
             });
 
-            countEl.textContent = `Exibindo ${filtered.length} de ${allUsers.length} usuários`;
+            countEl.textContent = `Exibindo ${filtered.length} de ${allUsers.length} usuÃ¡rios`;
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="16" class="table-msg">Nenhum usuário encontrado com os filtros aplicados.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="16" class="table-msg">Nenhum usuÃ¡rio encontrado com os filtros aplicados.</td></tr>`;
                 return;
             }
 
@@ -749,9 +750,9 @@
 
             tbody.innerHTML = '';
             filtered.forEach(u => {
-                const id = u.id ?? '—';
+                const id = u.id ?? 'â€”';
                 const name = u.name || 'Sem nome';
-                const email = u.email || '—';
+                const email = u.email || 'â€”';
                 const role = (u.role || 'user').toLowerCase();
                 const plan = (u.plan || 'Free');
                 const cycle = u.subscriptionCycle || 'Mensal';
@@ -762,9 +763,9 @@
                 const hours = u.hoursSaved ?? 0;
                 const agent = u.mostUsedAgent || 'Nenhum';
 
-                const createdAt = u.createdAt ? new Date(u.createdAt).toLocaleDateString('pt-BR') : '—';
+                const createdAt = u.createdAt ? new Date(u.createdAt).toLocaleDateString('pt-BR') : 'â€”';
                 const lastLogin = u.lastLogin ? new Date(u.lastLogin).toLocaleDateString('pt-BR') : 'Nunca';
-                const lastReset = u.lastResetDate ? new Date(u.lastResetDate).toLocaleDateString('pt-BR') : '—';
+                const lastReset = u.lastResetDate ? new Date(u.lastResetDate).toLocaleDateString('pt-BR') : 'â€”';
 
                 const tokenPct = Math.round((tokens / maxTokens) * 100);
                 const tokensDisplay = tokens >= 1000000
@@ -775,7 +776,7 @@
                 // Badges
                 const roleBadge = role === 'admin'
                     ? `<span class="badge badge-admin"><i class="fas fa-star"></i> Admin</span>`
-                    : `<span class="badge badge-user"><i class="fas fa-user"></i> Usuário</span>`;
+                    : `<span class="badge badge-user"><i class="fas fa-user"></i> UsuÃ¡rio</span>`;
 
                 const planLow = plan.toLowerCase();
                 let planBadge;
@@ -813,7 +814,7 @@
                     <td class="date-small">${lastReset}</td>
                     <td style="color:#f59e0b; font-size:0.75rem;" title="${agent}">
                         <i class="fas fa-robot" style="margin-right:4px; opacity:0.6;"></i>
-                        ${agent.length > 18 ? agent.substring(0, 18) + '…' : agent}
+                        ${agent.length > 18 ? agent.substring(0, 18) + 'â€¦' : agent}
                     </td>
                     <td>
                         <div class="token-bar-wrap">
@@ -826,13 +827,13 @@
                     <td style="color:#f59e0b;">${msgs.toLocaleString()}</td>
                     <td class="hours-badge">${hours}h</td>
                     <td>
-                        <button class="action-btn action-edit" onclick="openModal(${id}, '${email}', '${plan}', '${cycle}', '${role}', ${isActive})" title="Editar Usuário">
+                        <button class="action-btn action-edit" onclick="openModal(${id}, '${email}', '${plan}', '${cycle}', '${role}', ${isActive})" title="Editar UsuÃ¡rio">
                             <i class="fas fa-pen"></i>
                         </button>
                         <button class="action-btn action-reset" onclick="resetUserTokens(${id}, '${name}')" title="Resetar Tokens">
                             <i class="fas fa-rotate-right"></i>
                         </button>
-                        <button class="action-btn action-delete" onclick="deleteUser(${id}, '${email}')" title="Excluir Usuário">
+                        <button class="action-btn action-delete" onclick="deleteUser(${id}, '${email}')" title="Excluir UsuÃ¡rio">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
@@ -857,12 +858,12 @@
         }
 
         // ============================================================
-        // AÇÕES
+        // AÃ‡Ã•ES
         // ============================================================
         async function deleteUser(id, email) {
             const result = await Swal.fire({
-                title: 'Excluir Usuário?',
-                html: `<div style="color:#ccc">Essa ação não pode ser desfeita.<br><strong style="color:#ff5555">${email}</strong></div>`,
+                title: 'Excluir UsuÃ¡rio?',
+                html: `<div style="color:#ccc">Essa aÃ§Ã£o nÃ£o pode ser desfeita.<br><strong style="color:#ff5555">${email}</strong></div>`,
                 icon: 'warning',
                 background: '#141428',
                 color: '#fff',
@@ -883,14 +884,14 @@
                 });
 
                 if (response.ok) {
-                    showToast('Usuário excluído!', 'success');
+                    showToast('UsuÃ¡rio excluÃ­do!', 'success');
                     loadData();
                 } else {
                     const err = await response.json();
                     showToast('Erro: ' + (err.message || response.statusText), 'error');
                 }
             } catch (error) {
-                showToast('Erro de conexão: ' + error.message, 'error');
+                showToast('Erro de conexÃ£o: ' + error.message, 'error');
             }
         }
 
@@ -925,7 +926,7 @@
                     showToast('Erro ao resetar tokens.', 'error');
                 }
             } catch (error) {
-                showToast('Erro de conexão.', 'error');
+                showToast('Erro de conexÃ£o.', 'error');
             }
         }
 
@@ -934,7 +935,7 @@
         function openModal(id, email, plan, cycle, role, isActive) {
             currentEditingUserId = id;
             document.getElementById('editEmail').value = email;
-            document.getElementById('editEmailDisplay').textContent = '✉️  ' + email;
+            document.getElementById('editEmailDisplay').textContent = 'âœ‰ï¸  ' + email;
             document.getElementById('editPlan').value = plan;
             document.getElementById('editCycle').value = cycle;
             document.getElementById('editRole').value = role;
@@ -971,7 +972,7 @@
                 });
 
                 if (response.ok) {
-                    showToast('Usuário atualizado!', 'success');
+                    showToast('UsuÃ¡rio atualizado!', 'success');
                     closeModal();
                     loadData();
                 } else {

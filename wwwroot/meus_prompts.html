@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" type="image/jpeg" href="/favicon.png">
-    <title>Estúdio | Facility.IA</title>
+    <title>EstÃºdio | Facility.IA</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         const token = localStorage.getItem('token');
@@ -66,7 +66,7 @@
             box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
-        /* Container de Conteúdo */
+        /* Container de ConteÃºdo */
         .studio-content {
             background: rgba(22, 27, 34, 0.7);
             border-radius: 24px;
@@ -120,7 +120,7 @@
             border-color: var(--primary);
         }
 
-        /* Botões */
+        /* BotÃµes */
         .action-fab {
             background: var(--primary);
             color: white;
@@ -173,7 +173,7 @@
             flex-direction: column;
             gap: 15px;
             overflow: visible;
-            /* Necessário para o menu dropdown sair da caixa se precisar */
+            /* NecessÃ¡rio para o menu dropdown sair da caixa se precisar */
         }
 
         .item-card:hover {
@@ -220,7 +220,7 @@
             word-wrap: break-word;
         }
 
-        /* MENU DE TRÊS PONTINHOS */
+        /* MENU DE TRÃŠS PONTINHOS */
         .card-menu-container {
             position: relative;
             flex-shrink: 0;
@@ -248,7 +248,7 @@
 
         .card-menu-dropdown {
             display: none;
-            /* Escondido por padrão */
+            /* Escondido por padrÃ£o */
             position: absolute;
             top: 100%;
             right: 0;
@@ -418,7 +418,7 @@
 
     <div class="mobile-header">
         <i class="fas fa-bars menu-trigger-icon" onclick="toggleSidebar()"></i>
-        <div class="mobile-title">ESTÚDIO</div>
+        <div class="mobile-title">ESTÃšDIO</div>
         <div class="header-spacer"></div>
     </div>
     <div class="overlay" onclick="toggleSidebar()"></div>
@@ -427,18 +427,19 @@
         <nav class="sidebar" id="sidebar">
             <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
 
-            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> InÃ­cio</a>
             <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
             <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Prompts/Agentes</a>
+            <a href="workspace_admin.html" class="nav-btn"><i class="fas fa-microchip"></i> Workspace</a>
             <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
             <a href="prompts.html" class="nav-btn"><i class="fas fa-lightbulb"></i> Como Funciona</a>
-            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
+            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> ConfiguraÃ§Ãµes</a>
 
             <div id="adminArea"
                 style="display: none; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
                 <div
                     style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
-                    Administração</div>
+                    AdministraÃ§Ã£o</div>
 
 
                 <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i>
@@ -472,7 +473,7 @@
                 <div class="avatar" id="sidebarAvatar">U</div>
                 <div style="font-size:0.85rem; color:#ccc; overflow:hidden;">
                     <div id="sidebarUserName"
-                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">Usuário
+                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">UsuÃ¡rio
                     </div>
                     <div style="color:#666; font-size:0.75rem;">Ver Perfil</div>
                 </div>
@@ -488,7 +489,7 @@
             <div class="studio-wrapper">
 
                 <div style="text-align: center; margin-bottom: 30px;">
-                    <h2 style="font-weight: 300; font-size: 2rem;">Seu Espaço Criativo</h2>
+                    <h2 style="font-weight: 300; font-size: 2rem;">Seu EspaÃ§o Criativo</h2>
                 </div>
 
                 <div class="studio-tabs">
@@ -532,7 +533,7 @@
                             <label style="display:block; color:#666; margin-bottom:10px; font-size:0.9rem;">O QUE ELE
                                 DEVE FAZER?</label>
                             <textarea id="agentPrompt" class="minimal-textarea" style="min-height: 250px;"
-                                placeholder="Explique como ele deve agir. Ex: 'Você é um especialista em contratos de aluguel. Responda de forma simples e sempre cite a lei do inquilinato.'"></textarea>
+                                placeholder="Explique como ele deve agir. Ex: 'VocÃª Ã© um especialista em contratos de aluguel. Responda de forma simples e sempre cite a lei do inquilinato.'"></textarea>
 
                             <div style="margin-top: 20px;">
                                 <label style="display:block; color:#666; margin-bottom:10px; font-size:0.9rem;">BASE DE
@@ -584,14 +585,14 @@
             <div style="text-align: center; margin-bottom: 20px;">
                 <i class="fas fa-magic fa-3x" style="color: var(--primary);"></i>
                 <h3 style="margin-top: 15px;">Como criar seu Agente IA?</h3>
-                <p style="color: #888;">É como contratar um funcionário digital especialista.</p>
+                <p style="color: #888;">Ã‰ como contratar um funcionÃ¡rio digital especialista.</p>
             </div>
             <div class="tutorial-step">
                 <div class="step-icon">1</div>
                 <div>
-                    <h5 style="margin:0; color:white;">Dê um Nome e uma Função</h5>
-                    <p style="margin:0; font-size:0.9rem; color:#aaa;">Ex: "Revisor Jurídico". Diga para ele agir como
-                        um advogado sênior.</p>
+                    <h5 style="margin:0; color:white;">DÃª um Nome e uma FunÃ§Ã£o</h5>
+                    <p style="margin:0; font-size:0.9rem; color:#aaa;">Ex: "Revisor JurÃ­dico". Diga para ele agir como
+                        um advogado sÃªnior.</p>
                 </div>
             </div>
             <div class="tutorial-step">
@@ -606,7 +607,7 @@
                 <div class="step-icon">3</div>
                 <div>
                     <h5 style="margin:0; color:white;">Pronto para Trabalhar</h5>
-                    <p style="margin:0; font-size:0.9rem; color:#aaa;">Salve e vá para o chat. Ele usará o que aprendeu
+                    <p style="margin:0; font-size:0.9rem; color:#aaa;">Salve e vÃ¡ para o chat. Ele usarÃ¡ o que aprendeu
                         para te ajudar.</p>
                 </div>
             </div>
@@ -651,12 +652,12 @@
 
             <input type="hidden" id="inputPromptId">
 
-            <label style="color:#aaa; font-size:0.9rem; display:block; margin-bottom:5px;">Título (Ex: Corretor de
+            <label style="color:#aaa; font-size:0.9rem; display:block; margin-bottom:5px;">TÃ­tulo (Ex: Corretor de
                 Texto)</label>
             <input type="text" id="inputPromptTitle" class="minimal-input" style="margin-bottom: 20px; width:100%;"
-                placeholder="Dê um nome curto">
+                placeholder="DÃª um nome curto">
 
-            <label style="color:#aaa; font-size:0.9rem; display:block; margin-bottom:5px;">Conteúdo do Prompt</label>
+            <label style="color:#aaa; font-size:0.9rem; display:block; margin-bottom:5px;">ConteÃºdo do Prompt</label>
             <textarea id="inputPromptContent" class="minimal-textarea" style="min-height: 250px; width:100%;"
                 placeholder="Digite o comando que a IA deve executar..."></textarea>
 
@@ -674,10 +675,10 @@
     <script src="script.js"></script>
 
     <script>
-        // --- CONFIGURAÇÃO DA API ---
+        // --- CONFIGURAÃ‡ÃƒO DA API ---
         const baseUrl = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:5217';
 
-        // --- NAVEGAÇÃO ---
+        // --- NAVEGAÃ‡ÃƒO ---
         function switchMainTab(tab, btn) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             if (btn) btn.classList.add('active');
@@ -695,7 +696,7 @@
         }
 
         // ==========================================
-        // LÓGICA DE AGENTES (CRUD)
+        // LÃ“GICA DE AGENTES (CRUD)
         // ==========================================
 
         async function carregarAgentes() {
@@ -715,7 +716,7 @@
 
                     grid.innerHTML = '';
                     if (meus.length === 0) {
-                        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#666; padding:40px;">Você ainda não criou nenhum agente.</div>`;
+                        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#666; padding:40px;">VocÃª ainda nÃ£o criou nenhum agente.</div>`;
                         return;
                     }
 
@@ -750,7 +751,7 @@
                                 </div>
                             </div>
                             <div class="card-desc">
-                                ${a.systemInstruction || 'Sem descrição definida para este agente.'}
+                                ${a.systemInstruction || 'Sem descriÃ§Ã£o definida para este agente.'}
                             </div>
                         `;
                         grid.appendChild(div);
@@ -759,11 +760,11 @@
                     grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#ff5555; padding:20px;">Erro ao carregar agentes.</div>`;
                 }
             } catch (e) {
-                grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#ff5555; padding:20px;">Erro de conexão.</div>`;
+                grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#ff5555; padding:20px;">Erro de conexÃ£o.</div>`;
             }
         }
 
-        // --- LÓGICA DO MENU DROPDOWN ---
+        // --- LÃ“GICA DO MENU DROPDOWN ---
         function toggleMenu(event, menuId) {
             event.stopPropagation(); // Impede que o clique feche imediatamente
 
@@ -786,7 +787,7 @@
             }
         }
 
-        // --- FUNÇÕES DE FORMULÁRIO E UPLOAD (Mantidas) ---
+        // --- FUNÃ‡Ã•ES DE FORMULÃRIO E UPLOAD (Mantidas) ---
 
         function abrirTutorial() {
             document.getElementById('modalTutorialAgente').style.display = 'flex';
@@ -830,8 +831,8 @@
                 const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
                 
                 if (!allowed.includes(ext)) {
-                    if (typeof Swal !== 'undefined') Swal.fire('Aviso', 'Formato não suportado. Envie apenas arquivos PDF, DOCX, TXT ou Excel.', 'warning');
-                    else alert('Formato não suportado. Envie apenas arquivos PDF, DOCX, TXT ou Excel.');
+                    if (typeof Swal !== 'undefined') Swal.fire('Aviso', 'Formato nÃ£o suportado. Envie apenas arquivos PDF, DOCX, TXT ou Excel.', 'warning');
+                    else alert('Formato nÃ£o suportado. Envie apenas arquivos PDF, DOCX, TXT ou Excel.');
                     input.value = '';
                     document.getElementById('fileNameDisplayForm').innerText = '';
                     return;
@@ -849,7 +850,7 @@
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
             const creatorId = userData.id || userData.Id || 0;
 
-            if (!name || !prompt) return showToast('Preencha Nome e Instruções', 'warning');
+            if (!name || !prompt) return showToast('Preencha Nome e InstruÃ§Ãµes', 'warning');
 
             const btn = document.getElementById('btnSalvarAgent');
             const originalText = btn.innerHTML;
@@ -898,7 +899,7 @@
                 }
             } catch (e) {
                 console.error(e);
-                showToast('Erro de conexão.', 'error');
+                showToast('Erro de conexÃ£o.', 'error');
             }
             finally { btn.innerHTML = originalText; btn.disabled = false; }
         }
@@ -906,7 +907,7 @@
         async function excluirAgente(id) {
             const confirmado = await Swal.fire({
                 title: 'Excluir Agente?',
-                text: 'Isso apaga o agente e todo o conhecimento dele. Esta ação é irreversível.',
+                text: 'Isso apaga o agente e todo o conhecimento dele. Esta aÃ§Ã£o Ã© irreversÃ­vel.',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ff5555',
@@ -919,7 +920,7 @@
             if (!confirmado.isConfirmed) return;
             try {
                 await fetch(`${baseUrl}/api/agents/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-                showToast('Agente excluído.', 'success');
+                showToast('Agente excluÃ­do.', 'success');
                 carregarAgentes();
             } catch (e) { showToast('Erro ao excluir.', 'error'); }
         }
@@ -946,8 +947,8 @@
                 const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
                 
                 if (!allowed.includes(ext)) {
-                    if (typeof Swal !== 'undefined') Swal.fire('Aviso', 'Formato não suportado. Envie apenas arquivos de documentos válidos.', 'warning');
-                    else alert('Formato não suportado. Envie apenas arquivos de documentos válidos.');
+                    if (typeof Swal !== 'undefined') Swal.fire('Aviso', 'Formato nÃ£o suportado. Envie apenas arquivos de documentos vÃ¡lidos.', 'warning');
+                    else alert('Formato nÃ£o suportado. Envie apenas arquivos de documentos vÃ¡lidos.');
                     input.value = '';
                     document.getElementById('fileNameDisplay').innerText = '';
                     return;
@@ -987,14 +988,14 @@
                     showToast('Erro no upload.', 'error');
                 }
             } catch (error) {
-                showToast('Erro de conexão.', 'error');
+                showToast('Erro de conexÃ£o.', 'error');
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         }
 
-        /* --- LÓGICA DE PROMPTS PESSOAIS (ATUALIZADO) --- */
+        /* --- LÃ“GICA DE PROMPTS PESSOAIS (ATUALIZADO) --- */
 
         // 1. Controle do Modal
         function novoPromptModal() {
@@ -1006,7 +1007,7 @@
             document.getElementById('modalNovoPrompt').style.display = 'flex';
         }
 
-        // 1.1 NOVA FUNÇÃO: Editar Prompt
+        // 1.1 NOVA FUNÃ‡ÃƒO: Editar Prompt
         function editarPrompt(id, title, content) {
             // Preenche com dados existentes
             document.getElementById('inputPromptId').value = id;
@@ -1049,7 +1050,7 @@
                         div.className = 'item-card';
 
                         // Tratamento para evitar quebras no JS (Suporta camelCase ou PascalCase)
-                        const rawTitle = p.title || p.Title || 'Sem Título';
+                        const rawTitle = p.title || p.Title || 'Sem TÃ­tulo';
                         const rawContent = p.content || p.Content || '';
 
                         const promptId = p.id || p.Id;
@@ -1102,14 +1103,14 @@
             const title = document.getElementById('inputPromptTitle').value;
             const content = document.getElementById('inputPromptContent').value;
 
-            if (!title || !content) return showToast('Preencha título e conteúdo', 'warning');
+            if (!title || !content) return showToast('Preencha tÃ­tulo e conteÃºdo', 'warning');
 
             const btn = document.querySelector('#modalNovoPrompt .action-fab');
             const originalText = btn.innerHTML;
             btn.innerHTML = 'Salvando...'; btn.disabled = true;
 
             try {
-                // Decide se é Criação (POST) ou Edição (PUT)
+                // Decide se Ã© CriaÃ§Ã£o (POST) ou EdiÃ§Ã£o (PUT)
                 const method = id ? 'PUT' : 'POST';
                 const url = id ? `${baseUrl}/api/prompts/${id}` : `${baseUrl}/api/prompts`;
 
@@ -1130,7 +1131,7 @@
                     showToast('Erro ao salvar.', 'error');
                 }
             } catch (e) {
-                showToast('Erro de conexão.', 'error');
+                showToast('Erro de conexÃ£o.', 'error');
             } finally {
                 btn.innerHTML = originalText; btn.disabled = false;
             }
@@ -1140,7 +1141,7 @@
         async function excluirPrompt(id) {
             const confirmado = await Swal.fire({
                 title: 'Excluir Prompt?',
-                text: 'Esta ação é irreversível.',
+                text: 'Esta aÃ§Ã£o Ã© irreversÃ­vel.',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ff5555',
@@ -1158,7 +1159,7 @@
                 });
                 if (response.ok) {
                     carregarPrompts();
-                    showToast('Prompt excluído.', 'success');
+                    showToast('Prompt excluÃ­do.', 'success');
                 }
             } catch (e) { showToast('Erro ao excluir.', 'error'); }
         }
@@ -1169,7 +1170,7 @@
             window.location.href = 'chatcomIA.html';
         }
 
-        // --- INICIALIZAÇÃO ---
+        // --- INICIALIZAÃ‡ÃƒO ---
         document.addEventListener('DOMContentLoaded', () => {
             carregarAgentes();
         });

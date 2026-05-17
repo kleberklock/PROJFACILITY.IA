@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -33,18 +33,19 @@
         <nav class="sidebar" id="sidebar">
             <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
 
-            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> InÃ­cio</a>
             <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
             <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Prompts/Agentes</a>
+            <a href="workspace_admin.html" class="nav-btn"><i class="fas fa-microchip"></i> Workspace</a>
             <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
             <a href="prompts.html" class="nav-btn"><i class="fas fa-lightbulb"></i> Como Funciona</a>
-            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
+            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> ConfiguraÃ§Ãµes</a>
 
             <div id="adminArea"
                 style="display: none; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
                 <div
                     style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
-                    Administração</div>
+                    AdministraÃ§Ã£o</div>
 
 
                 <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i>
@@ -78,7 +79,7 @@
                 <div class="avatar" id="sidebarAvatar">U</div>
                 <div style="font-size:0.85rem; color:#ccc; overflow:hidden;">
                     <div id="sidebarUserName"
-                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">Usuário
+                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">UsuÃ¡rio
                     </div>
                     <div style="color:#666; font-size:0.75rem;">Ver Perfil</div>
                 </div>
@@ -117,11 +118,11 @@
                             <div style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Plano Atual</div>
                         </div>
                         <div>
-                            <div id="promptsCount" style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">—</div>
+                            <div id="promptsCount" style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">â€”</div>
                             <div style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Prompts Criados</div>
                         </div>
                         <div>
-                            <div id="agentsCount" style="font-size: 1.5rem; font-weight: bold; color: #00F3FF;">—</div>
+                            <div id="agentsCount" style="font-size: 1.5rem; font-weight: bold; color: #00F3FF;">â€”</div>
                             <div style="font-size: 0.8rem; color: #666; text-transform: uppercase;">Agentes Criados</div>
                         </div>
                     </div>
@@ -148,7 +149,7 @@
                     <div style="margin-top: 30px; text-align: right;">
                         <button id="btnSave" onclick="saveProfile()"
                             style="background: var(--primary); color: black; border: none; padding: 12px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.3s;">Salvar
-                            Alterações</button>
+                            AlteraÃ§Ãµes</button>
                     </div>
                 </div>
 
@@ -161,7 +162,7 @@
     <script src="script.js"></script>
 
     <script>
-        // Função de upload conectada ao backend
+        // FunÃ§Ã£o de upload conectada ao backend
         async function uploadPhoto(input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
@@ -181,11 +182,11 @@
                     if (response.ok) {
                         const data = await response.json();
 
-                        // Atualiza a visualização com a URL retornada pelo servidor
+                        // Atualiza a visualizaÃ§Ã£o com a URL retornada pelo servidor
                         const avatar = document.getElementById('mainAvatar');
                         avatar.innerText = "";
 
-                        // Normalização da URL
+                        // NormalizaÃ§Ã£o da URL
                         const normalizedBaseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
                         const normalizedPictureUrl = data.url.startsWith('/') ? data.url : '/' + data.url;
                         avatar.style.backgroundImage = `url('${normalizedBaseUrl}${normalizedPictureUrl}')`;
@@ -201,13 +202,13 @@
             }
         }
 
-        // Salvar alterações de texto (Nome)
+        // Salvar alteraÃ§Ãµes de texto (Nome)
         async function saveProfile() {
             const btn = document.getElementById('btnSave');
             const newName = document.getElementById('inputName').value;
 
             if (!newName.trim()) {
-                showToast('O nome não pode estar vazio.', 'warning');
+                showToast('O nome nÃ£o pode estar vazio.', 'warning');
                 return;
             }
 
@@ -236,19 +237,19 @@
                     btn.style.background = '#00cc88';
                     setTimeout(() => {
                         btn.disabled = false;
-                        btn.innerText = 'Salvar Alterações';
+                        btn.innerText = 'Salvar AlteraÃ§Ãµes';
                         btn.style.background = 'var(--primary)';
                     }, 2000);
                 } else {
                     showToast('Erro ao salvar perfil.', 'error');
                     btn.disabled = false;
-                    btn.innerText = 'Salvar Alterações';
+                    btn.innerText = 'Salvar AlteraÃ§Ãµes';
                 }
             } catch (error) {
                 console.error(error);
-                showToast('Erro de conexão.', 'error');
+                showToast('Erro de conexÃ£o.', 'error');
                 btn.disabled = false;
-                btn.innerText = 'Salvar Alterações';
+                btn.innerText = 'Salvar AlteraÃ§Ãµes';
             }
         }
 
@@ -275,7 +276,7 @@
                     if (elPrompts) elPrompts.innerText = '0';
                 }
 
-                // Carregar Agentes (filtra só os do usuário atual)
+                // Carregar Agentes (filtra sÃ³ os do usuÃ¡rio atual)
                 const resAgents = await fetch(`${baseUrl}/api/agents`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -298,8 +299,8 @@
 
             } catch (err) {
                 console.error("Erro ao carregar os totais:", err);
-                if (elPrompts) elPrompts.innerText = '—';
-                if (elAgents)  elAgents.innerText  = '—';
+                if (elPrompts) elPrompts.innerText = 'â€”';
+                if (elAgents)  elAgents.innerText  = 'â€”';
             }
         }
 

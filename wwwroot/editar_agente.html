@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -14,7 +14,7 @@
     <script>
         const token = localStorage.getItem('token');
 
-        // --- INÍCIO DA VALIDAÇÃO DE ADMIN ---
+        // --- INÃCIO DA VALIDAÃ‡ÃƒO DE ADMIN ---
         if (!token) {
             window.location.href = 'login.html';
         } else {
@@ -33,9 +33,9 @@
                 window.location.href = 'login.html';
             }
         }
-        // --- FIM DA VALIDAÇÃO ---
+        // --- FIM DA VALIDAÃ‡ÃƒO ---
 
-        // Código original que captura o ID continua aqui em baixo:
+        // CÃ³digo original que captura o ID continua aqui em baixo:
         const urlParams = new URLSearchParams(window.location.search);
         const agentId = urlParams.get('id');
         if (!agentId) window.location.href = 'gerenciar_agentes.html';
@@ -74,7 +74,7 @@
             padding-bottom: 10px;
         }
 
-        /* Área de Upload Drag & Drop */
+        /* Ãrea de Upload Drag & Drop */
         .upload-zone {
             border: 2px dashed rgba(255, 255, 255, 0.2);
             border-radius: 12px;
@@ -156,7 +156,7 @@
             transform: scale(1.1);
         }
 
-        /* Grid de Ícones */
+        /* Grid de Ãcones */
         .icon-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
@@ -219,18 +219,19 @@
         <nav class="sidebar" id="sidebar">
             <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
 
-            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> InÃ­cio</a>
             <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
             <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Prompts/Agentes</a>
+            <a href="workspace_admin.html" class="nav-btn"><i class="fas fa-microchip"></i> Workspace</a>
             <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
             <a href="prompts.html" class="nav-btn"><i class="fas fa-lightbulb"></i> Como Funciona</a>
-            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
+            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> ConfiguraÃ§Ãµes</a>
 
             <div id="adminArea"
                 style="display: none; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
                 <div
                     style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
-                    Administração</div>
+                    AdministraÃ§Ã£o</div>
 
 
                 <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i>
@@ -264,7 +265,7 @@
                 <div class="avatar" id="sidebarAvatar">U</div>
                 <div style="font-size:0.85rem; color:#ccc; overflow:hidden;">
                     <div id="sidebarUserName"
-                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">Usuário
+                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">UsuÃ¡rio
                     </div>
                     <div style="color:#666; font-size:0.75rem;">Ver Perfil</div>
                 </div>
@@ -286,10 +287,10 @@
 
             <div class="edit-layout">
                 <div class="glass-card">
-                    <div class="section-title"><i class="fas fa-user-cog"></i> Configurações do Agente</div>
+                    <div class="section-title"><i class="fas fa-user-cog"></i> ConfiguraÃ§Ãµes do Agente</div>
 
                     <div class="form-group">
-                        <label style="color: #ccc; font-size: 0.9rem;">Ícone de Identificação</label>
+                        <label style="color: #ccc; font-size: 0.9rem;">Ãcone de IdentificaÃ§Ã£o</label>
                         <div class="icon-grid" id="iconContainer"></div>
                         <input type="hidden" id="selectedIcon">
                     </div>
@@ -297,7 +298,7 @@
                     <div class="form-group">
                         <label style="color: #ccc;">Nome do Assistente</label>
                         <input type="text" id="agentName" class="auth-input" style="width: 100%;"
-                            placeholder="Ex: Consultor Jurídico">
+                            placeholder="Ex: Consultor JurÃ­dico">
                     </div>
 
                     <div class="form-group">
@@ -305,12 +306,12 @@
                         <select id="agentCategory" class="auth-input"
                             style="width: 100%; background: #2a2a40; color: white;">
                             <option value="tecnologia">Tecnologia & Dev</option>
-                            <option value="juridico">Jurídico</option>
-                            <option value="saude">Saúde</option>
+                            <option value="juridico">JurÃ­dico</option>
+                            <option value="saude">SaÃºde</option>
                             <option value="engenharia">Engenharia</option>
-                            <option value="negocios">Negócios & Finanças</option>
+                            <option value="negocios">NegÃ³cios & FinanÃ§as</option>
                             <option value="criativos">Criativos & Marketing</option>
-                            <option value="educacao">Educação</option>
+                            <option value="educacao">EducaÃ§Ã£o</option>
                             <option value="operacional">Operacional</option>
                             <option value="personalizado">Personalizado</option>
                         </select>
@@ -331,7 +332,7 @@
                     </div>
 
                     <p style="color: #888; font-size: 0.9rem; margin-bottom: 15px;">
-                        O agente usa esses arquivos para responder com precisão. Suporta PDF, DOCX e TXT.
+                        O agente usa esses arquivos para responder com precisÃ£o. Suporta PDF, DOCX e TXT.
                     </p>
 
                     <div class="upload-zone" id="dropZone" onclick="document.getElementById('newFile').click()">
@@ -357,7 +358,7 @@
     <script>
         const API_URL = (typeof BASE_URL !== 'undefined') ? BASE_URL : 'http://localhost:5217';
 
-        // --- ÍCONES ---
+        // --- ÃCONES ---
         const icons = ["fa-robot", "fa-user-tie", "fa-briefcase", "fa-laptop-code", "fa-gavel", "fa-stethoscope", "fa-calculator", "fa-bullhorn", "fa-chart-line", "fa-lightbulb", "fa-pen-nib", "fa-tools", "fa-hard-hat", "fa-truck", "fa-ship", "fa-plane", "fa-camera", "fa-music", "fa-gamepad", "fa-dumbbell", "fa-utensils", "fa-book", "fa-graduation-cap", "fa-microscope", "fa-flask", "fa-seedling", "fa-paw", "fa-balance-scale", "fa-building", "fa-home"];
         const container = document.getElementById('iconContainer');
         icons.forEach(icon => {
@@ -391,7 +392,7 @@
                 document.getElementById('agentCategory').value = agent.specialty || 'personalizado';
                 document.getElementById('selectedIcon').value = agent.icon;
 
-                // Seleciona ícone visualmente
+                // Seleciona Ã­cone visualmente
                 document.querySelectorAll('.icon-option').forEach(el => {
                     if (el.innerHTML.includes(agent.icon)) el.classList.add('selected');
                 });
@@ -404,7 +405,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
-                    text: 'Não foi possível carregar os dados do agente.',
+                    text: 'NÃ£o foi possÃ­vel carregar os dados do agente.',
                     background: '#1a1a1a', color: '#fff'
                 });
             }
@@ -418,7 +419,7 @@
                 });
 
                 if (!resFiles.ok) {
-                    divFiles.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Sem permissão ou erro ao buscar arquivos.</div>';
+                    divFiles.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">Sem permissÃ£o ou erro ao buscar arquivos.</div>';
                     return;
                 }
 
@@ -436,7 +437,7 @@
                 }
 
                 files.forEach(file => {
-                    // Decide ícone com base na extensão (apenas visual)
+                    // Decide Ã­cone com base na extensÃ£o (apenas visual)
                     let fileIcon = 'fa-file-alt';
                     if (file.fileName.endsWith('.pdf')) fileIcon = 'fa-file-pdf';
                     if (file.fileName.endsWith('.docx')) fileIcon = 'fa-file-word';
@@ -462,7 +463,7 @@
             }
         }
 
-        // --- SALVAR ALTERAÇÕES ---
+        // --- SALVAR ALTERAÃ‡Ã•ES ---
         async function salvarAlteracoes() {
             const btn = document.querySelector('button[onclick="salvarAlteracoes()"]');
             const originalText = btn.innerHTML;
@@ -488,10 +489,10 @@
                     const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
                     Toast.fire({ icon: 'success', title: 'Agente atualizado com sucesso!' });
                 } else {
-                    throw new Error('Falha na atualização');
+                    throw new Error('Falha na atualizaÃ§Ã£o');
                 }
             } catch (e) {
-                Swal.fire({ icon: 'error', title: 'Erro', text: 'Não foi possível salvar as alterações.', background: '#1a1a1a', color: '#fff' });
+                Swal.fire({ icon: 'error', title: 'Erro', text: 'NÃ£o foi possÃ­vel salvar as alteraÃ§Ãµes.', background: '#1a1a1a', color: '#fff' });
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
@@ -502,7 +503,7 @@
         async function excluirArquivo(fileId) {
             const confirm = await Swal.fire({
                 title: 'Esquecer arquivo?',
-                text: "O agente perderá o conhecimento contido neste documento.",
+                text: "O agente perderÃ¡ o conhecimento contido neste documento.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#ff5555',
@@ -561,8 +562,8 @@
             const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
             
             if (!allowed.includes(ext)) {
-                if (typeof Swal !== 'undefined') Swal.fire('Aviso', 'Formato não suportado. Envie apenas arquivos PDF, TXT ou DOCX.', 'warning');
-                else alert('Formato não suportado. Envie apenas arquivos PDF, TXT ou DOCX.');
+                if (typeof Swal !== 'undefined') Swal.fire('Aviso', 'Formato nÃ£o suportado. Envie apenas arquivos PDF, TXT ou DOCX.', 'warning');
+                else alert('Formato nÃ£o suportado. Envie apenas arquivos PDF, TXT ou DOCX.');
                 return;
             }
 
@@ -573,7 +574,7 @@
 
             const formData = new FormData();
             formData.append('file', file);
-            // IMPORTANTE: Envia o nome atual que está no input, pois o backend usa isso para linkar (Tag)
+            // IMPORTANTE: Envia o nome atual que estÃ¡ no input, pois o backend usa isso para linkar (Tag)
             formData.append('tag', document.getElementById('agentName').value);
             // O backend pega o userId do token, mas se pedir explicitamente podemos mandar 0 ou omitir se o controller tratar
 
@@ -598,7 +599,7 @@
                     }
                 }
             } catch (e) {
-                Swal.fire({ icon: 'error', title: 'Erro de Conexão', text: 'Falha ao enviar arquivo.', background: '#1a1a1a', color: '#fff' });
+                Swal.fire({ icon: 'error', title: 'Erro de ConexÃ£o', text: 'Falha ao enviar arquivo.', background: '#1a1a1a', color: '#fff' });
             } finally {
                 // Restaura a DropZone
                 dropZone.innerHTML = `<i class="fas fa-cloud-upload-alt"></i><h4 style="color: white; margin: 5px 0;">Arraste arquivos aqui</h4><span style="color: #666; font-size: 0.8rem;">ou clique para selecionar</span><input type="file" id="newFile" style="display:none" onchange="handleFileSelect(this)">`;

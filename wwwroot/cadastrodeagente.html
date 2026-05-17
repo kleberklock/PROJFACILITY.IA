@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -82,18 +82,19 @@
         <nav class="sidebar" id="sidebar">
             <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
 
-            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> InÃ­cio</a>
             <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
             <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Prompts/Agentes</a>
+            <a href="workspace_admin.html" class="nav-btn"><i class="fas fa-microchip"></i> Workspace</a>
             <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
             <a href="prompts.html" class="nav-btn"><i class="fas fa-lightbulb"></i> Como Funciona</a>
-            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> Configurações</a>
+            <a href="configuracoes.html" class="nav-btn"><i class="fas fa-cog"></i> ConfiguraÃ§Ãµes</a>
 
             <div id="adminArea"
                 style="display: none; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
                 <div
                     style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">
-                    Administração</div>
+                    AdministraÃ§Ã£o</div>
 
 
                 <a href="gerenciar_agentes.html" class="nav-btn" style="color: #00F3FF;"><i class="fas fa-robot"></i>
@@ -127,7 +128,7 @@
                 <div class="avatar" id="sidebarAvatar">U</div>
                 <div style="font-size:0.85rem; color:#ccc; overflow:hidden;">
                     <div id="sidebarUserName"
-                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">Usuário
+                        style="white-space:nowrap; text-overflow:ellipsis; overflow:hidden; max-width:140px;">UsuÃ¡rio
                     </div>
                     <div style="color:#666; font-size:0.75rem;">Ver Perfil</div>
                 </div>
@@ -145,7 +146,7 @@
                     <i id="previewIcon" class="fas fa-robot" style="color: #00F3FF;"></i> Novo Agente
                 </h2>
 
-                <label style="color: #ccc; display: block; margin-bottom: 8px;">Escolha um Ícone</label>
+                <label style="color: #ccc; display: block; margin-bottom: 8px;">Escolha um Ãcone</label>
                 <div class="icon-grid" id="iconContainer"></div>
                 <input type="hidden" id="selectedIcon" value="fa-robot">
 
@@ -159,22 +160,22 @@
                     <label style="color: #ccc; display: block; margin-bottom: 8px;">Categoria (Especialidade)</label>
                     <select id="agentCategory" class="auth-input"
                         style="width: 100%; background: #2a2a40; color: white; border: 1px solid #444;">
-                        <option value="automatico">✨ Automático (IA)</option>
+                        <option value="automatico">âœ¨ AutomÃ¡tico (IA)</option>
                         <option value="tecnologia">Tecnologia & Dev</option>
-                        <option value="juridico">Jurídico</option>
-                        <option value="saude">Saúde</option>
+                        <option value="juridico">JurÃ­dico</option>
+                        <option value="saude">SaÃºde</option>
                         <option value="engenharia">Engenharia</option>
-                        <option value="negocios">Negócios & Finanças</option>
+                        <option value="negocios">NegÃ³cios & FinanÃ§as</option>
                         <option value="criativos">Criativos & Marketing</option>
-                        <option value="educacao">Educação</option>
+                        <option value="educacao">EducaÃ§Ã£o</option>
                         <option value="operacional">Operacional</option>
                     </select>
-                    <small style="color: #666; font-size: 0.8rem;">Apenas Admins definem categorias globais. Usuários
+                    <small style="color: #666; font-size: 0.8rem;">Apenas Admins definem categorias globais. UsuÃ¡rios
                         comuns criam como "Personalizado".</small>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="color: #ccc; display: block; margin-bottom: 8px;">Instrução do Sistema</label>
+                    <label style="color: #ccc; display: block; margin-bottom: 8px;">InstruÃ§Ã£o do Sistema</label>
                     <textarea id="agentPrompt" class="auth-input" rows="4"
                         placeholder="Como o agente deve se comportar..." style="width: 100%; padding: 15px;"></textarea>
                 </div>
@@ -202,7 +203,7 @@
     <script src="script.js"></script>
 
     <script>
-        // Ícones e lógica de seleção de ícone (Mantidos)...
+        // Ãcones e lÃ³gica de seleÃ§Ã£o de Ã­cone (Mantidos)...
         const icons = ["fa-robot", "fa-user-tie", "fa-briefcase", "fa-laptop-code", "fa-gavel", "fa-stethoscope", "fa-calculator", "fa-bullhorn", "fa-chart-line", "fa-lightbulb", "fa-pen-nib", "fa-tools", "fa-hard-hat", "fa-truck", "fa-ship", "fa-plane", "fa-camera", "fa-music", "fa-gamepad", "fa-dumbbell", "fa-utensils", "fa-book", "fa-graduation-cap", "fa-microscope", "fa-flask", "fa-seedling", "fa-paw", "fa-balance-scale", "fa-building", "fa-home"];
         const container = document.getElementById('iconContainer');
         icons.forEach(icon => {
@@ -227,8 +228,8 @@
                 const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
                 
                 if (!allowed.includes(ext)) {
-                    if (typeof Swal !== 'undefined') Swal.fire('Aviso', 'Formato não suportado. Envie apenas arquivos PDF, TXT ou DOCX.', 'warning');
-                    else alert('Formato não suportado. Envie apenas arquivos PDF, TXT ou DOCX.');
+                    if (typeof Swal !== 'undefined') Swal.fire('Aviso', 'Formato nÃ£o suportado. Envie apenas arquivos PDF, TXT ou DOCX.', 'warning');
+                    else alert('Formato nÃ£o suportado. Envie apenas arquivos PDF, TXT ou DOCX.');
                     input.value = '';
                     document.getElementById('fileNameDisplay').innerText = '';
                     return;
@@ -237,7 +238,7 @@
             }
         }
 
-        // --- LÓGICA DE CRIAÇÃO ATUALIZADA ---
+        // --- LÃ“GICA DE CRIAÃ‡ÃƒO ATUALIZADA ---
         async function criarEtreinarAgente() {
             const name = document.getElementById('agentName').value;
             const prompt = document.getElementById('agentPrompt').value;
@@ -249,7 +250,7 @@
             const apiUrl = (typeof BASE_URL !== 'undefined') ? BASE_URL : (typeof CONFIG !== 'undefined' ? CONFIG.API_URL : 'http://localhost:5217');
 
             if (!name || !prompt) {
-                Swal.fire({ icon: 'warning', title: 'Atenção', text: 'Preencha Nome e Instrução.' });
+                Swal.fire({ icon: 'warning', title: 'AtenÃ§Ã£o', text: 'Preencha Nome e InstruÃ§Ã£o.' });
                 return;
             }
 

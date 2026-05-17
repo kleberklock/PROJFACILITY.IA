@@ -21,8 +21,8 @@ string? connectionString;
 
 if (builder.Environment.IsDevelopment())
 {
-    // Ignora a connection string do Azure e usa obrigatoriamente o fallback do banco local
-    connectionString = "Server=.\\SQLEXPRESS;Database=ProjFacilityIADb_Local_DB;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
+    // Lembre-se de substituir 'SUA_SENHA_AQUI' pela senha real do banco de dados do Azure.
+    connectionString = "Server=tcp:srv-facility-kleber.database.windows.net,1433;Initial Catalog=FacilityDB;User ID=adminfacility;Password=Junior2@;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
 }
 else
 {
@@ -78,6 +78,7 @@ builder.Services.Configure<EmailSettingsOptions>(builder.Configuration.GetSectio
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<KnowledgeService>();
+builder.Services.AddScoped<IWorkspaceToolService, WorkspaceToolService>();
 builder.Services.AddControllers();
 
 // 4. Configurar JWT

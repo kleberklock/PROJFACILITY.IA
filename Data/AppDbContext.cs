@@ -15,5 +15,7 @@ namespace PROJFACILITY.IA.Data
         
         // NOVO: Tabela para os prompts do sistema
         public DbSet<SystemPrompt> SystemPrompts { get; set; }
+
+        public DbSet<WorkspaceSession> WorkspaceSessions { get; set; }
     }
 }

@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/jpeg" href="/favicon.png">
+    <title>Workspace Artifacts | Facility.IA</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="style-master.css">
+    <link rel="stylesheet" href="responsive.css">
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(window.atob(base64));
+            const role = payload["role"] || payload["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+            if (role !== 'admin') window.location.href = 'dashboard.html';
+        } catch (e) {
+            window.location.href = 'login.html';
+        }
+    </script>
+
+    <style>
+        html, body {
+            margin: 0; padding: 0;
+            height: 100vh;
+            background-color: #0d0d14;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        .layout { display: flex; height: 100vh; overflow: hidden; }
+
+        /* Substitui o content original para usar flex horizontal */
+        .workspace-main {
+            flex: 1;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: #09090b; 
+            position: relative;
+        }
+
+        /* --- MENU LATERAL INTERNO (AGENTES) --- */
+        .agents-sidebar {
+            width: 260px;
+            background: #0f111a;
+            border-right: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .workspace-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .workspace-title i { color: #ffcc00; }
+
+        .agent-select-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .agent-select {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 10px 12px;
+            border-radius: 8px;
+            outline: none;
+            font-size: 0.9rem;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .agent-select:focus { border-color: #ffcc00; }
+        .agent-select option { background: #09090b; }
+
+        .btn-connect {
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            margin-top: 5px;
+        }
+        .btn-connect:hover { transform: translateY(-1px); background: #e6b800; }
+        .btn-connect:disabled { background: #333; color: #666; cursor: not-allowed; transform: none;}
+
+        .session-info {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #ff4444; box-shadow: 0 0 10px rgba(255,68,68,0.5);
+            display: inline-block; margin-right: 5px;
+        }
+        .status-dot.active { background: #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.5); }
+
+        /* --- ÁREA DO CHAT --- */
+        .chat-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            min-width: 400px;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 4vw 150px 4vw;
+            display: flex;
+            flex-direction: column;
+            scroll-behavior: smooth;
+        }
+        .chat-container::-webkit-scrollbar { width: 6px; }
+        .chat-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        .chat-row {
+            display: flex;
+            width: 100%;
+            margin-bottom: 24px;
+            animation: msgSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+        @keyframes msgSlideIn { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+
+        .chat-row-user { justify-content: flex-end; }
+        .chat-row-ai { justify-content: flex-start; gap: 14px;}
+
+        .ai-avatar {
+            width: 38px; height: 38px; border-radius: 12px;
+            background: linear-gradient(135deg, #0d3d2a 0%, #0a2e20 100%);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            display: flex; align-items: center; justify-content: center;
+            color: #10b981; flex-shrink: 0; margin-top: 4px;
+        }
+
+        .msg-user {
+            background: linear-gradient(135deg, #1a2e25 0%, #1e3329 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #e2f5ee;
+            padding: 13px 18px;
+            border-radius: 18px 18px 4px 18px;
+            max-width: 80%;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            word-wrap: break-word;
+        }
+
+        .msg-ai {
+            color: #dde3ec;
+            padding: 4px 4px 4px 2px;
+            max-width: 85%;
+            font-size: 1rem;
+            line-height: 1.8;
+            letter-spacing: 0.01em;
+            word-wrap: break-word;
+        }
+
+        /* --- INPUT FLUTUANTE --- */
+        .input-wrapper {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            pointer-events: none;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        .input-box-styled {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(22, 27, 36, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            backdrop-filter: blur(12px);
+            pointer-events: auto;
+            transition: 0.3s;
+        }
+        .input-box-styled:focus-within {
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 0 2px rgba(16, 185, 129, 0.1);
+        }
+
+        #userInput {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #fff;
+            resize: none;
+            max-height: 150px;
+            min-height: 24px;
+            padding: 8px 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            outline: none;
+        }
+
+        .btn-send {
+            background: #10b981;
+            color: #000;
+            border: none;
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-bottom: 2px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            flex-shrink: 0;
+        }
+        .btn-send:hover:not(:disabled) { transform: scale(1.05); background: #34d399;}
+        .btn-send:disabled { background: #333; color: #666; box-shadow: none; cursor: not-allowed; }
+
+        /* --- PAINEL DINÂMICO DE ARTEFATOS (DIREITA) --- */
+        .artifact-panel {
+            width: 0; /* Começa oculto */
+            background: #161b22;
+            border-left: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            z-index: 20;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.3);
+            transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            overflow: hidden; /* Oculta conteúdo quando width é 0 */
+        }
+
+        /* Classe ativada via JS para mostrar o painel */
+        .artifact-panel.active {
+            width: 500px; /* Largura do artefato */
+        }
+
+        .artifact-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+            min-width: 500px; /* Mantém estrutura durante transição */
+        }
+
+        .artifact-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .btn-close-artifact {
+            background: transparent;
+            color: #888;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: 0.2s;
+        }
+        .btn-close-artifact:hover { color: #fff; }
+
+        .artifact-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background: #0d1117;
+            color: #c9d1d9;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            min-width: 500px;
+        }
+
+        /* Renderização visual bonita do artefato gerado */
+        .artifact-card {
+            background: #ffffff;
+            color: #333;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            min-height: 300px;
+        }
+
+        .artifact-footer {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            background: rgba(0,0,0,0.2);
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            min-width: 500px;
+        }
+
+        .btn-action {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-action:hover { background: rgba(255,255,255,0.1); }
+        .btn-primary-action { background: #3b82f6; border-color: #3b82f6; }
+        .btn-primary-action:hover { background: #2563eb; }
+
+        /* Loading anim */
+        .loading-dots { display: flex; gap: 5px; align-items: center; padding: 4px 0;}
+        .loading-dots span { width: 6px; height: 6px; background: #10b981; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        @media(max-width: 1024px) {
+            .artifact-panel.active { width: 100%; position: absolute; height: 100%; right: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MODAL TUTORIAL -->
+    <div id="tutorialModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 9999; justify-content: center; align-items: center;">
+        <div style="background: #161b22; width: 90%; max-width: 500px; padding: 40px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; color: #fff;">
+            <i class="fas fa-rocket" style="font-size: 3rem; color: #ffcc00; margin-bottom: 20px;"></i>
+            <h2 style="margin-top: 0; font-size: 1.5rem; font-weight: 600;">Bem-vindo ao Workspace da IA 🚀</h2>
+            <p style="color: #aaa; font-size: 0.95rem; margin-bottom: 30px;">Veja como aproveitar ao máximo seu novo ambiente de trabalho inteligente:</p>
+            
+            <ul style="text-align: left; color: #e2e8f0; font-size: 0.95rem; line-height: 1.6; list-style: none; padding: 0; margin-bottom: 30px;">
+                <li style="margin-bottom: 15px;"><i class="fas fa-check-circle" style="color: #10b981; margin-right: 10px;"></i> <strong>1. Escolha o seu Agente Especialista</strong> no menu lateral para iniciar a sessão.</li>
+                <li style="margin-bottom: 15px;"><i class="fas fa-check-circle" style="color: #10b981; margin-right: 10px;"></i> <strong>2. Descreva a tarefa</strong> no chat, exatamente como faria com um assistente.</li>
+                <li><i class="fas fa-check-circle" style="color: #10b981; margin-right: 10px;"></i> <strong>3. Acompanhe a mágica:</strong> Documentos, e-mails e planilhas abrirão dinamicamente em uma janela interativa ao lado!</li>
+            </ul>
+            
+            <button onclick="closeTutorial()" style="background: #3b82f6; color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; width: 100%; transition: 0.2s;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+                Começar a Trabalhar
+            </button>
+        </div>
+    </div>
+
+    <div class="overlay" onclick="toggleSidebar()"></div>
+
+    <div class="layout">
+        
+        <!-- Sidebar Padrão -->
+        <nav class="sidebar" id="sidebar">
+            <div class="logo desktop-only" style="padding-left: 5px;">FACILITY<span>.IA</span></div>
+
+            <a href="dashboard.html" class="nav-btn"><i class="fas fa-th-large"></i> Início</a>
+            <a href="escolher_agente.html" class="nav-btn"><i class="fas fa-bolt"></i> Assistentes</a>
+            <a href="meus_prompts.html" class="nav-btn"><i class="fas fa-terminal"></i> Prompts/Agentes</a>
+            <a href="workspace_admin.html" class="nav-btn" style="color: #ffcc00;"><i class="fas fa-microchip"></i> Workspace</a>
+            <a href="planos.html" class="nav-btn"><i class="fas fa-layer-group"></i> Planos</a>
+            
+            <div id="adminArea" style="display: flex; flex-direction: column; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 15px; padding-top: 15px;">
+                <div style="font-size: 0.7rem; color: #666; margin-bottom: 10px; padding-left: 10px; text-transform: uppercase; font-weight:bold;">Administração</div>
+                <a href="gerenciar_agentes.html" class="nav-btn"><i class="fas fa-robot"></i> Agentes</a>
+                <a href="admin.html" class="nav-btn"><i class="fas fa-shield-halved"></i> Painel Admin</a>
+            </div>
+            <div class="spacer"></div>
+            <a href="#" onclick="fazerLogout()" class="nav-btn" style="color:#ff5555; border-top: 1px solid rgba(255,255,255,0.05); margin-top: 10px;">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </nav>
+
+        <main class="workspace-main">
+            
+            <!-- MENU LATERAL INTERNO (AGENTES) -->
+            <div class="agents-sidebar">
+                <div class="workspace-title" style="justify-content: space-between;">
+                    <span style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-microchip"></i> Workspace</span>
+                    <button class="btn-help" onclick="openTutorial()" style="background: rgba(255,255,255,0.05); color: #888; border: 1px solid rgba(255,255,255,0.1); width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; transition: 0.2s;" title="Como funciona?">
+                        <i class="fas fa-question"></i>
+                    </button>
+                </div>
+                
+                <div class="agent-select-wrapper">
+                    <label style="font-size: 0.8rem; color: #aaa; text-transform: uppercase; font-weight: bold;">Plugar Agente</label>
+                    <select id="agentSelect" class="agent-select">
+                        <option value="">Carregando...</option>
+                    </select>
+                    <button class="btn-connect" id="btnStartSession" onclick="startSession()">
+                        Iniciar Sessão
+                    </button>
+                </div>
+
+                <div class="session-info">
+                    <div style="margin-bottom: 10px;">
+                        <span class="status-dot" id="dotStatus"></span>
+                        <strong id="sessionStatusText" style="color: #fff;">Offline</strong>
+                    </div>
+                    <div style="margin-bottom: 5px;"><strong>Agente:</strong> <span id="sessionAgentName">-</span></div>
+                    <div><strong>Sessão ID:</strong> <br><span id="sessionIdDisplay" style="font-family: monospace; font-size: 0.7rem; word-break: break-all;">-</span></div>
+                </div>
+            </div>
+
+            <!-- ÁREA DO CHAT PRINCIPAL -->
+            <div class="chat-section">
+                <div class="chat-container" id="chatContainer">
+                    <div style="margin: auto; text-align: center; color: #555; padding-top: 50px;">
+                        <i class="fas fa-network-wired" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.3;"></i>
+                        <h3 style="color: #888; font-weight: 500; margin-bottom: 10px;">Aguardando Conexão</h3>
+                        <p style="font-size: 0.9rem; max-width: 400px; margin: 0 auto;">
+                            Selecione um agente no menu à esquerda para iniciar seu ambiente de trabalho dinâmico.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="input-wrapper">
+                    <div class="input-box-styled">
+                        <textarea id="userInput" placeholder="Envie uma instrução (ex: Crie um rascunho de e-mail...)" oninput="autoResize(this)" onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); }" disabled></textarea>
+                        <button class="btn-send" id="btnSend" onclick="sendMessage()" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAINEL DINÂMICO DE ARTEFATOS -->
+            <div class="artifact-panel" id="artifactPanel">
+                <div class="artifact-header">
+                    <div class="artifact-title" id="artifactTitle">
+                        <i class="fas fa-file-alt" style="color: #3b82f6;"></i> <span>Novo Artefato</span>
+                    </div>
+                    <button class="btn-close-artifact" onclick="closeArtifact()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="artifact-content" id="artifactContentArea">
+                    <div class="artifact-card" id="artifactRender">
+                        <!-- O conteúdo formatado da IA será injetado aqui -->
+                    </div>
+                </div>
+
+                <div class="artifact-footer">
+                    <button class="btn-action" onclick="alert('Funcionalidade em desenvolvimento!')">
+                        <i class="fas fa-download"></i> Baixar no Computador
+                    </button>
+                    <button class="btn-action btn-primary-action" onclick="alert('Funcionalidade em desenvolvimento!')">
+                        <i class="fas fa-paper-plane"></i> Enviar por E-mail
+                    </button>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+
+    <script>
+        let WORKSPACE_API_URL = "http://localhost:5217/api/workspace";
+        if (typeof BASE_URL !== 'undefined') { WORKSPACE_API_URL = `${BASE_URL}/api/workspace`; }
+
+        let currentSessionId = null;
+
+        function autoResize(el) {
+            el.style.height = 'auto';
+            el.style.height = (el.scrollHeight) + 'px';
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chatContainer');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Simulação do Markdown básico
+        function renderMarkdownSimple(text) {
+            let html = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            html = html.replace(/```([\s\S]*?)```/g, '<pre style="background:#1a1a2e; padding:10px; border-radius:8px; overflow-x:auto; margin:10px 0; border:1px solid #333;"><code>$1</code></pre>');
+            html = html.replace(/\n/g, '<br>');
+            return html;
+        }
+
+        function appendMessage(text, sender) {
+            const container = document.getElementById('chatContainer');
+            if(container.innerHTML.includes("Aguardando Conexão")) { container.innerHTML = ''; }
+
+            const row = document.createElement('div');
+            row.className = `chat-row chat-row-${sender}`;
+            
+            if(sender === 'ai') {
+                const avatar = document.createElement('div');
+                avatar.className = 'ai-avatar';
+                avatar.innerHTML = '<i class="fas fa-robot"></i>';
+                row.appendChild(avatar);
+
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'msg-ai';
+                msgDiv.innerHTML = renderMarkdownSimple(text);
+                row.appendChild(msgDiv);
+            } else {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'msg-user';
+                msgDiv.innerText = text;
+                row.appendChild(msgDiv);
+            }
+
+            container.appendChild(row);
+            scrollToBottom();
+        }
+
+        async function loadAgents() {
+            try {
+                const res = await fetch(WORKSPACE_API_URL, { headers: { 'Authorization': `Bearer ${token}` } });
+                if(!res.ok) throw new Error("Erro");
+                const agents = await res.json();
+                
+                const select = document.getElementById('agentSelect');
+                select.innerHTML = '<option value="">-- Escolha um Agente --</option>';
+                agents.forEach(a => {
+                    const opt = document.createElement('option');
+                    opt.value = a.id; opt.textContent = a.name;
+                    select.appendChild(opt);
+                });
+            } catch(e) {
+                document.getElementById('agentSelect').innerHTML = '<option value="">Erro ao carregar</option>';
+            }
+        }
+
+        async function startSession() {
+            const agentId = document.getElementById('agentSelect').value;
+            if(!agentId) return Swal.fire({toast:true, position:'top', title:'Selecione um agente', icon:'warning', showConfirmButton:false, timer:2000, background:'#1e1e2d', color:'#fff'});
+
+            const btn = document.getElementById('btnStartSession');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${WORKSPACE_API_URL}/session`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ agentId: parseInt(agentId) })
+                });
+
+                if(!res.ok) throw new Error("Falha de conexão com a API.");
+                const data = await res.json();
+                currentSessionId = data.sessionId;
+                
+                document.getElementById('dotStatus').classList.add('active');
+                document.getElementById('sessionStatusText').textContent = 'Online';
+                document.getElementById('sessionAgentName').textContent = data.agentName;
+                document.getElementById('sessionIdDisplay').textContent = currentSessionId;
+                
+                document.getElementById('chatContainer').innerHTML = '';
+                
+                const uInput = document.getElementById('userInput');
+                uInput.disabled = false; uInput.value = ''; uInput.style.height = 'auto';
+                document.getElementById('btnSend').disabled = false;
+                uInput.focus();
+
+                appendMessage(`Conexão estabelecida com **${data.agentName}**.\n\nA IA está em modo "Workspace/Artefatos". Se a minha resposta envolver a criação de um documento estruturado (como um e-mail, slide ou código grande), eu vou renderizá-lo na Janela Dinâmica ao lado. Experimente pedir um "rascunho de e-mail"!`, 'ai');
+
+            } catch(e) {
+                Swal.fire('Erro', e.message, 'error');
+            } finally {
+                btn.innerHTML = 'Iniciar Nova Sessão';
+                btn.disabled = false;
+            }
+        }
+
+        /* --- LÓGICA DE JANELA DINÂMICA (ARTIFACTS) --- */
+        function openArtifact(title, contentHtml) {
+            document.getElementById('artifactTitle').innerHTML = `<i class="fas fa-file-alt" style="color: #3b82f6;"></i> <span>${title}</span>`;
+            document.getElementById('artifactRender').innerHTML = contentHtml;
+            document.getElementById('artifactPanel').classList.add('active');
+        }
+
+        function closeArtifact() {
+            document.getElementById('artifactPanel').classList.remove('active');
+        }
+
+        // Função rudimentar para detectar intenção de artefato no texto retornado pela IA
+        function detectAndRenderArtifact(text) {
+            const lowerText = text.toLowerCase();
+            
+            if(lowerText.includes("e-mail") || lowerText.includes("email")) {
+                const htmlContent = `
+                    <h3 style="margin-top:0; border-bottom: 2px solid #f0f0f0; padding-bottom:10px; color:#333;">Rascunho de E-mail</h3>
+                    <p style="color:#555; font-size:0.9rem;"><strong>Assunto:</strong> [Insira o assunto aqui]</p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                    <div style="color: #444; line-height: 1.6;">
+                        ${renderMarkdownSimple(text)}
+                    </div>
+                `;
+                openArtifact("Rascunho de E-mail", htmlContent);
+                return true;
+            }
+            
+            if(lowerText.includes("slide") || lowerText.includes("apresentação")) {
+                const htmlContent = `
+                    <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 40px; text-align: center; aspect-ratio: 16/9; display: flex; flex-direction: column; justify-content: center;">
+                        <h2 style="color: #2c3e50; font-size: 2rem; margin-bottom: 20px;">Prévia do Slide</h2>
+                        <div style="color: #555; text-align: left; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                           ${renderMarkdownSimple(text)}
+                        </div>
+                    </div>
+                `;
+                openArtifact("Prévia de Apresentação", htmlContent);
+                return true;
+            }
+
+            if(lowerText.includes("planilha") || lowerText.includes("tabela")) {
+                openArtifact("Tabela de Dados", `<div style="overflow-x:auto; color:#333;">${renderMarkdownSimple(text)}</div>`);
+                return true;
+            }
+
+            return false;
+        }
+        /* ----------------------------------------------- */
+
+        async function sendMessage() {
+            if(!currentSessionId) return;
+            const input = document.getElementById('userInput');
+            const text = input.value.trim();
+            if(!text) return;
+
+            input.value = ''; input.style.height = 'auto';
+            appendMessage(text, 'user');
+            
+            const container = document.getElementById('chatContainer');
+            const row = document.createElement('div');
+            row.className = 'chat-row chat-row-ai'; row.id = 'temp-loading';
+            row.innerHTML = `<div class="ai-avatar"><i class="fas fa-robot"></i></div><div class="msg-ai"><div class="loading-dots"><span></span><span></span><span></span></div></div>`;
+            container.appendChild(row);
+            scrollToBottom();
+
+            input.disabled = true; document.getElementById('btnSend').disabled = true;
+
+            try {
+                const res = await fetch(`${WORKSPACE_API_URL}/session/message`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId: currentSessionId, userMessage: text })
+                });
+
+                document.getElementById('temp-loading')?.remove();
+                if(!res.ok) throw new Error("Erro no backend.");
+                const data = await res.json();
+                
+                // Valida se a resposta deve ser renderizada como artefato dinâmico
+                const isArtifact = detectAndRenderArtifact(data.response);
+                
+                if (isArtifact) {
+                    appendMessage("Gerei o documento solicitado. Você pode visualizá-lo e interagir com ele no painel à direita.", 'ai');
+                } else {
+                    appendMessage(data.response, 'ai');
+                }
+
+            } catch(e) {
+                document.getElementById('temp-loading')?.remove();
+                appendMessage(`⚠️ **Erro:** ${e.message}`, 'ai');
+            } finally {
+                input.disabled = false; document.getElementById('btnSend').disabled = false; input.focus();
+            }
+        }
+
+        function openTutorial() {
+            document.getElementById('tutorialModal').style.display = 'flex';
+        }
+
+        function closeTutorial() {
+            document.getElementById('tutorialModal').style.display = 'none';
+            localStorage.setItem('workspaceTutorialSeen', 'true');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAgents();
+            if (!localStorage.getItem('workspaceTutorialSeen')) {
+                openTutorial();
+            }
+        });
+    </script>
+</body>
+</html>
