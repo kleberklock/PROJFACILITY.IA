@@ -39,7 +39,7 @@ namespace PROJFACILITY.IA.Services
             
             if (!string.IsNullOrEmpty(openAiKey))
             {
-                try { _embeddingClient = new EmbeddingClient("text-embedding-3-small", openAiKey); }
+                try { _embeddingClient = new EmbeddingClient("text-embedding-3-small", new System.ClientModel.ApiKeyCredential(openAiKey)); }
                 catch (Exception ex) { _logger.LogError(ex, "Erro OpenAI"); }
             }
         }

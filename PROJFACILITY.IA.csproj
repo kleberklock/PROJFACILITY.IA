@@ -11,6 +11,7 @@
 
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.1.1" />
     <PackageReference Include="RestSharp" Version="112.0.0" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="mercadopago-sdk" Version="2.11.0" />
@@ -27,8 +28,8 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
 
-<PackageReference Include="MailKit" Version="4.15.1" />
-    <PackageReference Include="MimeKit" Version="4.15.1" />
+<PackageReference Include="MailKit" Version="4.16.0" />
+    <PackageReference Include="MimeKit" Version="4.16.0" />
     
     <PackageReference Include="PdfPig" Version="0.1.13" />
     <PackageReference Include="Pinecone.Client" Version="4.0.2" />

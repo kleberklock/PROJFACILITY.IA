@@ -9,23 +9,29 @@ using PROJFACILITY.IA.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Garante explicitamente que as Variáveis de Ambiente do Azure tenham prioridade máxima
+// e não sejam sobrescritas pelo appsettings.json
+builder.Configuration.AddEnvironmentVariables();
+
 builder.WebHost.CaptureStartupErrors(true);
 builder.WebHost.UseSetting("detailedErrors", "true");
 
 // 1. Configurar Banco de Dados
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+string? connectionString;
 
-if (!builder.Environment.IsDevelopment())
+if (builder.Environment.IsDevelopment())
 {
+    // Ignora a connection string do Azure e usa obrigatoriamente o fallback do banco local
+    connectionString = "Server=.\\SQLEXPRESS;Database=ProjFacilityIADb_Local_DB;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
+}
+else
+{
+    // Exige a string do Azure (geralmente com Identidade Gerida)
+    connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     if (string.IsNullOrEmpty(connectionString))
     {
         throw new InvalidOperationException("FALTA A CONNECTION STRING NO AZURE!");
     }
-}
-else if (string.IsNullOrEmpty(connectionString))
-{
-    // Fallback apenas para desenvolvimento local
-    connectionString = "Server=(localdb)\\mssqllocaldb;Database=ProjFacilityIADb_Local_DB;Trusted_Connection=True;MultipleActiveResultSets=true";
 }
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -113,6 +119,14 @@ builder.Services.AddAuthentication(x =>
 // ==========================================
 // CONSTRUÇÃO DO CONTÊINER IoC — BLINDADA COM TRY-CATCH
 // Exceções aqui são silenciosas no Azure sem este bloco.
+
+// Ativa a Telemetria e Monitorização Automática do Azure Application Insights
+var appInsightsString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+if (!string.IsNullOrEmpty(appInsightsString))
+{
+    builder.Services.AddApplicationInsightsTelemetry(options => { options.ConnectionString = appInsightsString; });
+}
+
 WebApplication app;
 try
 {

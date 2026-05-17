@@ -47,8 +47,8 @@ namespace PROJFACILITY.IA.Services
             {
                 try
                 {
-                    _chatClient = new ChatClient("gpt-4o-mini", apiKey);
-                    _embeddingClient = new EmbeddingClient("text-embedding-3-small", apiKey);
+                    _chatClient = new ChatClient("gpt-4o-mini", new System.ClientModel.ApiKeyCredential(apiKey));
+                    _embeddingClient = new EmbeddingClient("text-embedding-3-small", new System.ClientModel.ApiKeyCredential(apiKey));
                 }
                 catch (Exception ex) { _logger.LogError(ex, "Erro ao iniciar OpenAI"); }
             }
