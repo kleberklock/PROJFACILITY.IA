@@ -12,7 +12,7 @@ namespace PROJFACILITY.IA.Controllers
 {
     [Route("api/workspace")]
     [ApiController]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "admin,Admin")]
     public class WorkspaceController : ControllerBase
     {
         private readonly AppDbContext _context;
